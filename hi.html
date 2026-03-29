@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bortle UI</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: Arial, sans-serif;
+    }
+
+    body {
+      background: black;
+      color: white;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Grid Layout */
+    .container {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      padding: 40px;
+      gap: 40px;
+      max-width: 1200px;
+      width: 100%;
+    }
+
+    /* Headings */
+    h2 {
+      margin-bottom: 20px;
+    }
+
+    h3 {
+      margin: 20px 0;
+      font-weight: normal;
+    }
+
+    /* Scale */
+    .scale {
+      display: flex;
+      margin: 20px 0;
+    }
+
+    .box {
+      padding: 10px 14px;
+      font-size: 14px;
+      text-align: center;
+    }
+
+    /* Colors */
+    .grey { background: #999; }
+    .red { background: #d9534f; }
+    .orange { background: #f0ad4e; }
+    .yellow { background: #ffd966; color: black; }
+    .green { background: #5cb85c; }
+    .blue { background: #5bc0de; }
+    .dark { background: #555; }
+
+    /* Text */
+    .location {
+      text-align: center;
+      margin-bottom: 20px;
+      font-size: 14px;
+    }
+
+    .info p {
+      font-size: 14px;
+      margin-bottom: 5px;
+    }
+
+    /* Middle */
+    .middle p {
+      font-size: 14px;
+      margin-bottom: 8px;
+    }
+
+    button {
+      margin-top: 20px;
+      padding: 10px 15px;
+      background: #333;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    button:hover {
+      background: #555;
+    }
+
+    /* Image */
+    .right img {
+      width: 100%;
+      border-radius: 10px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- Left Section -->
+  <div class="left">
+    <h2>/ Bortle Scale</h2>
+
+    <h3>/ Can I see it Tonight</h3>
+
+    <div class="scale">
+      <div class="box grey">9-8</div>
+      <div class="box red">7</div>
+      <div class="box orange">6</div>
+      <div class="box yellow">5</div>
+      <div class="box green">4</div>
+      <div class="box blue">3</div>
+      <div class="box dark">2</div>
+    </div>
+
+    <p class="location">your location</p>
+
+    <div class="info">
+      <p>Current: Bortle 4</p>
+      <p>Condition: Rural/Suburban transition</p>
+      <p>Visibility: Good Milky Way visibility</p>
+    </div>
+  </div>
+
+  <!-- Middle Section -->
+  <div class="middle">
+    <h2>/ Live sky Photo</h2>
+
+    <p>Location - Thane Maharashtra</p>
+    <p>Move 30-40 km Away to view best watching Sky</p>
+
+    <br>
+
+    <p>Location - Thane Maharashtra</p>
+    <p>Move 30-40 km Away to view best watching Sky</p>
+
+    <button>Watch on Map</button>
+  </div>
+
+  <!-- Right Section -->
+  <div class="right">
+    <img src="sky.jpg" alt="Sky Image">
+  </div>
+
+</div>
+
+</body>
+</html>

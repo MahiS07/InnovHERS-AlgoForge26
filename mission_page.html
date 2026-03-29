@@ -1,0 +1,2954 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Orbital - Mission Voyages</title>
+    <link rel="icon" type="image/jpeg" href="./codeathon-figma/orbi.jpg">
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Oxanium:wght@300;600;700&family=Inter:wght@300;400;500;600;700&family=Sansita:wght@300&display=swap" rel="stylesheet">
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Three.js for 3D Satellite Viewer -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.134.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.134.0/examples/js/loaders/GLTFLoader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.134.0/examples/js/loaders/DRACOLoader.js"></script>
+    
+    <!-- GSAP & Flip Plugin -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/Flip.min.js"></script>
+    
+    <!-- Tailwind Config -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'oxanium': ['Oxanium', 'sans-serif'],
+                        'inter': ['Inter', 'sans-serif'],
+                        'sansita': ['Sansita', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+            background-color: #000000;
+            color: #FFFFFF;
+            overflow-x: hidden;
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Glassmorphism */
+        .glass {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.10);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        /* Mission Card Hover Effect */
+        .mission-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+        }
+
+        .mission-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Vertical Text */
+        .vertical-text {
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+            letter-spacing: 4px;
+        }
+        
+        /* Fade-in animation */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .animate-fadeIn {
+            animation: fadeIn 0.6s ease-out forwards;
+        }
+
+        /* Hide scrollbar for Earth section */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        /* Fade animations */
+        .fade-out {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .fade-in {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* ============================================
+           SATELLITE TRACKER STYLES
+        ============================================ */
+
+        /* Satellite Card Grid */
+        .satellite-card {
+            transition: transform 0.3s ease;
+        }
+        
+        .satellite-card:hover {
+            transform: translateY(-4px);
+        }
+
+        /* Operator badges */
+        .sat-badge {
+            font-size: 10px;
+            font-family: 'Oxanium', sans-serif;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            padding: 3px 8px;
+            border-radius: 6px;
+            display: inline-block;
+        }
+        .badge-nasa    { background: rgba(14,165,233,0.2);  border: 1px solid rgba(14,165,233,0.4);  color: #38bdf8; }
+        .badge-esa     { background: rgba(20,184,166,0.2);  border: 1px solid rgba(20,184,166,0.4);  color: #2dd4bf; }
+        .badge-isro    { background: rgba(251,146,60,0.2);  border: 1px solid rgba(251,146,60,0.4);  color: #fb923c; }
+        .badge-roscosmos { background: rgba(239,68,68,0.2); border: 1px solid rgba(239,68,68,0.4);  color: #f87171; }
+        .badge-usaf    { background: rgba(99,102,241,0.2);  border: 1px solid rgba(99,102,241,0.4);  color: #a5b4fc; }
+        .badge-noaa    { background: rgba(34,197,94,0.2);   border: 1px solid rgba(34,197,94,0.4);   color: #4ade80; }
+        .badge-default { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #e2e8f0; }
+
+        /* Orbit type chips */
+        .orbit-chip {
+            font-size: 10px;
+            font-family: 'Inter', sans-serif;
+            padding: 2px 8px;
+            border-radius: 999px;
+            display: inline-block;
+        }
+        .orbit-leo  { background: rgba(56,189,248,0.15); color: #7dd3fc; }
+        .orbit-meo  { background: rgba(167,139,250,0.15); color: #c4b5fd; }
+        .orbit-geo  { background: rgba(251,191,36,0.15);  color: #fcd34d; }
+        .orbit-sso  { background: rgba(52,211,153,0.15);  color: #6ee7b7; }
+        .orbit-lunar { background: rgba(244,114,182,0.15); color: #f9a8d4; }
+
+        /* Satellite icon container */
+        .sat-icon-wrap {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: rgba(56,189,248,0.08);
+            border: 1px solid rgba(56,189,248,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        /* Satellite Detail Overlay */
+        #satDetailOverlay {
+            position: fixed;
+            inset: 0;
+            z-index: 200;
+            background: #000;
+            display: none;
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+        #satDetailOverlay.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        /* Info panel */
+        .sat-info-panel {
+            width: 280px;
+            min-width: 280px;
+            height: 100vh;
+            overflow-y: auto;
+            background: #0a0a12;
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 24px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            flex-shrink: 0;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+            position: relative;
+            z-index: 201;
+        }
+
+        /* Info stat row */
+        .sat-stat-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .sat-stat-row:last-child { border-bottom: none; }
+        .sat-stat-label { font-size: 10px; color: rgba(255, 255, 255, 0.5); font-family: 'Inter', sans-serif; text-transform: uppercase; letter-spacing: 0.05em; }
+        .sat-stat-value { font-size: 12px; color: #e2e8f0; font-family: 'Oxanium', sans-serif; font-weight: 600; }
+
+        /* Three.js canvas container */
+        #satCanvasContainer {
+            flex: 1;
+            height: 100vh;
+            position: relative;
+            overflow: hidden;
+        }
+        #satCanvas {
+            width: 100% !important;
+            height: 100% !important;
+            display: block;
+        }
+
+        /* Top-right stats overlay on 3D view - Minimal */
+        .sat-3d-stats {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            pointer-events: none;
+            z-index: 10;
+        }
+        .sat-3d-stat-box {
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 10px 12px;
+            min-width: 100px;
+        }
+        .sat-3d-stat-box .s-label { font-size: 9px; color: rgba(255, 255, 255, 0.5); font-family: 'Inter', sans-serif; margin-bottom: 3px; text-transform: uppercase; letter-spacing: 0.05em; }
+        .sat-3d-stat-box .s-val   { font-size: 14px; color: #e2e8f0; font-family: 'Oxanium', sans-serif; font-weight: 600; }
+
+        /* Bottom hint */
+        .sat-3d-hint {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.4);
+            font-family: 'Inter', sans-serif;
+            pointer-events: none;
+            z-index: 10;
+            letter-spacing: 0.05em;
+        }
+
+        /* Back button in overlay */
+        #satBackBtn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 202;
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 8px 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            transition: background 0.2s ease, border-color 0.2s ease;
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.7);
+            font-family: 'Inter', sans-serif;
+        }
+        #satBackBtn:hover { 
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.2);
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        /* Pulse animation for orbit dot */
+        @keyframes orbitPulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+
+        /* Satellite tracker header title */
+        .sat-tracker-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 32px;
+        }
+
+        /* Live dot */
+        .live-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #22c55e;
+            animation: orbitPulse 2s ease-in-out infinite;
+            display: inline-block;
+            margin-right: 6px;
+        }
+    </style>
+    
+    <!-- Authentication Utilities -->
+    <script src="./auth.js"></script>
+    
+    <!-- ORBI - Space Assistant Module -->
+    <script src="./orbi.js"></script>
+</head>
+<body class="bg-black">
+    <!-- Main Container -->
+    <div class="min-h-screen relative">
+        <!-- Starry Background -->
+        <div class="fixed inset-0 z-0">
+            <div class="absolute inset-0 opacity-50" style="background-image: url('./codeathon-figma/pexels-roboseal34-35272009.jpg'); background-size: cover; background-position: center;"></div>
+            <div class="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-black/80"></div>
+        </div>
+
+        <!-- Header - Persistent -->
+        <header class="fixed top-0 left-0 right-0 z-50 py-4">
+            <div class="container mx-auto px-6 max-w-7xl">
+                <div class="flex items-center justify-between glass rounded-full p-2 shadow-2xl">
+                    <!-- Logo -->
+                    <button onclick="toggleChat()" class="flex items-center rounded-full hover:opacity-90 transition-opacity">
+                        <img src="./codeathon-figma/image 68.png" alt="Orbital Logo" class="h-10 w-auto">
+                    </button>
+
+                    <!-- Navigation Links -->
+                    <nav class="flex items-center gap-2">
+                        <a href="index.html" class="px-5 py-1.5 text-sm font-inter text-white/80 hover:text-white transition-colors">Home</a>
+                        <a href="mission_page.html" class="px-5 py-1.5 rounded-full bg-white/80 text-black text-sm font-inter font-medium hover:bg-white transition-colors">Mission</a>
+                        <a href="cosmic_page.html" class="px-5 py-1.5 text-sm font-inter text-white/80 hover:text-white transition-colors">Cosmic</a>
+                        <a href="learn.html" class="px-5 py-1.5 text-sm font-inter text-white/80 hover:text-white transition-colors">Learn</a>
+                        <a href="blog.html" class="px-5 py-1.5 text-sm font-inter text-white/80 hover:text-white transition-colors">Blogs</a>
+                        <a href="committee.html" class="px-5 py-1.5 text-sm font-inter text-white/80 hover:text-white transition-colors">Committee</a>
+                    </nav>
+
+                    <!-- Right Actions -->
+                    <div class="flex items-center gap-3">
+                        <!-- User Avatar -->
+                        <a href="profile.html" class="w-10 h-10 rounded-full overflow-hidden border border-white/20">
+                            <img src="./codeathon-figma/profile_pic.png" alt="User Avatar" class="w-full h-full object-cover">
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Mission Gallery View -->
+        <div id="missionGallery" class="relative z-10">
+            <!-- Earth Hero Section - Full Screen -->
+            <div class="h-screen w-full relative overflow-hidden flex items-center justify-center" style="background-image: url('./codeathon-figma/3865467.jpg'); background-size: cover; background-position: center;">
+                <!-- Dark Overlay -->
+                <div class="absolute inset-0 bg-black/30"></div>
+                
+                <!-- Subtle Bottom Fade -->
+                <div class="absolute bottom-0 left-0 right-0 h-64 bg-gradient-to-t from-black/90 via-transparent to-transparent z-5"></div>
+                
+                <!-- Title Overlay -->
+                <div class="relative z-10 flex items-center justify-center">
+                    <h1 class="text-7xl md:text-9xl font-sansita font-light tracking-[0.3em] text-white/90 text-center">
+                        VOYAGES
+                    </h1>
+                </div>
+
+                <!-- Scroll Down Arrow -->
+                <button onclick="scrollToMissions()" class="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-10 cursor-pointer hover:opacity-100 opacity-80 transition-opacity">
+                    <i data-lucide="chevron-down" class="w-8 h-8 text-white"></i>
+                </button>
+            </div>
+
+            <!-- Mission Section - Full Screen -->
+            <div id="missionSection" class="min-h-screen bg-black flex flex-col justify-center pt-20 pb-12">
+                <!-- Glass Pill Tabs -->
+                <div class="relative z-20 flex justify-center px-6 py-6">
+                    <div class="flex items-center gap-0 bg-white/5 backdrop-blur-md border border-white/10 rounded-full p-1 w-fit mx-auto">
+                        <button onclick="switchTab('active')" class="tab-btn px-6 py-2 bg-white/90 text-gray-900 font-semibold rounded-full text-sm font-inter transition-all">Active</button>
+                        <button onclick="switchTab('upcoming')" class="tab-btn px-6 py-2 text-white/70 hover:text-white text-sm font-inter transition-colors">Upcoming</button>
+                        <button onclick="switchTab('past')" class="tab-btn px-6 py-2 text-white/70 hover:text-white text-sm font-inter transition-colors">Past</button>
+                        <button onclick="switchTab('compare')" class="tab-btn px-6 py-2 text-white/70 hover:text-white text-sm font-inter transition-colors">Compare</button>
+                        <button onclick="switchTab('tracker')" class="tab-btn px-6 py-2 text-white/70 hover:text-white text-sm font-inter transition-colors flex items-center gap-1.5">Satellite Tracker</button>
+                    </div>
+                </div>
+
+                <!-- Mission Vertical Slices Grid -->
+                <div class="relative z-20 container mx-auto px-6 flex-1 flex items-center max-w-7xl">
+                    <div class="grid grid-cols-4 gap-1 h-[74vh] w-full" id="missionGrid">
+                        <!-- Mission cards will be dynamically loaded by JavaScript -->
+                    </div>
+
+                    <!-- Mission Detail View (Hidden Initially) -->
+                    <div id="missionDetail" class="absolute inset-0 opacity-0 pointer-events-none transition-opacity duration-500">
+                        <!-- Background Image -->
+                        <div id="detailImageContainer" class="absolute inset-0">
+                            <img id="detailBackgroundImage" src="" alt="Mission Background" class="w-full h-full object-cover">
+                            <div class="absolute inset-0 bg-gradient-to-r from-black/90 via-black/70 to-black/60"></div>
+                        </div>
+
+                        <!-- Close Button -->
+                        <button onclick="closeMissionDetail()" class="absolute top-4 right-4 z-50 p-2 bg-white/10 hover:bg-white/20 rounded-full transition-all group">
+                            <i data-lucide="chevron-left" class="w-6 h-6 text-white"></i>
+                        </button>
+
+                        <!-- Content Grid -->
+                        <div class="relative z-40 h-full flex items-center px-8">
+                            <div class="grid grid-cols-12 gap-8 w-full">
+                                <!-- Left Column - Date & Links -->
+                                <div class="col-span-3 flex flex-col justify-center space-y-6">
+                                    <!-- Date -->
+                                    <div id="missionDate" class="opacity-0">
+                                        <p class="text-xs font-inter text-gray-400 mb-1">Launch Date</p>
+                                        <div class="flex items-baseline gap-2">
+                                            <span id="detailDay" class="text-7xl font-oxanium font-bold">26</span>
+                                            <div>
+                                                <p id="detailMonth" class="text-lg font-inter font-light">Sep</p>
+                                                <p id="detailYear" class="text-lg font-inter font-light">2026</p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Links -->
+                                    <div id="missionLinks" class="space-y-2 opacity-0">
+                                        <a href="#" class="flex items-center gap-2 px-4 py-2 glass rounded-lg text-xs font-inter hover:bg-white/15 transition-all">
+                                            <i data-lucide="external-link" class="w-3 h-3"></i>
+                                            <span id="link1Text">View Mission Timeline</span>
+                                        </a>
+                                        <a href="#" class="flex items-center gap-2 px-4 py-2 glass rounded-lg text-xs font-inter hover:bg-white/15 transition-all">
+                                            <i data-lucide="users" class="w-3 h-3"></i>
+                                            <span id="link2Text">Meet the Crew</span>
+                                        </a>
+                                    </div>
+                                </div>
+
+                                <!-- Right Column - Mission Info Glass Card -->
+                                <div class="col-span-9 flex items-center">
+                                    <div id="missionInfoCard" class="glass-card rounded-2xl p-6 w-full max-h-[60vh] overflow-y-auto opacity-0 transform scale-95">
+                                        <!-- Mission Title -->
+                                        <div class="mb-4">
+                                            <h2 id="detailTitle" class="text-4xl font-oxanium font-bold mb-1">ARTEMIS II</h2>
+                                            <p id="detailSubtitle" class="text-base font-inter font-light text-gray-300">NASA's First Crewed Mission</p>
+                                        </div>
+
+                                        <!-- Mission Overview -->
+                                        <div class="mb-4">
+                                            <h3 class="text-base font-inter font-semibold mb-2 text-white">Mission Overview :</h3>
+                                            <p id="detailOverview" class="text-xs font-inter leading-relaxed text-gray-300">
+                                                Mission overview text goes here...
+                                            </p>
+                                        </div>
+
+                                        <!-- Key Objectives -->
+                                        <div class="mb-4">
+                                            <h3 class="text-base font-inter font-semibold mb-2 text-white">Current Objectives:</h3>
+                                            <ul id="detailObjectives" class="space-y-2 text-xs font-inter text-gray-300">
+                                                <li class="flex items-start gap-2">
+                                                    <span class="text-purple-400">•</span>
+                                                    <span>Objective 1</span>
+                                                </li>
+                                            </ul>
+                                        </div>
+
+                                        <!-- Explore More Button -->
+                                        <div class="mt-6">
+                                            <button id="exploreMoreBtn" onclick="navigateToDetailed()" class="px-6 py-2.5 bg-white/10 hover:bg-white/20 border border-white/20 rounded-lg text-white text-sm font-medium transition-all flex items-center gap-2">
+                                                <span>Explore More</span>
+                                                <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Your Trajectory Section -->
+                <div class="relative z-20 container mx-auto px-6 py-16 max-w-7xl">
+                    <h2 class="text-3xl font-inter font-semibold text-white mb-10 border-l-4 border-white pl-4" style="margin-top: 3rem;">Your Trajectory</h2>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <!-- CHANDRAYAN Card -->
+                        <div class="relative group cursor-pointer overflow-hidden rounded-0 h-64" onclick="window.location.href='detailed.html'">
+                            <img src="./codeathon-figma/isro3-1537702620.jpg" 
+                                 alt="Chandrayan" 
+                                 class="w-full h-full object-cover brightness-75 group-hover:brightness-100 transition-all duration-300">
+                            <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
+                            <div class="absolute bottom-6 left-6">
+                                <h3 class="text-2xl font-oxanium font-bold text-white tracking-wider">CHANDRAYAN</h3>
+                            </div>
+                            <button class="absolute bottom-6 right-6 p-2 hover:scale-110 transition-transform">
+                                <i data-lucide="heart" class="w-6 h-6 text-white"></i>
+                            </button>
+                        </div>
+
+                        <!-- Voyager 1 Card -->
+                        <div class="relative group cursor-pointer overflow-hidden rounded-0 h-64" onclick="window.location.href='detailed.html'">
+                            <img src="./codeathon-figma/12224590.jpg" 
+                                 alt="Voyager 1" 
+                                 class="w-full h-full object-cover brightness-75 group-hover:brightness-100 transition-all duration-300">
+                            <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
+                            <div class="absolute bottom-6 left-6">
+                                <h3 class="text-2xl font-oxanium font-bold text-white tracking-wider">Voyager 1</h3>
+                            </div>
+                            <button class="absolute bottom-6 right-6 p-2 hover:scale-110 transition-transform">
+                                <i data-lucide="heart" class="w-6 h-6 text-white"></i>
+                            </button>
+                        </div>
+
+                        <!-- James Webb Card -->
+                        <div class="relative group cursor-pointer overflow-hidden rounded-0 h-64" onclick="window.location.href='detailed.html'">
+                            <img src="./codeathon-figma/intro-1676493671.jpg" 
+                                 alt="James Webb" 
+                                 class="w-full h-full object-cover brightness-75 group-hover:brightness-100 transition-all duration-300">
+                            <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
+                            <div class="absolute bottom-6 left-6">
+                                <h3 class="text-2xl font-oxanium font-bold text-white tracking-wider">James Webb</h3>
+                            </div>
+                            <button class="absolute bottom-6 right-6 p-2 hover:scale-110 transition-transform">
+                                <i data-lucide="heart" class="w-6 h-6 text-white"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer Section -->
+        <footer class="relative bg-gray-200 py-16 px-5 overflow-hidden">
+            <!-- Background Image -->
+            <div class="absolute inset-0">
+                <img src="./codeathon-figma/image 46.png" alt="Background" class="w-full h-full object-cover">
+            </div>
+            <!-- Dark translucent overlay above image -->
+            <div class="absolute inset-0 bg-black/20"></div>
+
+            <div class="max-w-7xl mx-auto relative z-10">
+                <div class="grid grid-cols-1 lg:grid-cols-[1fr_3fr] gap-12">
+                    
+                    <!-- Left Column: Logo & Social Icons -->
+                    <div>
+                        <a href="index.html" class="inline-block mb-6">
+                            <img src="./codeathon-figma/image 68.png" alt="Orbital Logo" class="h-12 w-auto">
+                        </a>
+                        
+                        <!-- Social Media Icons -->
+                        <div class="flex gap-4">
+                            <a href="#" class="text-gray-800 hover:text-purple-700 transition-colors">
+                                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                                </svg>
+                            </a>
+                            <a href="#" class="text-gray-800 hover:text-purple-700 transition-colors">
+                                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                                </svg>
+                            </a>
+                            <a href="#" class="text-gray-800 hover:text-purple-700 transition-colors">
+                                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                                </svg>
+                            </a>
+                            <a href="#" class="text-gray-800 hover:text-purple-700 transition-colors">
+                                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                                </svg>
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Right Columns: Links -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                        
+                        <!-- Column 1: Explore -->
+                        <div>
+                            <h3 class="text-gray-900 font-bold text-base mb-4">Explore</h3>
+                            <ul class="space-y-2">
+                                <li><a href="mission_page.html" class="text-gray-700 text-sm hover:text-purple-700 transition-colors">Space Missions</a></li>
+                                <li><a href="cosmic_page.html" class="text-gray-700 text-sm hover:text-purple-700 transition-colors">Cosmic Events</a></li>
+                                <li><a href="learn.html" class="text-gray-700 text-sm hover:text-purple-700 transition-colors">Learning Hub</a></li>
+                                <li><a href="index.html#events" class="text-gray-700 text-sm hover:text-purple-700 transition-colors">Community Events</a></li>
+                            </ul>
+                        </div>
+
+                        <!-- Column 2: Features -->
+                        <div>
+                            <h3 class="text-gray-900 font-bold text-base mb-4">Features</h3>
+                            <ul class="space-y-2">
+                                <li><a href="index.html#sky" class="text-gray-700 text-sm hover:text-purple-700 transition-colors">Tonight's Sky</a></li>
+                                <li><a href="mission_page.html" class="text-gray-700 text-sm hover:text-purple-700 transition-colors">Mission Tracking</a></li>
+                                <li><a href="cosmic_page.html" class="text-gray-700 text-sm hover:text-purple-700 transition-colors">Geomagnetic Data</a></li>
+                                <li><a href="profile.html" class="text-gray-700 text-sm hover:text-purple-700 transition-colors">Your Profile</a></li>
+                            </ul>
+                        </div>
+
+                        <!-- Column 3: Resources -->
+                        <div>
+                            <h3 class="text-gray-900 font-bold text-base mb-4">Resources</h3>
+                            <ul class="space-y-2">
+                                <li><a href="learn.html" class="text-gray-700 text-sm hover:text-purple-700 transition-colors">Educational Content</a></li>
+                                <li><a href="decoder_challenge.html" class="text-gray-700 text-sm hover:text-purple-700 transition-colors">Decoder Challenge</a></li>
+                                <li><a href="#" class="text-gray-700 text-sm hover:text-purple-700 transition-colors">API Documentation</a></li>
+                                <li><a href="#" class="text-gray-700 text-sm hover:text-purple-700 transition-colors">About Orbital</a></li>
+                            </ul>
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
+        </footer>
+
+        <!-- Fixed Chat Button -->
+        <div class="fixed bottom-8 right-8 z-50 group">
+            <button onclick="toggleChat()" class="w-16 h-16 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 border-2 border-white/40 flex items-center justify-center transition-all duration-300 shadow-2xl hover:shadow-purple-500/50 overflow-hidden hover:scale-110 active:scale-95">
+                <img src="./codeathon-figma/orbi.jpg" alt="Chat with Orbit" class="w-full h-full object-cover">
+            </button>
+        </div>
+
+        <!-- Chat Overlay (same as cosmic_page.html) -->
+        <div id="chatOverlay" class="hidden fixed inset-0 z-[60] flex items-end justify-end p-4 md:p-8 bg-black/20 backdrop-blur-sm">
+            <div class="w-full md:w-96 h-[600px] bg-gradient-to-b from-purple-900/40 via-black/60 to-black/80 backdrop-blur-2xl border border-purple-500/30 rounded-3xl shadow-2xl overflow-hidden flex flex-col">
+                <!-- Header -->
+                <div class="flex items-center justify-between p-5 border-b border-purple-500/20 bg-gradient-to-r from-purple-600/20 to-pink-600/20">
+                    <div class="flex items-center gap-3">
+                        <div class="w-11 h-11 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shadow-lg overflow-hidden">
+                            <img src="./codeathon-figma/orbi.jpg" alt="Orbit" class="w-full h-full object-cover">
+                        </div>
+                        <div>
+                            <p class="font-oxanium font-bold text-base text-white">Orbi</p>
+                            <div class="flex items-center gap-1">
+                                <div class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></div>
+                                <p class="text-xs text-gray-300 font-inter">Always here to help</p>
+                            </div>
+                        </div>
+                    </div>
+                    <button onclick="toggleChat()" class="p-2 hover:bg-white/10 rounded-full transition-all duration-200">
+                        <i data-lucide="x" class="w-5 h-5 text-white"></i>
+                    </button>
+                </div>
+
+                <!-- Chat Messages -->
+                <div id="chatMessages" class="flex-1 p-5 space-y-4 overflow-y-auto">
+                    <div class="flex items-start gap-3">
+                        <div class="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center flex-shrink-0 shadow-lg overflow-hidden">
+                            <img src="./codeathon-figma/orbi.jpg" alt="Orbi" class="w-full h-full object-cover">
+                        </div>
+                        <div class="flex-1 bg-gradient-to-br from-purple-500/20 to-pink-500/10 backdrop-blur-md rounded-2xl rounded-tl-sm p-4 border border-purple-400/30 shadow-lg">
+                            <p class="text-sm font-inter text-white leading-relaxed">Hello! I'm Orbi, your space assistant. I can help you learn about space missions and cosmic events. What would you like to know?</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Input -->
+                <div class="p-5 border-t border-purple-500/20 bg-gradient-to-r from-purple-600/10 to-pink-600/10">
+                    <div class="flex items-center gap-2 bg-white/10 backdrop-blur-md rounded-2xl p-3 border border-purple-400/30">
+                        <input type="text" id="chatInput" placeholder="Ask about missions..." onkeypress="handleChatKeyPress(event)" class="flex-1 bg-transparent border-none outline-none text-sm font-inter text-white placeholder-gray-400 px-2">
+                        <button id="chatSendBtn" onclick="sendMessage()" class="p-2 bg-gradient-to-br from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 rounded-xl transition-all duration-200 flex-shrink-0 shadow-lg hover:scale-110 active:scale-95">
+                            <i data-lucide="send" class="w-5 h-5 text-white"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ====================================================
+         SATELLITE TRACKER FULL-SCREEN OVERLAY
+    ===================================================== -->
+    <div id="satDetailOverlay">
+        <!-- Left Info Panel -->
+        <div class="sat-info-panel" id="satInfoPanel">
+            <!-- Back button -->
+            <button onclick="closeSatDetail()" style="background:rgba(0,0,0,0.6);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:8px 12px;cursor:pointer;display:flex;align-items:center;gap:6px;color:rgba(255,255,255,0.7);font-size:12px;font-family:'Inter',sans-serif;transition:all 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.1)';this.style.borderColor='rgba(255,255,255,0.2)';this.style.color='rgba(255,255,255,0.9)'" onmouseout="this.style.background='rgba(0,0,0,0.6)';this.style.borderColor='rgba(255,255,255,0.1)';this.style.color='rgba(255,255,255,0.7)'">
+                <i data-lucide="chevron-left" style="width:14px;height:14px;"></i> Back
+            </button>
+
+            <!-- Satellite Name -->
+            <div>
+                <h2 id="satPanelName" style="font-family:'Oxanium',sans-serif;font-size:24px;font-weight:700;color:#fff;margin:0 0 4px;"></h2>
+                <div id="satPanelOrbitChip" style="margin-bottom:8px;"></div>
+                <p id="satPanelDesc" style="font-size:11px;color:rgba(255,255,255,0.55);font-family:'Inter',sans-serif;line-height:1.6;margin:0;"></p>
+            </div>
+
+            <!-- Divider -->
+            <div style="height:1px;background:rgba(255,255,255,0.08);"></div>
+
+            <!-- Stats -->
+            <div>
+                <div class="sat-stat-row"><span class="sat-stat-label">Launch</span><span class="sat-stat-value" id="statLaunchDate">—</span></div>
+                <div class="sat-stat-row"><span class="sat-stat-label">Operator</span><span class="sat-stat-value" id="statOperator">—</span></div>
+                <div class="sat-stat-row"><span class="sat-stat-label">Orbit</span><span class="sat-stat-value" id="statOrbitType">—</span></div>
+                <div class="sat-stat-row"><span class="sat-stat-label">Altitude</span><span class="sat-stat-value" id="statAltitude">—</span></div>
+                <div class="sat-stat-row"><span class="sat-stat-label">Inclination</span><span class="sat-stat-value" id="statInclination">—</span></div>
+                <div class="sat-stat-row"><span class="sat-stat-label">Speed</span><span class="sat-stat-value" id="statSpeed">—</span></div>
+                <div class="sat-stat-row"><span class="sat-stat-label">Period</span><span class="sat-stat-value" id="statPeriod">—</span></div>
+            </div>
+        </div>
+
+        <!-- 3D Canvas Container -->
+        <div id="satCanvasContainer">
+            <canvas id="satCanvas"></canvas>
+            <!-- Top-right stats overlay -->
+            <div class="sat-3d-stats" id="sat3dStats">
+                <div class="sat-3d-stat-box"><div class="s-label">Altitude</div><div class="s-val" id="o3d-alt">—</div></div>
+                <div class="sat-3d-stat-box"><div class="s-label">Speed</div><div class="s-val" id="o3d-spd">—</div></div>
+                <div class="sat-3d-stat-box"><div class="s-label">Inclination</div><div class="s-val" id="o3d-inc">—</div></div>
+                <div class="sat-3d-stat-box"><div class="s-label">Period</div><div class="s-val" id="o3d-per">—</div></div>
+            </div>
+            <div class="sat-3d-hint">Drag · Scroll · Right-click to pan</div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Lucide Icons
+        lucide.createIcons();
+        
+        // Register GSAP Flip Plugin
+        gsap.registerPlugin(Flip);
+        
+        // Test if GSAP is loaded
+        console.log('GSAP loaded:', typeof gsap !== 'undefined');
+        console.log('Flip loaded:', typeof Flip !== 'undefined');
+
+        // ============================================
+        // GROQ AI CONFIGURATION
+        // ============================================
+        const GROQ_API_KEY = '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';
+        const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
+        
+        // Compare state
+        let compareSelectedMissions = [];
+        let isComparingMissions = false;
+        let aiComparisonData = null;
+
+        // ============================================
+        // CHATBOT FUNCTIONALITY
+        // ============================================
+        
+        // Chat history for context
+        let chatHistory = [
+            {
+                role: 'system',
+                content: `You are Orbi, a space assistant STRICTLY LIMITED to answering ONLY space-related questions.
+
+✅ ALLOWED TOPICS ONLY:
+- Space missions, spacecraft, rockets, launches, space exploration
+- Space weather, solar activity, geomagnetic storms, auroras
+- Astronomy, planets, stars, galaxies, cosmic events
+- Satellites, ISS, astronauts, space stations
+- Space agencies (NASA, ESA, SpaceX, etc.)
+- Space technology, telescopes, orbital mechanics
+- Space science and physics
+
+❌ STRICTLY FORBIDDEN - DO NOT ANSWER:
+- General knowledge, trivia unrelated to space
+- Mathematics, coding (unless space-related)
+- Cooking, sports, entertainment, politics
+- General science not related to space
+- ANY other non-space topics
+
+🚫 CRITICAL RULE: If ANY question is not specifically about space, astronomy, or space missions, you MUST respond EXACTLY:
+"I'm Orbi, a space assistant. I can ONLY answer questions about space, astronomy, space missions, and space-related topics. Please ask me something about space!"
+
+You have access to mission data from the current page. Be concise but informative (2-3 sentences max unless more detail is requested).`
+            }
+        ];
+        
+        // Toggle chat overlay
+        function toggleChat() {
+            const chatOverlay = document.getElementById('chatOverlay');
+            const isHidden = chatOverlay.classList.contains('hidden');
+            
+            if (isHidden) {
+                chatOverlay.classList.remove('hidden');
+                setTimeout(() => lucide.createIcons(), 10);
+            } else {
+                chatOverlay.classList.add('hidden');
+            }
+        }
+        
+        // Close chat when clicking outside
+        document.getElementById('chatOverlay')?.addEventListener('click', function(e) {
+            if (e.target === this) {
+                toggleChat();
+            }
+        });
+        
+        // Handle Enter key press in chat input
+
+
+        // ============================================
+        // REAL MISSION DATA FETCHING
+        // Using The Space Devs Launch Library 2 API
+        // ============================================
+
+        const API_BASE = 'https://ll.thespacedevs.com/2.2.0';
+        let realMissionsData = {
+            active: [],
+            upcoming: [],
+            past: []
+        };
+
+        // Fetch real mission data
+        async function fetchRealMissions() {
+            try {
+                console.log('🚀 Fetching real mission data from API...');
+                
+                // Fetch upcoming launches (100 missions)
+                const upcomingRes = await fetch(`${API_BASE}/launch/upcoming/?limit=100`);
+                if (!upcomingRes.ok) {
+                    throw new Error(`API error: ${upcomingRes.status}`);
+                }
+                const upcomingData = await upcomingRes.json();
+                console.log('✅ Fetched upcoming launches:', upcomingData.results?.length);
+                
+                // Fetch previous launches (100 missions)
+                const pastRes = await fetch(`${API_BASE}/launch/previous/?limit=100`);
+                if (!pastRes.ok) {
+                    throw new Error(`API error: ${pastRes.status}`);
+                }
+                const pastData = await pastRes.json();
+                console.log('✅ Fetched previous launches:', pastData.results?.length);
+                
+                // Combine all launches
+                const allLaunches = [...upcomingData.results, ...pastData.results];
+                
+                // Categorize by date
+                const now = new Date();
+                const activeMissions = [];
+                const upcomingMissions = [];
+                const pastMissions = [];
+                
+                allLaunches.forEach(launch => {
+                    const launchDate = new Date(launch.net);
+                    const daysDiff = (launchDate - now) / (1000 * 60 * 60 * 24);
+                    
+                    if (daysDiff > 7) {
+                        // Future missions (more than 7 days away)
+                        upcomingMissions.push(launch);
+                    } else if (daysDiff >= -7) {
+                        // Active missions (within 7 days before or after)
+                        activeMissions.push(launch);
+                    } else {
+                        // Past missions (more than 7 days ago)
+                        pastMissions.push(launch);
+                    }
+                });
+                
+                // Normalize and store
+                realMissionsData.upcoming = normalizeMissions(upcomingMissions, 'upcoming');
+                realMissionsData.active = normalizeMissions(activeMissions, 'active');
+                realMissionsData.past = normalizeMissions(pastMissions, 'past');
+                
+                // Cache data
+                localStorage.setItem('missionsCache', JSON.stringify(realMissionsData));
+                localStorage.setItem('missionsCacheTime', Date.now());
+                
+                console.log('✅ Mission data categorized:');
+                console.log('   - Active missions:', realMissionsData.active.length);
+                console.log('   - Upcoming missions:', realMissionsData.upcoming.length);
+                console.log('   - Past missions:', realMissionsData.past.length);
+                
+                // Update the missions object with real data
+                console.log('🔄 Updating missions object with real data...');
+                updateMissionsObject();
+                console.log('✅ Missions updated and rendered!');
+                
+            } catch (error) {
+                console.error('❌ Error fetching mission data:', error);
+                console.log('⚠️  Attempting to load from cache...');
+                // Try to load from cache
+                if (!loadFromCache()) {
+                    console.warn('⚠️  No cache available, using fallback data');
+                }
+            }
+        }
+
+        // Normalize missions for any category
+        function normalizeMissions(launches, category) {
+            const now = new Date();
+            
+            return launches.map((launch) => {
+                const missionId = `${category}_${launch.id}`;
+                const launchDate = new Date(launch.net);
+                const isPast = category === 'past';
+                const isActive = category === 'active';
+                const isUpcoming = category === 'upcoming';
+                
+                // Prefer mission name over launch name for better display (e.g., "Chandrayaan-3" instead of "GSLV Mk III")
+                const displayTitle = launch.mission?.name || launch.name;
+                const missionType = launch.mission?.type || 'Space Mission';
+                
+                // Set appropriate links based on category
+                let link1, link2, statusText;
+                if (isPast) {
+                    link1 = "Mission Report";
+                    link2 = "Launch Video";
+                    statusText = launch.status?.name || 'Completed';
+                } else if (isActive) {
+                    link1 = "Live Updates";
+                    link2 = "Mission Status";
+                    statusText = 'Active';
+                } else {
+                    link1 = "View Mission Details";
+                    link2 = "Launch Updates";
+                    statusText = launch.status?.name || 'Scheduled';
+                }
+                
+                // Set overview text based on category
+                let overview;
+                if (launch.mission?.description) {
+                    overview = launch.mission.description;
+                } else if (isPast) {
+                    overview = `${displayTitle} was launched on ${launchDate.toDateString()} by ${launch.launch_service_provider?.name}.`;
+                } else if (isActive) {
+                    overview = `${displayTitle} is currently active. This mission is operated by ${launch.launch_service_provider?.name}.`;
+                } else {
+                    overview = `${displayTitle} is scheduled to launch on ${launchDate.toDateString()}. This mission is operated by ${launch.launch_service_provider?.name}.`;
+                }
+                
+                // Default image based on category
+                let defaultImage;
+                if (isPast) defaultImage = './codeathon-figma/1936147.jpg';
+                else if (isActive) defaultImage = './codeathon-figma/europaclipper_hero_02-scaled-1-2048x1152.jpg';
+                else defaultImage = './codeathon-figma/artemis-ii-luna-orig.jpg';
+                
+                return {
+                    id: missionId,
+                    title: displayTitle.toUpperCase(),
+                    subtitle: missionType,
+                    date: {
+                        day: launchDate.getDate().toString().padStart(2, '0'),
+                        month: launchDate.toLocaleString('en', { month: 'short' }),
+                        year: launchDate.getFullYear().toString()
+                    },
+                    image: launch.image || launch.rocket?.configuration?.image_url || defaultImage,
+                    link1: link1,
+                    link2: link2,
+                    overview: overview,
+                    objectives: (launch.mission?.description || 'Mission objectives available').split('.').filter(s => s.trim()).slice(0, 4).map(s => s.trim()),
+                    category: category,
+                    launchDate: launch.net,
+                    agency: launch.launch_service_provider?.name || 'Unknown',
+                    rocket: launch.rocket?.configuration?.name || 'Unknown',
+                    destination: launch.mission?.orbit?.name || 'Orbit',
+                    status: statusText,
+                    launchYear: launchDate.getFullYear().toString(),
+                    duration: launch.mission?.type || (isPast ? 'Mission Complete' : 'TBD'),
+                    distance: '~ Unknown',
+                    cost: '~ Unknown',
+                    crewSize: launch.rocket?.configuration?.max_stage || 'Unknown',
+                    instruments: launch.rocket?.configuration?.name || 'Unknown',
+                    description: launch.mission?.description?.substring(0, 150) || `${displayTitle} mission by ${launch.launch_service_provider?.name}.`,
+                    // Store mission and launch names for search
+                    missionName: launch.mission?.name || '',
+                    launchName: launch.name || '',
+                    missionDescription: launch.mission?.description || ''
+                };
+            });
+        }
+
+        // Update missions object with real data
+        function updateMissionsObject() {
+            // Clear existing missions except compare defaults
+            for (let key in missions) {
+                if (missions.hasOwnProperty(key)) {
+                    delete missions[key];
+                }
+            }
+            
+            // Add only top 4 active missions (sorted by date, closest first)
+            const topActiveMissions = realMissionsData.active
+                .sort((a, b) => new Date(a.launchDate) - new Date(b.launchDate))
+                .slice(0, 4);
+            topActiveMissions.forEach(mission => {
+                missions[mission.id] = mission;
+            });
+            
+            // Add only top 4 upcoming missions (sorted by date, nearest first)
+            const topUpcomingMissions = realMissionsData.upcoming
+                .sort((a, b) => new Date(a.launchDate) - new Date(b.launchDate))
+                .slice(0, 4);
+            topUpcomingMissions.forEach(mission => {
+                missions[mission.id] = mission;
+            });
+            
+            // Add all past missions (for search functionality)
+            realMissionsData.past.forEach(mission => {
+                missions[mission.id] = mission;
+            });
+            
+            // Update mission categories with only top 4 for active/upcoming
+            missionCategories.active = topActiveMissions.map(m => m.id);
+            missionCategories.upcoming = topUpcomingMissions.map(m => m.id);
+            missionCategories.past = realMissionsData.past.map(m => m.id);
+            
+            // Set compare missions (top 4 from active/upcoming)
+            const comparableMissions = [...topActiveMissions, ...topUpcomingMissions];
+            missionCategories.compare = comparableMissions.slice(0, 4).map(m => m.id);
+            selectedMissions = comparableMissions.slice(0, 3).map(m => m.id);
+            
+            console.log('📊 Missions object updated with real data');
+            console.log('   - Active (top 4):', missionCategories.active);
+            console.log('   - Upcoming (top 4):', missionCategories.upcoming);
+            console.log('   - Past:', missionCategories.past.length, 'missions');
+            
+            // Re-render current tab
+            if (currentTab) {
+                console.log('🎨 Re-rendering tab:', currentTab);
+                renderMissions(currentTab);
+            }
+        }
+
+        // Load from cache
+        function loadFromCache() {
+            const cached = localStorage.getItem('missionsCache');
+            const cacheTime = localStorage.getItem('missionsCacheTime');
+            
+            if (cached && cacheTime) {
+                const age = Date.now() - parseInt(cacheTime);
+                // Cache valid for 1 hour
+                if (age < 3600000) {
+                    realMissionsData = JSON.parse(cached);
+                    console.log('💾 Loaded from cache (age:', Math.floor(age/60000), 'minutes)');
+                    updateMissionsObject();
+                    return true;
+                } else {
+                    console.log('⏰ Cache expired (age:', Math.floor(age/60000), 'minutes)');
+                }
+            } else {
+                console.log('📭 No cache found');
+            }
+            return false;
+        }
+
+        // Mission Data (fallback structure - will be replaced by real data)
+        const missions = {
+            artemis: {
+                title: "ARTEMIS II",
+                subtitle: "NASA's First Crewed Mission to Lunar Orbit",
+                date: { day: "26", month: "Sep", year: "2026" },
+                image: "./codeathon-figma/artemis-ii-luna-orig.jpg",
+                link1: "View Mission Timeline",
+                link2: "Meet the Crew",
+                overview: "Artemis II is the first crewed mission of NASA's Artemis program, marking humanity's return to lunar proximity after more than 50 years. This 10-day flight will carry four astronauts around the Moon to verify the Orion spacecraft's life-support systems, proving the technology needed for deep space exploration.",
+                objectives: [
+                    "Crew Safety Verification: Validate the Orion spacecraft's life support, communication, and navigation systems with humans on board.",
+                    "Lunar Flyby: Execute a precise trajectory around the far side of the Moon, traveling further from Earth than any human has before.",
+                    "Safe Re-entry: Demonstrate the spacecraft's ability to withstand the intense heat of re-entry from lunar return speeds (approx. 25,000 mph).",
+                    "International Collaboration: Include crew members from international partners, strengthening global cooperation in space exploration."
+                ],
+                category: "active",
+                launchYear: "2026",
+                duration: "10 days",
+                distance: "~ 2.1 M km",
+                cost: "~ $4.1 B",
+                crewSize: "4",
+                instruments: "Orion Spacecraft",
+                destination: "Moon",
+                status: "Upcoming",
+                description: "A critical crewed test flight of the SLS rocket and Orion spacecraft around the Moon."
+            },
+            perseverance: {
+                title: "PERSEVERANCE",
+                subtitle: "Mars 2020 Rover Mission",
+                date: { day: "18", month: "Feb", year: "2021" },
+                image: "./codeathon-figma/1936147.jpg",
+                link1: "View JPL Dashboard",
+                link2: "Latest Images",
+                overview: "NASA's Perseverance rover is exploring Jezero Crater on Mars, seeking signs of ancient microbial life and collecting rock samples for future return to Earth. The car-sized rover is equipped with cutting-edge scientific instruments and the Ingenuity helicopter companion.",
+                objectives: [
+                    "Search for Biosignatures: Look for signs of ancient microbial life in Jezero Crater, once a river delta.",
+                    "Sample Collection: Gather and cache rock and soil samples for future Mars Sample Return mission.",
+                    "Test MOXIE: Produce oxygen from Mars' carbon dioxide atmosphere for future human missions.",
+                    "Ingenuity Helicopter: Demonstrate powered flight in Mars' thin atmosphere."
+                ],
+                category: "active",
+                launchYear: "2020",
+                duration: "Active",
+                distance: "~ 471 M km",
+                cost: "~ $2.7 B",
+                crewSize: "Robotic",
+                instruments: "7",
+                destination: "Mars",
+                status: "Active",
+                description: "A critical uncrewed test flight of the SLS rocket and Orion spacecraft. It successfully orbited the Moon and returned to Earth, certifying the systems for future human crews."
+            },
+            curiosity: {
+                title: "CURIOSITY",
+                subtitle: "Mars Science Laboratory",
+                date: { day: "06", month: "Aug", year: "2012" },
+                image: "./codeathon-figma/l-intro-1669850999.jpg",
+                link1: "Mission Updates",
+                link2: "Photo Gallery",
+                overview: "Curiosity is NASA's car-sized rover exploring Gale Crater on Mars since 2012. It has made groundbreaking discoveries about Mars' ancient habitability, including evidence that the planet once had conditions suitable for microbial life.",
+                objectives: [
+                    "Assess Habitability: Determine if Mars ever offered environmental conditions favorable for microbial life.",
+                    "Study Geology: Investigate the geological processes that formed and modified Martian rocks and soil.",
+                    "Radiation Monitoring: Measure radiation levels to assess risks for future human explorers.",
+                    "Atmospheric Analysis: Study the current Martian climate and its evolution over time."
+                ],
+                category: "active",
+                launchYear: "2011",
+                duration: "Active",
+                distance: "~ 354 M km",
+                cost: "~ $2.5 B",
+                crewSize: "Robotic",
+                instruments: "10",
+                destination: "Mars",
+                status: "Active",
+                description: "Mars rover investigating the planet's habitability and searching for signs of ancient microbial life."
+            },
+            europa: {
+                title: "EUROPA CLIPPER",
+                subtitle: "Exploring Jupiter's Icy Moon",
+                date: { day: "10", month: "Oct", year: "2024" },
+                image: "./codeathon-figma/europaclipper_hero_02-scaled-1-2048x1152.jpg",
+                link1: "Mission Overview",
+                link2: "Science Goals",
+                overview: "Europa Clipper will conduct a detailed investigation of Jupiter's moon Europa to determine whether the icy world could harbor conditions suitable for life. The spacecraft will perform dozens of close flybys to study Europa's ice shell, subsurface ocean, and potential plumes.",
+                objectives: [
+                    "Ice Shell Thickness: Map the thickness and structure of Europa's ice shell using ice-penetrating radar.",
+                    "Ocean Composition: Analyze the composition and salinity of Europa's subsurface ocean.",
+                    "Surface Features: Study surface features like chaos terrain and potential water plumes.",
+                    "Habitability Assessment: Determine if Europa's ocean has the ingredients necessary for life."
+                ],
+                category: "active",
+                launchYear: "2024",
+                duration: "6 years",
+                distance: "~ 628 M km",
+                cost: "~ $4.9 B",
+                crewSize: "Uncrewed",
+                instruments: "9",
+                destination: "Europa",
+                status: "Active",
+                description: "Spacecraft studying Jupiter's moon Europa to assess its habitability for life."
+            },
+            gaganyaan: {
+                title: "GAGANYAAN",
+                subtitle: "India's First Human Spaceflight",
+                date: { day: "15", month: "Dec", year: "2026" },
+                image: "./codeathon-figma/artemis-ii-luna-orig.jpg",
+                link1: "Mission Details",
+                link2: "Crew Training",
+                overview: "Gaganyaan is India's ambitious human spaceflight program designed to send a crew of three astronauts to low Earth orbit for a seven-day mission. This historic mission will demonstrate India's capability in human spaceflight and pave the way for future space exploration endeavors.",
+                objectives: [
+                    "Orbital Flight: Successfully launch and sustain three astronauts in a 400 km low Earth orbit.",
+                    "Life Support Systems: Validate environmental control and life support systems for human spaceflight.",
+                    "Safe Return: Demonstrate crew escape systems and safe re-entry capabilities.",
+                    "National Pride: Establish India as the fourth nation to independently launch humans into space."
+                ],
+                category: "upcoming"
+            },
+            starship: {
+                title: "STARSHIP MARS",
+                subtitle: "First Crewed Mission to Mars",
+                date: { day: "20", month: "Nov", year: "2028" },
+                image: "./codeathon-figma/1936147.jpg",
+                link1: "Mission Architecture",
+                link2: "Crew Selection",
+                overview: "Starship Mars represents SpaceX's ambitious plan to send the first crewed mission to the Red Planet. This groundbreaking mission will utilize the fully reusable Starship vehicle to transport crew and cargo, establishing the foundation for a sustainable human presence on Mars.",
+                objectives: [
+                    "Mars Landing: Successfully land the first human crew on Mars' surface.",
+                    "Habitat Setup: Deploy sustainable living habitats and resource utilization systems.",
+                    "Scientific Research: Conduct extensive geological and biological studies.",
+                    "Return Capability: Demonstrate in-situ resource utilization for return propellant production."
+                ],
+                category: "upcoming"
+            },
+            artemis3: {
+                title: "ARTEMIS III",
+                subtitle: "Return to the Lunar Surface",
+                date: { day: "30", month: "Sep", year: "2027" },
+                image: "./codeathon-figma/l-intro-1669850999.jpg",
+                link1: "Landing Site",
+                link2: "Science Objectives",
+                overview: "Artemis III will mark humanity's return to the lunar surface for the first time since Apollo 17 in 1972. This historic mission will land the first woman and the first person of color on the Moon, conducting unprecedented scientific research near the lunar South Pole.",
+                objectives: [
+                    "Lunar Landing: Land astronauts near the South Pole using the Starship Human Landing System.",
+                    "Surface Exploration: Conduct six days of surface operations with multiple moonwalks.",
+                    "Water Ice Research: Search for and analyze water ice in permanently shadowed craters.",
+                    "Sustainable Architecture: Test technologies for long-term lunar habitation."
+                ],
+                category: "upcoming"
+            },
+            dragonfly: {
+                title: "DRAGONFLY",
+                subtitle: "Exploring Titan's Organic Chemistry",
+                date: { day: "05", month: "Jul", year: "2028" },
+                image: "./codeathon-figma/europaclipper_hero_02-scaled-1-2048x1152.jpg",
+                link1: "Mission Overview",
+                link2: "Titan Science",
+                overview: "Dragonfly is a revolutionary rotorcraft lander mission that will explore Saturn's moon Titan. This car-sized drone will fly to dozens of locations across Titan's surface, sampling and examining sites for organic chemistry and potential biosignatures.",
+                objectives: [
+                    "Aerial Mobility: Utilize Titan's dense atmosphere for powered flight between research sites.",
+                    "Organic Chemistry: Study the complex organic molecules forming in Titan's atmosphere and surface.",
+                    "Prebiotic Chemistry: Investigate chemistry similar to early Earth's conditions.",
+                    "Habitability Assessment: Determine if Titan's subsurface water ocean could support life."
+                ],
+                category: "upcoming"
+            },
+            voyager2: {
+                title: "Voyager 2",
+                subtitle: "Grand Tour of the Outer Planets",
+                date: { day: "20", month: "Aug", year: "1977" },
+                image: "./codeathon-figma/artemis-ii-luna-orig.jpg",
+                link1: "Mission Legacy",
+                link2: "Discoveries",
+                overview: "Voyager 2 is the only spacecraft to have visited all four outer planets - Jupiter, Saturn, Uranus, and Neptune. Launched in 1977, it continues to transmit data from beyond the solar system.",
+                objectives: [
+                    "Planetary Exploration: Study Jupiter, Saturn, Uranus, and Neptune up close.",
+                    "Moon Discovery: Discover new moons and study known satellites.",
+                    "Ring Systems: Investigate planetary ring systems.",
+                    "Interstellar Space: Enter interstellar space and study its properties."
+                ],
+                category: "past"
+            },
+            viking1: {
+                title: "Viking 1",
+                subtitle: "First Successful Mars Landing",
+                date: { day: "20", month: "Jul", year: "1976" },
+                image: "./codeathon-figma/1936147.jpg",
+                link1: "Historical Impact",
+                link2: "Mars Data",
+                overview: "Viking 1 was the first U.S. spacecraft to successfully land on Mars and perform its mission. It operated on the surface for over six years, far exceeding its designed lifespan.",
+                objectives: [
+                    "Surface Landing: Achieve first successful U.S. landing on Mars.",
+                    "Life Detection: Conduct experiments to search for signs of life.",
+                    "Surface Imaging: Photograph the Martian surface in detail.",
+                    "Weather Monitoring: Study Martian meteorology and atmospheric conditions."
+                ],
+                category: "past"
+            },
+            kepler: {
+                title: "Kepler",
+                subtitle: "Exoplanet Hunter",
+                date: { day: "06", month: "Mar", year: "2009" },
+                image: "./codeathon-figma/l-intro-1669850999.jpg",
+                link1: "Discoveries",
+                link2: "Exoplanet Catalog",
+                overview: "The Kepler Space Telescope revolutionized our understanding of planets beyond our solar system, discovering thousands of exoplanets during its nine-year mission.",
+                objectives: [
+                    "Exoplanet Survey: Discover Earth-sized planets in the habitable zone.",
+                    "Statistical Data: Determine how common planets are in our galaxy.",
+                    "Transit Method: Perfect the transit photometry technique.",
+                    "Habitable Worlds: Find potentially habitable planets."
+                ],
+                category: "past"
+            },
+            apollosoyuz: {
+                title: "Apollo-Soyuz",
+                subtitle: "First International Space Cooperation",
+                date: { day: "17", month: "Jul", year: "1975" },
+                image: "./codeathon-figma/europaclipper_hero_02-scaled-1-2048x1152.jpg",
+                link1: "Cold War Context",
+                link2: "Docking Achievement",
+                overview: "The Apollo-Soyuz Test Project was the first joint U.S.-Soviet space flight, symbolizing the easing of tensions between the two superpowers during the Cold War.",
+                objectives: [
+                    "International Docking: Successfully dock U.S. and Soviet spacecraft.",
+                    "Crew Exchange: Enable crew members to visit each other's spacecraft.",
+                    "Scientific Experiments: Conduct joint scientific experiments.",
+                    "Diplomatic Relations: Demonstrate peaceful cooperation in space."
+                ],
+                category: "past"
+            },
+            apollo11: {
+                title: "Apollo 11",
+                subtitle: "First Human Moon Landing",
+                date: { day: "20", month: "Jul", year: "1969" },
+                image: "./codeathon-figma/1936147.jpg",
+                link1: "Historic Moments",
+                link2: "Lunar Samples",
+                overview: "Apollo 11 achieved President Kennedy's goal of landing humans on the Moon and returning them safely to Earth. Neil Armstrong and Buzz Aldrin became the first humans to walk on another world.",
+                objectives: [
+                    "Moon Landing: Achieve first human landing on the lunar surface.",
+                    "Surface EVA: Conduct extravehicular activities on the Moon.",
+                    "Sample Collection: Collect lunar rocks and soil samples.",
+                    "Safe Return: Demonstrate capability to return crew safely to Earth."
+                ],
+                category: "past",
+                launchYear: "1969",
+                duration: "8 days",
+                distance: "~ 384 M km",
+                cost: "~ $355 M",
+                crewSize: "3",
+                instruments: "4 (EASEP)",
+                destination: "Moon",
+                status: "Successful",
+                description: "The historic mission that landed the first humans on the Moon. Neil Armstrong and Buzz Aldrin explored the lunar surface while Michael Collins orbited above."
+            },
+            vostok1: {
+                title: "Vostok 1",
+                subtitle: "First Human in Space",
+                date: { day: "12", month: "Apr", year: "1961" },
+                image: "./codeathon-figma/artemis-ii-luna-orig.jpg",
+                link1: "Yuri Gagarin",
+                link2: "Space Race",
+                overview: "Vostok 1 carried Soviet cosmonaut Yuri Gagarin into orbit, making him the first human to journey into outer space and orbit the Earth.",
+                objectives: [
+                    "Human Spaceflight: Achieve first human orbital flight.",
+                    "Life Support: Validate life support systems in space.",
+                    "Safe Recovery: Successfully recover spacecraft and cosmonaut.",
+                    "Scientific Data: Gather data on human physiology in space."
+                ],
+                category: "past"
+            }
+        };
+
+        // Mission categories
+        const missionCategories = {
+            active: ['artemis', 'perseverance', 'curiosity', 'europa'],
+            upcoming: ['gaganyaan', 'starship', 'artemis3', 'dragonfly'],
+            past: ['voyager2', 'viking1', 'kepler', 'apollosoyuz', 'apollo11', 'vostok1'],
+            compare: ['artemis', 'perseverance', 'curiosity', 'europa']
+        };
+
+        let currentTab = 'active';
+
+        // State tracking
+        let currentMission = null;
+        let isDetailOpen = false;
+
+        // Switch Tab Function
+        function switchTab(tabName) {
+            if (isDetailOpen) return; // Prevent tab switch while detail is open
+            
+            currentTab = tabName;
+            
+            // Update tab UI
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('bg-white/90', 'text-gray-900', 'font-semibold', 'rounded-full');
+                btn.classList.add('text-white/70', 'hover:text-white');
+            });
+            
+            const activeTab = document.querySelector(`[onclick="switchTab('${tabName}')"]`);
+            if (activeTab) {
+                activeTab.classList.add('bg-white/90', 'text-gray-900', 'font-semibold', 'rounded-full');
+                activeTab.classList.remove('text-white/70', 'hover:text-white');
+            }
+            
+            // Render missions for selected tab
+            renderMissions(tabName);
+        }
+
+        // ============================================
+        // SATELLITE TRACKER DATA
+        // ============================================
+        const satelliteData = [
+            {
+                id: 'iss',
+                name: 'ISS',
+                fullName: 'International Space Station',
+                operator: 'NASA / Roscosmos',
+                badgeClass: 'badge-nasa',
+                launchDate: '20 Nov 1998',
+                orbitType: 'LEO',
+                orbitClass: 'orbit-leo',
+                altitude: 408,
+                inclination: 51.6,
+                speed: 27600,
+                period: 92,
+                description: 'A multinational collaborative project, the ISS serves as a microgravity and space environment research laboratory. Since 2000 it has hosted continuous human presence, supporting experiments in biology, physics, astronomy, and technology.'
+            },
+            {
+                id: 'hubble',
+                name: 'Hubble',
+                fullName: 'Hubble Space Telescope',
+                operator: 'NASA / ESA',
+                badgeClass: 'badge-nasa',
+                launchDate: '24 Apr 1990',
+                orbitType: 'LEO',
+                orbitClass: 'orbit-leo',
+                altitude: 537,
+                inclination: 28.5,
+                speed: 27000,
+                period: 95,
+                description: 'Hubble has transformed our understanding of the universe. Orbiting above the distortion of the atmosphere, it captures images of galaxies billions of light-years away and has been instrumental in measuring the expansion rate of the universe.'
+            },
+            {
+                id: 'jason3',
+                name: 'JASON-3',
+                fullName: 'JASON-3 Oceanography Satellite',
+                operator: 'NASA / CNES',
+                badgeClass: 'badge-nasa',
+                launchDate: '17 Jan 2016',
+                orbitType: 'MEO',
+                orbitClass: 'orbit-meo',
+                altitude: 1336,
+                inclination: 66,
+                speed: 7200,
+                period: 112,
+                description: 'JASON-3 tracks sea surface height to monitor ocean currents, weather patterns, and global sea level rise. It uses a dual-frequency radar altimeter to measure surface height with centimetre-level precision.'
+            },
+            {
+                id: 'sentinel1',
+                name: 'Sentinel-1A',
+                fullName: 'Sentinel-1A SAR Satellite',
+                operator: 'ESA',
+                badgeClass: 'badge-esa',
+                launchDate: '3 Apr 2014',
+                orbitType: 'SSO',
+                orbitClass: 'orbit-sso',
+                altitude: 693,
+                inclination: 98.2,
+                speed: 7500,
+                period: 99,
+                description: 'Part of the European Copernicus programme, Sentinel-1A carries a C-band Synthetic Aperture Radar that can image through clouds and in darkness, supporting monitoring of sea ice, oil spills, land subsidence, and disaster response.'
+            },
+            {
+                id: 'goes16',
+                name: 'GOES-16',
+                fullName: 'GOES-16 Weather Satellite',
+                operator: 'NOAA / NASA',
+                badgeClass: 'badge-noaa',
+                launchDate: '19 Nov 2016',
+                orbitType: 'GEO',
+                orbitClass: 'orbit-geo',
+                altitude: 35786,
+                inclination: 0.1,
+                speed: 3070,
+                period: 1436,
+                description: 'GOES-16 is the first of the next-generation geostationary weather satellites, providing continuous full-disk imagery of the Americas every 5 minutes. Its Advanced Baseline Imager captures 16 channels including visible and infrared data.'
+            },
+            {
+                id: 'gps2',
+                name: 'GPS IIF-12',
+                fullName: 'GPS Block IIF-12 Navigation Satellite',
+                operator: 'USAF',
+                badgeClass: 'badge-usaf',
+                launchDate: '5 Feb 2016',
+                orbitType: 'MEO',
+                orbitClass: 'orbit-meo',
+                altitude: 20200,
+                inclination: 55,
+                speed: 14000,
+                period: 718,
+                description: 'The final Block IIF GPS satellite provides global positioning, navigation, and timing services with improved accuracy and anti-jamming capability. It broadcasts on three civil frequencies for enhanced civilian and military navigation.'
+            },
+            {
+                id: 'spot7',
+                name: 'SPOT-7',
+                fullName: 'SPOT-7 Earth Observation Satellite',
+                operator: 'Airbus DS',
+                badgeClass: 'badge-default',
+                launchDate: '30 Jun 2014',
+                orbitType: 'SSO',
+                orbitClass: 'orbit-sso',
+                altitude: 694,
+                inclination: 98.2,
+                speed: 7500,
+                period: 99,
+                description: 'SPOT-7 provides sub-metre resolution multispectral Earth imagery for cartography, agriculture, forestry, and urban planning applications. It forms a constellation with sister satellites to deliver daily revisit capability over any point on Earth.'
+            },
+            {
+                id: 'chandrayaan2orb',
+                name: 'Chandrayaan-2',
+                fullName: 'Chandrayaan-2 Lunar Orbiter',
+                operator: 'ISRO',
+                badgeClass: 'badge-isro',
+                launchDate: '22 Jul 2019',
+                orbitType: 'Lunar',
+                orbitClass: 'orbit-lunar',
+                altitude: 100,
+                inclination: 90,
+                speed: 1600,
+                period: 118,
+                description: "India's second lunar mission orbiter continues mapping the Moon's surface with high-resolution cameras and mineral composition sensors. Despite the Vikram lander's hard touchdown, the orbiter remains fully operational and has been extended indefinitely."
+            }
+        ];
+
+        // ============================================
+        // SATELLITE TRACKER RENDER
+        // ============================================
+        function renderSatelliteTracker() {
+            const missionGrid = document.getElementById('missionGrid');
+            missionGrid.className = 'w-full';
+            
+            // Satellite images - Working image sources
+            const satImages = {
+                'iss': 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e7/ISS-42_Soyuz_TMA-17M_spacecraft.jpg/1200px-ISS-42_Soyuz_TMA-17M_spacecraft.jpg',
+                'hubble': 'https://upload.wikimedia.org/wikipedia/commons/3/3f/Hubble_01.JPG',
+                'jason3': 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8c/JASON-3_satellite_model.png/800px-JASON-3_satellite_model.png',
+                'sentinel1': 'https://upload.wikimedia.org/wikipedia/commons/a/a3/Sentinel-1_satellite_model.png',
+                'goes16': 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/6d/GOES-16_Satellite_Model.png/800px-GOES-16_Satellite_Model.png',
+                'gps2': 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c2/NavSTAR_GPS_satellite_III.png/800px-NavSTAR_GPS_satellite_III.png',
+                'spot7': 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/SPOT-7_satellite.jpg/800px-SPOT-7_satellite.jpg',
+                'chandrayaan2orb': 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/eb/Chandrayaan-2_orbiter.jpg/800px-Chandrayaan-2_orbiter.jpg'
+            };
+            
+            missionGrid.innerHTML = `
+                <div class="mb-10 flex items-center justify-between">
+                    <div>
+                        <h2 class="text-3xl font-inter font-semibold text-white border-l-4 border-sky-400 pl-4">SATELLITE TRACKER</h2>
+                        <p class="text-gray-400 text-xs font-inter mt-1 pl-5">Select a satellite to view its live 3D orbital visualization</p>
+                    </div>
+                    <div class="flex items-center gap-2 text-xs font-inter text-gray-400">
+                        <span class="live-dot"></span>
+                        <span style="color:rgba(255,255,255,0.4)">${satelliteData.length} satellites tracked</span>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    ${satelliteData.map(sat => `
+                        <div class="satellite-card relative overflow-hidden cursor-pointer group rounded-lg h-64" 
+                             id="satcard-${sat.id}"
+                             onclick="openSatDetail('${sat.id}')">
+                            <img src="${satImages[sat.id]}" 
+                                 alt="${sat.name}" 
+                                 class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                 style="background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);">
+                            <div class="absolute inset-0 bg-black/40 group-hover:bg-black/30 transition-all duration-300"></div>
+                            <div class="absolute bottom-0 left-0 right-0 p-6">
+                                <h3 class="text-white text-xl font-bold font-inter">${sat.name}</h3>
+                                <p class="text-gray-300 text-xs font-inter mt-1">${sat.fullName}</p>
+                                <div class="mt-3 flex items-center justify-between">
+                                    <span class="sat-badge ${sat.badgeClass}">${sat.operator.split('/')[0].trim()}</span>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+            lucide.createIcons();
+        }
+
+        // ============================================
+        // SATELLITE DETAIL 3D VIEW
+        // ============================================
+        let satThreeScene = null; // holder for cleanup
+
+        function getBadgeHtml(sat) {
+            return `<span class="sat-badge ${sat.badgeClass}">${sat.operator}</span>`;
+        }
+
+        function getOrbitChipHtml(sat) {
+            return `<span class="orbit-chip ${sat.orbitClass}" style="font-size:11px;padding:3px 10px;">${sat.orbitType} Orbit</span>`;
+        }
+
+        function openSatDetail(satId) {
+            const sat = satelliteData.find(s => s.id === satId);
+            if (!sat) return;
+
+            // Populate info panel
+            document.getElementById('satPanelName').textContent = sat.name;
+            document.getElementById('satPanelOrbitChip').innerHTML = getOrbitChipHtml(sat);
+            document.getElementById('satPanelDesc').textContent = sat.description;
+            document.getElementById('statLaunchDate').textContent = sat.launchDate;
+            document.getElementById('statOperator').textContent = sat.operator;
+            document.getElementById('statOrbitType').textContent = sat.orbitType;
+            document.getElementById('statAltitude').textContent = sat.altitude.toLocaleString() + ' km';
+            document.getElementById('statInclination').textContent = sat.inclination + '°';
+            document.getElementById('statSpeed').textContent = sat.speed.toLocaleString() + ' km/h';
+            document.getElementById('statPeriod').textContent = sat.period + ' min';
+
+            // Populate 3D overlay stats
+            document.getElementById('o3d-alt').textContent = sat.altitude.toLocaleString() + ' km';
+            document.getElementById('o3d-spd').textContent = sat.speed.toLocaleString() + ' km/h';
+            document.getElementById('o3d-inc').textContent = sat.inclination + '°';
+            document.getElementById('o3d-per').textContent = sat.period + ' min';
+
+            // Show overlay
+            const overlay = document.getElementById('satDetailOverlay');
+            overlay.style.display = 'flex';
+            requestAnimationFrame(() => {
+                overlay.style.opacity = '1';
+            });
+
+            // Init Three.js
+            setTimeout(() => initSatThree(sat), 80);
+
+            // ESC to close
+            document.addEventListener('keydown', satEscHandler);
+        }
+
+        function satEscHandler(e) {
+            if (e.key === 'Escape') closeSatDetail();
+        }
+
+        function closeSatDetail() {
+            document.removeEventListener('keydown', satEscHandler);
+            const overlay = document.getElementById('satDetailOverlay');
+            overlay.style.opacity = '0';
+            setTimeout(() => {
+                overlay.style.display = 'none';
+                destroySatThree();
+            }, 400);
+        }
+
+        function destroySatThree() {
+            if (satThreeScene && satThreeScene.cleanup) {
+                satThreeScene.cleanup();
+            }
+            satThreeScene = null;
+        }
+
+        function initSatThree(sat) {
+            destroySatThree();
+
+            const canvas = document.getElementById('satCanvas');
+            const container = document.getElementById('satCanvasContainer');
+            const W = container.clientWidth;
+            const H = container.clientHeight;
+
+            // Renderer
+            const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false });
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            renderer.setSize(W, H);
+            renderer.setClearColor(0x00000a, 1);
+
+            // Scene
+            const scene = new THREE.Scene();
+
+            // Camera
+            const camera = new THREE.PerspectiveCamera(50, W / H, 0.1, 1000);
+            camera.position.set(0, 3, 8);
+
+            // Controls
+            const controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.06;
+            controls.minDistance = 3.5;
+            controls.maxDistance = 20;
+            controls.autoRotate = false;
+
+            // ---- Starfield ----
+            const starGeo = new THREE.BufferGeometry();
+            const starCount = 3000;
+            const starPositions = new Float32Array(starCount * 3);
+            for (let i = 0; i < starCount * 3; i++) {
+                starPositions[i] = (Math.random() - 0.5) * 400;
+            }
+            starGeo.setAttribute('position', new THREE.BufferAttribute(starPositions, 3));
+            const starMat = new THREE.PointsMaterial({ color: 0xffffff, size: 0.4, sizeAttenuation: true });
+            const stars = new THREE.Points(starGeo, starMat);
+            scene.add(stars);
+
+            // ---- Earth ----
+            const earthRadius = 2;
+            const earthGeo = new THREE.SphereGeometry(earthRadius, 64, 64);
+
+            // Load Earth texture from NASA Blue Marble CDN
+            const texLoader = new THREE.TextureLoader();
+
+            // Fallback materials in case texture fails
+            const earthMat = new THREE.MeshPhongMaterial({
+                color: 0x1a3a5c,
+                shininess: 15,
+                specular: new THREE.Color(0x224466),
+            });
+            const earth = new THREE.Mesh(earthGeo, earthMat);
+            scene.add(earth);
+
+            // Try to load texture
+            texLoader.load(
+                'https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg',
+                (tex) => { earthMat.map = tex; earthMat.color.set(0xffffff); earthMat.needsUpdate = true; },
+                undefined,
+                () => {
+                    // fallback: try another source
+                    texLoader.load(
+                        'https://threejs.org/examples/textures/planets/earth_atmos_2048.jpg',
+                        (tex) => { earthMat.map = tex; earthMat.color.set(0xffffff); earthMat.needsUpdate = true; }
+                    );
+                }
+            );
+
+            // Atmosphere glow
+            const atmosGeo = new THREE.SphereGeometry(earthRadius * 1.02, 64, 64);
+            const atmosMat = new THREE.MeshPhongMaterial({
+                color: 0x4488ff,
+                transparent: true,
+                opacity: 0.08,
+                side: THREE.FrontSide,
+            });
+            scene.add(new THREE.Mesh(atmosGeo, atmosMat));
+
+            // ---- Lighting ----
+            const ambient = new THREE.AmbientLight(0x334466, 0.7);
+            scene.add(ambient);
+            const sun = new THREE.DirectionalLight(0xffeedd, 1.4);
+            sun.position.set(10, 5, 8);
+            scene.add(sun);
+
+            // ---- Orbit Path ----
+            // Satellite orbits smoothly - orbit visualization removed for clarity
+            const orbitRadiusViz = ((6371 + sat.altitude) / 6371) * earthRadius;
+            const incRad = THREE.MathUtils.degToRad(sat.inclination);
+
+            // ---- Satellite Model ----
+            const satGroup = new THREE.Group();
+            const gltfLoader = new THREE.GLTFLoader();
+            
+            // Set up DRACO decoder for compressed GLTF models
+            const dracoLoader = new THREE.DRACOLoader();
+            dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.6/');
+            gltfLoader.setDRACOLoader(dracoLoader);
+            
+            // 3D Model URLs - LOCAL satellite models
+            const satModelUrls = {
+                // Local .glb/.gltf files from /models/ folder
+                'iss': './models/iss.glb',
+                'hubble': './models/hubble.glb',
+                'goes16': './models/goes16.glb',
+                'sentinel1': './models/sentinel1.glb',
+                'jason3': './models/jason3.glb',
+                'gps2': './models/gps.glb',
+                'spot7': './models/spot7.glb',
+                'chandrayaan2orb': './models/chandrayaan2.glb'
+            };
+            
+            // Fallback procedural models - Detailed realistic satellite models
+            function createFallbackSatelliteModel(satId) {
+                const group = new THREE.Group();
+                
+                if (satId === 'iss') {
+                    // ISS - Actual detailed truss structure with modules
+                    // Main truss beam
+                    const trussGeo = new THREE.BoxGeometry(0.8, 0.06, 0.06);
+                    const trussMat = new THREE.MeshPhongMaterial({ color: 0x888888, shininess: 100 });
+                    group.add(new THREE.Mesh(trussGeo, trussMat));
+                    
+                    // Central column
+                    const columnGeo = new THREE.CylinderGeometry(0.08, 0.08, 0.3);
+                    const columnMat = new THREE.MeshPhongMaterial({ color: 0xbbbbbb, shininess: 80 });
+                    const column = new THREE.Mesh(columnGeo, columnMat);
+                    column.position.y = 0;
+                    group.add(column);
+                    
+                    // Habitation modules (cylinders)
+                    const modGeo = new THREE.CylinderGeometry(0.1, 0.1, 0.28);
+                    const modMat = new THREE.MeshPhongMaterial({ color: 0xcccccc, shininess: 60 });
+                    
+                    for (let i = 0; i < 4; i++) {
+                        const mod = new THREE.Mesh(modGeo, modMat);
+                        mod.rotation.z = Math.PI / 2;
+                        mod.position.set(Math.cos(i * Math.PI / 2) * 0.3, 0.15, Math.sin(i * Math.PI / 2) * 0.3);
+                        group.add(mod);
+                    }
+                    
+                    // Large port and starboard solar arrays
+                    const solarGeo = new THREE.BoxGeometry(0.7, 0.003, 0.2);
+                    const solarMat = new THREE.MeshPhongMaterial({ color: 0x1a3a7f, shininess: 120 });
+                    
+                    const solarPort = new THREE.Mesh(solarGeo, solarMat);
+                    const solarStarboard = new THREE.Mesh(solarGeo, solarMat);
+                    solarPort.position.set(-0.15, 0.35, 0);
+                    solarStarboard.position.set(0.15, 0.35, 0);
+                    group.add(solarPort, solarStarboard);
+                } 
+                else if (satId === 'hubble') {
+                    // Hubble Space Telescope - Distinctive cylindrical tube
+                    const tubeGeo = new THREE.CylinderGeometry(0.09, 0.09, 0.45);
+                    const tubeMat = new THREE.MeshPhongMaterial({ color: 0xd4af37, shininess: 90 });
+                    group.add(new THREE.Mesh(tubeGeo, tubeMat));
+                    
+                    // Primary mirror (large disk at bottom)
+                    const mirrorGeo = new THREE.CylinderGeometry(0.1, 0.1, 0.05);
+                    const mirrorMat = new THREE.MeshPhongMaterial({ color: 0x444444, shininess: 150 });
+                    const mirror = new THREE.Mesh(mirrorGeo, mirrorMat);
+                    mirror.position.z = 0.25;
+                    group.add(mirror);
+                    
+                    // Solar panel wings (characteristic of Hubble)
+                    const wingGeo = new THREE.BoxGeometry(0.35, 0.003, 0.15);
+                    const wingMat = new THREE.MeshPhongMaterial({ color: 0x1a4a8a, shininess: 120 });
+                    
+                    const wing1 = new THREE.Mesh(wingGeo, wingMat);
+                    const wing2 = new THREE.Mesh(wingGeo, wingMat);
+                    wing1.position.set(0, 0.2, 0);
+                    wing2.position.set(0, -0.2, 0);
+                    group.add(wing1, wing2);
+                    
+                    // Radiator panels
+                    const radiatorGeo = new THREE.BoxGeometry(0.3, 0.003, 0.12);
+                    const radiatorMat = new THREE.MeshPhongMaterial({ color: 0x8b4513, shininess: 80 });
+                    const rad1 = new THREE.Mesh(radiatorGeo, radiatorMat);
+                    const rad2 = new THREE.Mesh(radiatorGeo, radiatorMat);
+                    rad1.position.set(0.15, 0, 0.15);
+                    rad2.position.set(-0.15, 0, -0.15);
+                    group.add(rad1, rad2);
+                }
+                else if (satId === 'goes16') {
+                    // GOES-16 - Large weather satellite with dish
+                    const bodyGeo = new THREE.BoxGeometry(0.3, 0.3, 0.45);
+                    const bodyMat = new THREE.MeshPhongMaterial({ color: 0xdd9944, shininess: 70 });
+                    group.add(new THREE.Mesh(bodyGeo, bodyMat));
+                    
+                    // Large communication dish
+                    const dishGeo = new THREE.CylinderGeometry(0.25, 0.25, 0.03);
+                    const dishMat = new THREE.MeshPhongMaterial({ color: 0xc0c0c0, shininess: 130 });
+                    const dish = new THREE.Mesh(dishGeo, dishMat);
+                    dish.position.z = -0.25;
+                    dish.rotation.x = Math.PI / 2;
+                    group.add(dish);
+                    
+                    // Radiant cooler
+                    const coolerGeo = new THREE.BoxGeometry(0.35, 0.003, 0.16);
+                    const coolerMat = new THREE.MeshPhongMaterial({ color: 0x4a4a6a, shininess: 100 });
+                    const cooler = new THREE.Mesh(coolerGeo, coolerMat);
+                    cooler.position.set(0, -0.2, 0);
+                    group.add(cooler);
+                    
+                    // Solar arrays
+                    const panelGeo = new THREE.BoxGeometry(0.3, 0.003, 0.2);
+                    const panelMat = new THREE.MeshPhongMaterial({ color: 0x1a4a8a, shininess: 120 });
+                    const panel = new THREE.Mesh(panelGeo, panelMat);
+                    panel.position.y = 0.2;
+                    group.add(panel);
+                }
+                else if (satId === 'sentinel1') {
+                    // Sentinel-1A - SAR satellite with large antenna
+                    const bodyGeo = new THREE.BoxGeometry(0.22, 0.32, 0.16);
+                    const bodyMat = new THREE.MeshPhongMaterial({ color: 0xb8860b, shininess: 80 });
+                    group.add(new THREE.Mesh(bodyGeo, bodyMat));
+                    
+                    // Large antenna array
+                    const antArrayGeo = new THREE.BoxGeometry(0.18, 0.003, 0.45);
+                    const antArrayMat = new THREE.MeshPhongMaterial({ color: 0x666666, shininess: 110 });
+                    const antArray = new THREE.Mesh(antArrayGeo, antArrayMat);
+                    antArray.position.z = 0.3;
+                    group.add(antArray);
+                    
+                    // Solar panel
+                    const panelGeo = new THREE.BoxGeometry(0.32, 0.003, 0.14);
+                    const panelMat = new THREE.MeshPhongMaterial({ color: 0x1a4a8a, shininess: 120 });
+                    const panel = new THREE.Mesh(panelGeo, panelMat);
+                    panel.position.y = 0.2;
+                    group.add(panel);
+                }
+                else if (satId === 'jason3') {
+                    // JASON-3 - Cylindrical oceanography satellite
+                    const bodyGeo = new THREE.CylinderGeometry(0.12, 0.12, 0.35);
+                    const bodyMat = new THREE.MeshPhongMaterial({ color: 0xc8a84b, shininess: 85 });
+                    group.add(new THREE.Mesh(bodyGeo, bodyMat));
+                    
+                    // Altimeter antenna (top)
+                    const altGeo = new THREE.CylinderGeometry(0.15, 0.15, 0.06);
+                    const altMat = new THREE.MeshPhongMaterial({ color: 0xaaaaaa, shininess: 110 });
+                    const alt = new THREE.Mesh(altGeo, altMat);
+                    alt.position.z = 0.2;
+                    group.add(alt);
+                    
+                    // Dual solar panels
+                    const panelGeo = new THREE.BoxGeometry(0.35, 0.003, 0.12);
+                    const panelMat = new THREE.MeshPhongMaterial({ color: 0x1a4a8a, shininess: 120 });
+                    const p1 = new THREE.Mesh(panelGeo, panelMat);
+                    const p2 = new THREE.Mesh(panelGeo, panelMat);
+                    p1.position.set(0.15, 0.2, 0);
+                    p2.position.set(-0.15, 0.2, 0);
+                    group.add(p1, p2);
+                }
+                else if (satId === 'gps2') {
+                    // GPS IIF - Medium box with solar panel wings
+                    const bodyGeo = new THREE.BoxGeometry(0.25, 0.25, 0.35);
+                    const bodyMat = new THREE.MeshPhongMaterial({ color: 0xdd9944, shininess: 75 });
+                    group.add(new THREE.Mesh(bodyGeo, bodyMat));
+                    
+                    // Large solar panel arrays
+                    const panelGeo = new THREE.BoxGeometry(0.45, 0.003, 0.18);
+                    const panelMat = new THREE.MeshPhongMaterial({ color: 0x1a4a8a, shininess: 120 });
+                    
+                    const p1 = new THREE.Mesh(panelGeo, panelMat);
+                    const p2 = new THREE.Mesh(panelGeo, panelMat);
+                    p1.position.set(0, 0.2, 0);
+                    p2.position.set(0, -0.2, 0);
+                    group.add(p1, p2);
+                    
+                    // Antennas
+                    const antGeo = new THREE.CylinderGeometry(0.012, 0.012, 0.2);
+                    const antMat = new THREE.MeshPhongMaterial({ color: 0xdddddd });
+                    for (let i = 0; i < 6; i++) {
+                        const ant = new THREE.Mesh(antGeo, antMat);
+                        const angle = (i * Math.PI) / 3;
+                        ant.position.set(Math.cos(angle) * 0.15, 0, Math.sin(angle) * 0.15);
+                        group.add(ant);
+                    }
+                }
+                else if (satId === 'spot7') {
+                    // SPOT-7 - High-resolution imaging satellite
+                    const bodyGeo = new THREE.BoxGeometry(0.2, 0.28, 0.16);
+                    const bodyMat = new THREE.MeshPhongMaterial({ color: 0xb8860b, shininess: 80 });
+                    group.add(new THREE.Mesh(bodyGeo, bodyMat));
+                    
+                    // Optical telescope (imaging instrument)
+                    const telescopeGeo = new THREE.CylinderGeometry(0.1, 0.1, 0.22);
+                    const telescopeMat = new THREE.MeshPhongMaterial({ color: 0x1a1a1a, shininess: 120 });
+                    const telescope = new THREE.Mesh(telescopeGeo, telescopeMat);
+                    telescope.position.z = -0.15;
+                    group.add(telescope);
+                    
+                    // Dual solar panels
+                    const panelGeo = new THREE.BoxGeometry(0.32, 0.003, 0.12);
+                    const panelMat = new THREE.MeshPhongMaterial({ color: 0x1a4a8a, shininess: 120 });
+                    const p1 = new THREE.Mesh(panelGeo, panelMat);
+                    const p2 = new THREE.Mesh(panelGeo, panelMat);
+                    p1.position.y = 0.15;
+                    p2.position.y = -0.15;
+                    group.add(p1, p2);
+                }
+                else if (satId === 'chandrayaan2orb') {
+                    // Chandrayaan-2 - Lunar orbiter
+                    const bodyGeo = new THREE.BoxGeometry(0.24, 0.24, 0.32);
+                    const bodyMat = new THREE.MeshPhongMaterial({ color: 0xffaa00, shininess: 85 });
+                    group.add(new THREE.Mesh(bodyGeo, bodyMat));
+                    
+                    // Thermal radiator panel
+                    const radiatorGeo = new THREE.BoxGeometry(0.32, 0.003, 0.18);
+                    const radiatorMat = new THREE.MeshPhongMaterial({ color: 0x8b4513, shininess: 95 });
+                    const radiator = new THREE.Mesh(radiatorGeo, radiatorMat);
+                    radiator.position.set(0.2, 0, 0);
+                    group.add(radiator);
+                    
+                    // Solar panel
+                    const solarGeo = new THREE.BoxGeometry(0.28, 0.003, 0.16);
+                    const solarMat = new THREE.MeshPhongMaterial({ color: 0x1a4a8a, shininess: 120 });
+                    const solar = new THREE.Mesh(solarGeo, solarMat);
+                    solar.position.set(0, 0, 0.15);
+                    group.add(solar);
+                    
+                    // Instruments panel
+                    const instGeo = new THREE.BoxGeometry(0.22, 0.003, 0.14);
+                    const instMat = new THREE.MeshPhongMaterial({ color: 0xcccccc, shininess: 100 });
+                    const inst = new THREE.Mesh(instGeo, instMat);
+                    inst.position.set(0, 0, -0.18);
+                    group.add(inst);
+                }
+                
+                return group;
+            }
+            
+            // Try to load actual model, fallback to procedural
+            const modelUrl = satModelUrls[sat.id];
+            
+            if (modelUrl) {
+                console.log(`Loading model for ${sat.id}: ${modelUrl}`);
+                gltfLoader.load(
+                    modelUrl,
+                    (gltf) => {
+                        console.log(`✓ Model loaded successfully for ${sat.id}`);
+                        const model = gltf.scene;
+                        // Auto-scale and center the model
+                        const bbox = new THREE.Box3().setFromObject(model);
+                        const size = bbox.getSize(new THREE.Vector3());
+                        const maxDim = Math.max(size.x, size.y, size.z);
+                        const scale = 1.5 / maxDim;
+                        model.scale.set(scale, scale, scale);
+                        
+                        // Center it
+                        const center = bbox.getCenter(new THREE.Vector3());
+                        model.position.sub(center.multiplyScalar(scale));
+                        
+                        satGroup.add(model);
+                    },
+                    undefined,
+                    (error) => {
+                        console.error(`✗ Failed to load model for ${sat.id}:`, error);
+                        console.log(`Using procedural fallback for ${sat.id}`);
+                        const fallback = createFallbackSatelliteModel(sat.id);
+                        fallback.scale.set(2.5, 2.5, 2.5);
+                        satGroup.add(fallback);
+                    }
+                );
+            } else {
+                console.log(`No model URL for ${sat.id}, using procedural fallback`);
+                const fallback = createFallbackSatelliteModel(sat.id);
+                fallback.scale.set(2.5, 2.5, 2.5);
+                satGroup.add(fallback);
+            }
+            
+            scene.add(satGroup);
+
+            // ---- Animation Loop ----
+            // Angular speed: full orbit in (sat.period minutes) real-time is too slow visually.
+            // We speed it up: one orbit = ~12 seconds in the viewer.
+            const visualOrbitDuration = 12; // seconds
+            const angularSpeed = (Math.PI * 2) / visualOrbitDuration;
+
+            let angle = 0;
+            let lastTime = performance.now();
+            let rafId;
+            let disposed = false;
+
+            function animate(now) {
+                if (disposed) return;
+                rafId = requestAnimationFrame(animate);
+                const delta = (now - lastTime) / 1000;
+                lastTime = now;
+
+                angle += angularSpeed * delta;
+
+                // Position satellite along orbit (XZ plane rotated by inclination)
+                const x = Math.cos(angle) * orbitRadiusViz;
+                const z = Math.sin(angle) * orbitRadiusViz;
+                
+                // Apply inclination rotation (same as orbit line)
+                satGroup.position.set(
+                    x,
+                    z * Math.sin(incRad),
+                    z * Math.cos(incRad)
+                );
+
+                // Point satellite in direction of travel (tangent to orbit)
+                const tx = -Math.sin(angle);
+                const tz =  Math.cos(angle);
+                satGroup.lookAt(
+                    satGroup.position.x + tx,
+                    satGroup.position.y + tz * Math.sin(incRad),
+                    satGroup.position.z + tz * Math.cos(incRad)
+                );
+
+                // Slow Earth rotation
+                earth.rotation.y += 0.0005;
+
+                controls.update();
+                renderer.render(scene, camera);
+            }
+            animate(performance.now());
+
+            // Resize handler
+            function onResize() {
+                const nW = container.clientWidth;
+                const nH = container.clientHeight;
+                camera.aspect = nW / nH;
+                camera.updateProjectionMatrix();
+                renderer.setSize(nW, nH);
+            }
+            window.addEventListener('resize', onResize);
+
+            // Cleanup
+            satThreeScene = {
+                cleanup: () => {
+                    disposed = true;
+                    cancelAnimationFrame(rafId);
+                    window.removeEventListener('resize', onResize);
+                    controls.dispose();
+                    renderer.dispose();
+                }
+            };
+        }
+
+        // Render Missions Function
+        function renderMissions(category) {
+            console.log('🎨 renderMissions called for category:', category);
+            const missionGrid = document.getElementById('missionGrid');
+            const missionIds = missionCategories[category];
+            console.log('   Mission IDs to render:', missionIds);
+            
+            // Satellite Tracker is self-contained and doesn't need missionIds
+            if (category !== 'tracker' && (!missionIds || missionIds.length === 0)) {
+                console.warn('⚠️  No missions found for category:', category);
+                return;
+            }
+            
+            // Fade out current missions
+            gsap.to(missionGrid, {
+                opacity: 0,
+                duration: 0.3,
+                onComplete: () => {
+                    // Clear grid
+                    missionGrid.innerHTML = '';
+                    
+                    if (category === 'tracker') {
+                        // Satellite Tracker view
+                        renderSatelliteTracker();
+                    } else if (category === 'compare') {
+                        // Compare view - Dynamic AI-powered
+                        missionGrid.className = 'w-full';
+                        renderCompareView();
+                    } else if (category === 'past') {
+                        // Past missions - Grid card layout
+                        missionGrid.className = 'w-full';
+                        missionGrid.innerHTML = `
+                            <div class="mb-10 flex items-center justify-between">
+                                <h2 class="text-3xl font-inter font-semibold text-white border-l-4 border-white pl-4">PAST MISSIONS</h2>
+                                <div class="relative w-80">
+                                    <input type="text" id="missionSearch" placeholder="Search missions..." 
+                                           class="w-full pl-4 pr-12 py-2.5 bg-white/5 backdrop-blur-md border border-white/10 rounded-full text-white text-sm placeholder-gray-500 focus:outline-none focus:border-white/30 focus:bg-white/10 font-inter transition-all" 
+                                           oninput="filterPastMissions()">
+                                    <i data-lucide="search" class="w-4 h-4 text-gray-400 absolute right-4 top-1/2 transform -translate-y-1/2"></i>
+                                </div>
+                            </div>
+                            <div id="pastMissionsGrid" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                ${missionIds.map(missionId => {
+                                    const mission = missions[missionId];
+                                    return `
+                                        <div class="mission-past-card relative overflow-hidden cursor-pointer group rounded-lg h-64" 
+                                             data-mission="${missionId}"
+                                             data-mission-name="${mission.title.toLowerCase()}"
+                                             onclick="openPastMission('${missionId}')">
+                                            <img src="${mission.image}" 
+                                                 alt="${mission.title}" 
+                                                 class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+                                            <div class="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-all duration-300"></div>
+                                            <div class="absolute bottom-0 left-0 right-0 p-6">
+                                                <h3 class="text-white text-2xl font-bold font-inter">${mission.title}</h3>
+                                            </div>
+                                            <button class="absolute bottom-6 right-6 p-2 hover:scale-110 transition-transform" onclick="event.stopPropagation(); toggleFavorite('${missionId}')">
+                                                <i data-lucide="heart" class="w-6 h-6 text-white"></i>
+                                            </button>
+                                        </div>
+                                    `;
+                                }).join('')}
+                            </div>
+                        `;
+                        lucide.createIcons();
+                    } else {
+                        // Active, Upcoming - Vertical slice layout
+                        missionGrid.className = 'grid grid-cols-4 gap-1 h-[70vh] w-full';
+                        missionIds.forEach((missionId, index) => {
+                            const mission = missions[missionId];
+                            if (!mission) {
+                                console.warn('Mission not found:', missionId);
+                                return;
+                            }
+                            const missionCard = `
+                                <div class="mission-card relative overflow-hidden cursor-pointer group h-full brightness-50 hover:brightness-100 transition-all duration-300" 
+                                     data-mission="${missionId}" 
+                                     onclick="openMissionDetail('${missionId}')">
+                                    <img id="${missionId}-image" 
+                                         src="${mission.image}" 
+                                         alt="${mission.title}" 
+                                         class="w-full h-full object-cover">
+                                    <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                        <h3 class="text-white text-4xl font-bold tracking-[0.3em] uppercase" 
+                                            style="writing-mode: vertical-rl; transform: rotate(180deg); font-family: 'Sansita', sans-serif;">
+                                            ${mission.title}
+                                        </h3>
+                                    </div>
+                                </div>
+                            `;
+                            missionGrid.innerHTML += missionCard;
+                        });
+                        lucide.createIcons();
+                    }
+                    
+                    // Fade in new missions
+                    gsap.to(missionGrid, {
+                        opacity: 1,
+                        duration: 0.4
+                    });
+                }
+            });
+        }
+        
+        // Filter Past Missions
+        function filterPastMissions() {
+            const searchTerm = document.getElementById('missionSearch').value.toLowerCase();
+            const missionCards = document.querySelectorAll('.mission-past-card');
+            
+            missionCards.forEach(card => {
+                const missionId = card.getAttribute('data-mission');
+                const mission = missions[missionId];
+                
+                if (mission) {
+                    // Search in mission name, description, agency, and launch name
+                    const searchableText = [
+                        mission.missionName,
+                        mission.title,
+                        mission.missionDescription,
+                        mission.agency,
+                        mission.launchName,
+                        mission.rocket
+                    ].join(' ').toLowerCase();
+                    
+                    if (searchableText.includes(searchTerm)) {
+                        gsap.to(card, { opacity: 1, scale: 1, duration: 0.3 });
+                        card.style.display = 'block';
+                    } else {
+                        gsap.to(card, { opacity: 0, scale: 0.9, duration: 0.3, onComplete: () => {
+                            card.style.display = 'none';
+                        }});
+                    }
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+        
+        // Toggle Favorite
+        function toggleFavorite(missionId) {
+            console.log('Toggled favorite for:', missionId);
+            // Add favorite functionality here
+        }
+        
+        // Open Past Mission - Navigate to detailed.html
+        function openPastMission(missionId) {
+            const mission = missions[missionId];
+            if (!mission) {
+                console.error('Mission not found:', missionId);
+                return;
+            }
+            
+            // Store mission data in sessionStorage
+            sessionStorage.setItem('selectedMission', JSON.stringify(mission));
+            
+            // Navigate to detailed.html
+            window.location.href = 'detailed.html?mission=' + missionId;
+        }
+        
+        // Remove mission from compare
+        function removeFromCompare(missionId) {
+            selectedMissions = selectedMissions.filter(id => id !== missionId);
+            if (selectedMissions.length < 2) {
+                // Add a default mission if less than 2
+                const availableMissions = Object.keys(missions).filter(id => !selectedMissions.includes(id));
+                if (availableMissions.length > 0) {
+                    selectedMissions.push(availableMissions[0]);
+                }
+            }
+            renderMissions('compare');
+        }
+        
+        // ============================================
+        // AI-POWERED COMPARISON SYSTEM
+        // ============================================
+        
+        // Render compare view
+        function renderCompareView() {
+            const missionGrid = document.getElementById('missionGrid');
+            const allMissionIds = Object.keys(missions);
+            
+            missionGrid.innerHTML = `
+                <div class="mb-6 border-l-4 border-white pl-4">
+                    <h2 class="text-3xl font-inter font-semibold text-white mb-1">Select Missions to Compare</h2>
+                    <p class="text-gray-400 text-xs font-inter mb-4">Choose 2 or 3 missions to visualize their differences using AI analysis</p>
+                    
+                    <div class="flex items-center gap-4 mb-4">
+                        <div class="relative flex-1 max-w-md">
+                            <input type="text" id="compareSearch" placeholder="Search missions..." 
+                                   class="w-full pl-4 pr-10 py-2 bg-white/90 text-black text-sm rounded-lg focus:outline-none font-inter" 
+                                   oninput="filterCompareMissions()">
+                            <i data-lucide="search" class="w-4 h-4 text-gray-600 absolute right-3 top-1/2 transform -translate-y-1/2"></i>
+                        </div>
+                        <button id="addCustomMissionBtn" onclick="addCustomMission()" class="hidden px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-500 text-white text-sm font-semibold rounded-lg hover:from-green-600 hover:to-emerald-600 transition-all">
+                            <i data-lucide="plus" class="w-4 h-4 inline mr-1"></i> Add Custom Mission
+                        </button>
+                        <div class="flex gap-2 flex-wrap" id="selectedMissionPills">
+                            ${compareSelectedMissions.map(mId => `
+                                <div class="px-3 py-1.5 bg-white/10 border border-white/30 rounded-full text-white text-xs font-inter flex items-center gap-2">
+                                    <span>${missions[mId]?.title || mId}</span>
+                                    <button onclick="removeFromCompare('${mId}')" class="hover:bg-white/20 rounded-full p-0.5">
+                                        <i data-lucide="x" class="w-3 h-3"></i>
+                                    </button>
+                                </div>
+                            `).join('')}
+                        </div>
+                        ${compareSelectedMissions.length >= 2 && compareSelectedMissions.length <= 3 ? `
+                            <button onclick="generateAIComparison()" class="px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-sm font-semibold rounded-lg hover:from-purple-600 hover:to-pink-600 transition-all">
+                                <i data-lucide="sparkles" class="w-4 h-4 inline mr-1"></i> Compare with AI
+                            </button>
+                        ` : ''}
+                    </div>
+                    
+                    ${compareSelectedMissions.length < 2 ? `
+                        <p class="text-yellow-400 text-xs font-inter mb-4">⚠️ Select at least 2 missions to compare</p>
+                    ` : compareSelectedMissions.length > 3 ? `
+                        <p class="text-red-400 text-xs font-inter mb-4">⚠️ Maximum 3 missions can be compared at once</p>
+                    ` : ''}
+                    
+                    <!-- Mission Selection Grid -->
+                    <div id="compareSearchResults" class="grid grid-cols-2 md:grid-cols-4 gap-2 max-h-[30vh] overflow-y-auto mb-6">
+                        ${allMissionIds.slice(0, 20).map(mId => {
+                            const mission = missions[mId];
+                            const isSelected = compareSelectedMissions.includes(mId);
+                            return `
+                                <div onclick="toggleCompareSelection('${mId}')" 
+                                     class="cursor-pointer p-2 rounded-lg border transition-all ${
+                                         isSelected 
+                                         ? 'bg-purple-500/30 border-purple-400' 
+                                         : 'bg-white/5 border-white/10 hover:bg-white/10 hover:border-white/20'
+                                     }">
+                                    <p class="text-white text-xs font-semibold truncate">${mission?.title || mId}</p>
+                                    <p class="text-gray-400 text-[10px] truncate">${mission?.agency || 'Unknown'}</p>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                </div>
+                
+                <!-- Comparison Cards Container -->
+                <div id="comparisonCardsContainer" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    ${isComparingMissions ? `
+                        <div class="col-span-full flex items-center justify-center py-20">
+                            <div class="text-center">
+                                <div class="animate-spin rounded-full h-16 w-16 border-b-2 border-purple-500 mx-auto mb-4"></div>
+                                <p class="text-white font-inter">AI is analyzing missions...</p>
+                            </div>
+                        </div>
+                    ` : aiComparisonData ? renderAIComparisonCards() : `
+                        <div class="col-span-full flex items-center justify-center py-20">
+                            <p class="text-gray-400 font-inter">Select 2-3 missions and click "Compare with AI" to see intelligent analysis</p>
+                        </div>
+                    `}
+                </div>
+            `;
+            
+            lucide.createIcons();
+        }
+        
+        // Toggle mission selection for comparison
+        function toggleCompareSelection(missionId) {
+            const index = compareSelectedMissions.indexOf(missionId);
+            
+            if (index > -1) {
+                compareSelectedMissions.splice(index, 1);
+            } else {
+                if (compareSelectedMissions.length < 3) {
+                    compareSelectedMissions.push(missionId);
+                } else {
+                    alert('Maximum 3 missions can be compared at once');
+                    return;
+                }
+            }
+            
+            // Clear AI data when selection changes
+            aiComparisonData = null;
+            renderCompareView();
+        }
+        
+        // Remove mission from comparison
+        function removeFromCompare(missionId) {
+            const index = compareSelectedMissions.indexOf(missionId);
+            if (index > -1) {
+                compareSelectedMissions.splice(index, 1);
+                aiComparisonData = null;
+                renderCompareView();
+            }
+        }
+        
+        // Filter compare missions
+        function filterCompareMissions() {
+            const searchTerm = document.getElementById('compareSearch').value.toLowerCase().trim();
+            const resultsContainer = document.getElementById('compareSearchResults');
+            const addCustomBtn = document.getElementById('addCustomMissionBtn');
+            const allMissionIds = Object.keys(missions);
+            
+            const filteredIds = allMissionIds.filter(mId => {
+                const mission = missions[mId];
+                return mission.title.toLowerCase().includes(searchTerm) ||
+                       mission.agency.toLowerCase().includes(searchTerm) ||
+                       (mission.missionName && mission.missionName.toLowerCase().includes(searchTerm));
+            });
+            
+            // Show/hide add custom mission button
+            if (searchTerm && filteredIds.length === 0) {
+                addCustomBtn.classList.remove('hidden');
+            } else {
+                addCustomBtn.classList.add('hidden');
+            }
+            
+            resultsContainer.innerHTML = filteredIds.slice(0, 20).map(mId => {
+                const mission = missions[mId];
+                const isSelected = compareSelectedMissions.includes(mId);
+                return `
+                    <div onclick="toggleCompareSelection('${mId}')" 
+                         class="cursor-pointer p-2 rounded-lg border transition-all ${
+                             isSelected 
+                             ? 'bg-purple-500/30 border-purple-400' 
+                             : 'bg-white/5 border-white/10 hover:bg-white/10 hover:border-white/20'
+                         }">
+                        <p class="text-white text-xs font-semibold truncate">${mission.title}</p>
+                        <p class="text-gray-400 text-[10px] truncate">${mission.agency}</p>
+                    </div>
+                `;
+            }).join('');
+            
+            if (filteredIds.length === 0 && !searchTerm) {
+                resultsContainer.innerHTML = '<p class="text-gray-400 text-sm col-span-full text-center py-4">Start typing to search missions</p>';
+            } else if (filteredIds.length === 0 && searchTerm) {
+                resultsContainer.innerHTML = '<p class="text-yellow-400 text-sm col-span-full text-center py-4">No missions found. Click "Add Custom Mission" to create one!</p>';
+            }
+        }
+        
+        // Add custom mission using LLM
+        async function addCustomMission() {
+            const searchTerm = document.getElementById('compareSearch').value.trim();
+            
+            if (!searchTerm) {
+                alert('Please enter a mission name to add');
+                return;
+            }
+            
+            if (compareSelectedMissions.length >= 3) {
+                alert('Maximum 3 missions can be compared. Remove one first.');
+                return;
+            }
+            
+            const addBtn = document.getElementById('addCustomMissionBtn');
+            addBtn.disabled = true;
+            addBtn.innerHTML = '<i data-lucide="loader" class="w-4 h-4 inline mr-1 animate-spin"></i> Generating...';
+            lucide.createIcons();
+            
+            try {
+                // Call Groq LLM to generate mission data
+                const response = await fetch(GROQ_API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${GROQ_API_KEY}`
+                    },
+                    body: JSON.stringify({
+                        model: 'llama-3.3-70b-versatile',
+                        messages: [
+                            {
+                                role: 'system',
+                                content: `You are a space mission database expert. Generate complete mission data based on the mission name provided. Return ONLY a JSON object with this exact structure:
+                                {
+                                  "title": "MISSION NAME IN CAPS",
+                                  "subtitle": "Mission type/category",
+                                  "agency": "Space agency name",
+                                  "launchYear": "Year",
+                                  "destination": "Destination",
+                                  "status": "Active/Completed/Failed",
+                                  "rocket": "Launch vehicle",
+                                  "duration": "Mission duration",
+                                  "overview": "2-3 sentence mission overview",
+                                  "description": "Detailed description",
+                                  "cost": "Estimated cost or Unknown",
+                                  "crewSize": "Crew size or Robotic",
+                                  "instruments": "Key instruments",
+                                  "distance": "Distance traveled",
+                                  "objectives": ["objective1", "objective2", "objective3"],
+                                  "missionName": "Mission name",
+                                  "launchDate": "YYYY-MM-DD"
+                                }
+                                
+                                Use accurate historical/current data if the mission exists. If it's fictional or unknown, generate plausible data. Return ONLY valid JSON, no markdown.`
+                            },
+                            {
+                                role: 'user',
+                                content: `Generate mission data for: ${searchTerm}`
+                            }
+                        ],
+                        temperature: 0.7,
+                        max_tokens: 1000
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to generate mission data');
+                }
+                
+                const data = await response.json();
+                let content = data.choices[0].message.content.trim();
+                
+                // Remove markdown code fences if present
+                content = content.replace(/```json\n?/g, '').replace(/```\n?/g, '');
+                
+                const missionData = JSON.parse(content);
+                
+                // Create unique ID for custom mission
+                const customId = 'custom_' + Date.now();
+                
+                // Add date object for consistency
+                const launchDate = new Date(missionData.launchDate || '2000-01-01');
+                missionData.date = {
+                    day: launchDate.getDate().toString().padStart(2, '0'),
+                    month: launchDate.toLocaleString('en', { month: 'short' }),
+                    year: launchDate.getFullYear().toString()
+                };
+                
+                // Add default image and other required fields
+                missionData.id = customId;
+                missionData.image = missionData.image || './codeathon-figma/1936147.jpg';
+                missionData.category = 'custom';
+                missionData.link1 = 'Mission Details';
+                missionData.link2 = 'More Info';
+                
+                // Add to missions object
+                missions[customId] = missionData;
+                
+                // Add to selected missions
+                compareSelectedMissions.push(customId);
+                
+                // Clear search and re-render
+                document.getElementById('compareSearch').value = '';
+                aiComparisonData = null;
+                renderCompareView();
+                
+                console.log('Custom mission added:', missionData);
+                
+            } catch (error) {
+                console.error('Error generating custom mission:', error);
+                alert('Failed to generate mission data. Please try again.');
+                addBtn.disabled = false;
+                addBtn.innerHTML = '<i data-lucide="plus" class="w-4 h-4 inline mr-1"></i> Add Custom Mission';
+                lucide.createIcons();
+            }
+        }
+        
+        // Generate AI comparison using Groq
+        async function generateAIComparison() {
+            if (compareSelectedMissions.length < 2 || compareSelectedMissions.length > 3) {
+                alert('Please select 2 or 3 missions to compare');
+                return;
+            }
+            
+            isComparingMissions = true;
+            renderCompareView();
+            
+            try {
+                // Prepare mission data for AI
+                const missionsData = compareSelectedMissions.map(mId => {
+                    const mission = missions[mId];
+                    return {
+                        id: mId,
+                        name: mission.missionName || mission.title,
+                        title: mission.title,
+                        agency: mission.agency,
+                        launchYear: mission.launchYear,
+                        destination: mission.destination,
+                        status: mission.status,
+                        rocket: mission.rocket,
+                        duration: mission.duration,
+                        overview: mission.overview,
+                        description: mission.description,
+                        image: mission.image
+                    };
+                });
+                
+                // Call Groq API
+                const response = await fetch(GROQ_API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${GROQ_API_KEY}`
+                    },
+                    body: JSON.stringify({
+                        model: 'llama-3.3-70b-versatile',
+                        messages: [
+                            {
+                                role: 'system',
+                                content: `You are an expert space mission analyst. Compare the given missions and return ONLY a JSON object with enhanced details for each mission. Analyze their purpose, technology, scale, and impact. Determine appropriate background themes based on mission destination.
+                                
+                                Return this exact structure:
+                                {
+                                  "missions": [
+                                    {
+                                      "name": "mission name",
+                                      "orbit": "orbit type or destination",
+                                      "status": "mission status",
+                                      "launchYear": "year",
+                                      "type": "mission type/category",
+                                      "vehicle": "rocket name",
+                                      "duration": "mission duration",
+                                      "cost": "estimated cost or Unknown",
+                                      "crewSize": "crew size or Robotic",
+                                      "instruments": "key instruments",
+                                      "distance": "distance traveled or Unknown",
+                                      "description": "2-3 sentence intelligent comparison-focused description",
+                                      "backgroundTheme": "moon|mars|earth|deep-space|dark"
+                                    }
+                                  ]
+                                }
+                                
+                                Choose backgroundTheme based on:
+                                - moon: Lunar missions
+                                - mars: Mars missions
+                                - earth: Earth orbit missions
+                                - deep-space: Outer planet/asteroid missions
+                                - dark: Default
+                                
+                                Return ONLY valid JSON, no markdown.`
+                            },
+                            {
+                                role: 'user',
+                                content: `Compare these missions intelligently:\n\n${JSON.stringify(missionsData, null, 2)}`
+                            }
+                        ],
+                        temperature: 0.7,
+                        max_tokens: 2000
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Groq API request failed');
+                }
+                
+                const data = await response.json();
+                let content = data.choices[0].message.content.trim();
+                
+                // Remove markdown code fences if present
+                content = content.replace(/```json\n?/g, '').replace(/```\n?/g, '');
+                
+                aiComparisonData = JSON.parse(content);
+                
+                console.log('AI Comparison Generated:', aiComparisonData);
+                
+            } catch (error) {
+                console.error('AI Comparison Error:', error);
+                alert('Failed to generate AI comparison. Showing basic mission data.');
+                
+                // Fallback: Use basic mission data
+                aiComparisonData = {
+                    missions: compareSelectedMissions.map(mId => {
+                        const mission = missions[mId];
+                        return {
+                            name: mission.title,
+                            orbit: mission.destination,
+                            status: mission.status,
+                            launchYear: mission.launchYear,
+                            type: mission.subtitle || 'Unknown',
+                            vehicle: mission.rocket,
+                            duration: mission.duration,
+                            cost: mission.cost || 'Unknown',
+                            crewSize: mission.crewSize || 'Unknown',
+                            instruments: mission.instruments || 'Unknown',
+                            distance: mission.distance || 'Unknown',
+                            description: mission.description || mission.overview,
+                            backgroundTheme: 'dark'
+                        };
+                    })
+                };
+            } finally {
+                isComparingMissions = false;
+                renderCompareView();
+            }
+        }
+        
+        // Render AI comparison cards
+        function renderAIComparisonCards() {
+            if (!aiComparisonData || !aiComparisonData.missions) return '';
+            
+            return aiComparisonData.missions.map((aiMission, index) => {
+                const originalMissionId = compareSelectedMissions[index];
+                const originalMission = missions[originalMissionId];
+                const image = originalMission?.image || './codeathon-figma/1936147.jpg';
+                
+                // Get background based on theme
+                const backgroundOpacity = {
+                    'moon': 'opacity-30',
+                    'mars': 'opacity-25',
+                    'earth': 'opacity-30',
+                    'deep-space': 'opacity-20',
+                    'dark': 'opacity-20'
+                }[aiMission.backgroundTheme] || 'opacity-20';
+                
+                return `
+                    <div class="glass-card rounded-xl p-4 relative overflow-hidden h-full flex flex-col animate-fadeIn">
+                        <img src="${image}" class="absolute inset-0 w-full h-full object-cover ${backgroundOpacity}" />
+                        <div class="relative z-10 flex flex-col h-full">
+                            <div class="mb-3">
+                                <h3 class="text-xl font-bold font-inter text-white mb-2">${aiMission.name}</h3>
+                                <div class="flex gap-2 mb-2 flex-wrap">
+                                    <span class="px-2 py-0.5 bg-blue-500/30 border border-blue-400/50 rounded text-xs font-inter">${aiMission.orbit}</span>
+                                    <span class="px-2 py-0.5 bg-green-500/30 border border-green-400/50 rounded text-xs font-inter">${aiMission.status}</span>
+                                    <span class="px-2 py-0.5 bg-purple-500/30 border border-purple-400/50 rounded text-xs font-inter">${aiMission.type}</span>
+                                </div>
+                            </div>
+                            
+                            <div class="space-y-2 text-sm font-inter flex-shrink-0">
+                                <div class="flex justify-between border-b border-white/10 pb-1.5">
+                                    <span class="text-gray-400 text-xs">Launch Year :</span>
+                                    <span class="text-white font-semibold text-xs">${aiMission.launchYear}</span>
+                                </div>
+                                <div class="flex justify-between border-b border-white/10 pb-1.5">
+                                    <span class="text-gray-400 text-xs">Duration :</span>
+                                    <span class="text-white font-semibold text-xs">${aiMission.duration}</span>
+                                </div>
+                                <div class="flex justify-between border-b border-white/10 pb-1.5">
+                                    <span class="text-gray-400 text-xs">Distance :</span>
+                                    <span class="text-white font-semibold text-xs">${aiMission.distance}</span>
+                                </div>
+                                <div class="flex justify-between border-b border-white/10 pb-1.5">
+                                    <span class="text-gray-400 text-xs">Cost :</span>
+                                    <span class="text-white font-semibold text-xs">${aiMission.cost}</span>
+                                </div>
+                                <div class="flex justify-between border-b border-white/10 pb-1.5">
+                                    <span class="text-gray-400 text-xs">Crew Size :</span>
+                                    <span class="text-white font-semibold text-xs">${aiMission.crewSize}</span>
+                                </div>
+                                <div class="flex justify-between border-b border-white/10 pb-1.5">
+                                    <span class="text-gray-400 text-xs">Instruments :</span>
+                                    <span class="text-white font-semibold text-xs">${aiMission.instruments}</span>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-3 pt-3 border-t border-white/10 flex-grow">
+                                <p class="text-gray-400 text-xs font-inter mb-1">AI Analysis :</p>
+                                <p class="text-white text-xs font-inter leading-relaxed">${aiMission.description}</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // GSAP Flip Animation - Open Mission Detail
+        function openMissionDetail(missionId) {
+            console.log('Opening mission:', missionId);
+            if (isDetailOpen) return;
+            isDetailOpen = true;
+            currentMission = missionId;
+
+            const mission = missions[missionId];
+            if (!mission) {
+                console.error('Mission not found:', missionId);
+                isDetailOpen = false;
+                return;
+            }
+
+            const missionGrid = document.getElementById('missionGrid');
+            const detailSection = document.getElementById('missionDetail');
+            const detailBackgroundImage = document.getElementById('detailBackgroundImage');
+
+            // Update detail content
+            updateMissionContent(mission);
+
+            // Set the detail background image source
+            detailBackgroundImage.src = mission.image;
+
+            // Fade out mission grid
+            gsap.to(missionGrid, {
+                opacity: 0,
+                duration: 0.4,
+                ease: "power2.out",
+                onComplete: () => {
+                    missionGrid.style.pointerEvents = 'none';
+                    
+                    // Show detail section
+                    detailSection.classList.remove('opacity-0', 'pointer-events-none');
+                    detailSection.classList.add('opacity-100', 'pointer-events-auto');
+                    
+                    // Animate content in
+                    gsap.to('#missionDate', {
+                        opacity: 1,
+                        y: 0,
+                        duration: 0.6,
+                        delay: 0.1,
+                        ease: "power3.out"
+                    });
+                    
+                    gsap.to('#missionLinks', {
+                        opacity: 1,
+                        y: 0,
+                        duration: 0.6,
+                        delay: 0.2,
+                        ease: "power3.out"
+                    });
+                    
+                    gsap.to('#missionInfoCard', {
+                        opacity: 1,
+                        scale: 1,
+                        duration: 0.7,
+                        delay: 0.3,
+                        ease: "power3.out"
+                    });
+
+                    // Re-initialize icons
+                    lucide.createIcons();
+                }
+            });
+        }
+
+        // Close Mission Detail
+        function closeMissionDetail() {
+            if (!isDetailOpen) return;
+
+            const missionGrid = document.getElementById('missionGrid');
+            const detailSection = document.getElementById('missionDetail');
+
+            // Fade out detail content
+            gsap.to(['#missionDate', '#missionLinks', '#missionInfoCard'], {
+                opacity: 0,
+                duration: 0.3,
+                ease: "power2.in",
+                onComplete: () => {
+                    // Hide detail section
+                    detailSection.classList.add('opacity-0', 'pointer-events-none');
+                    detailSection.classList.remove('opacity-100', 'pointer-events-auto');
+                    
+                    // Fade in mission grid
+                    missionGrid.style.pointerEvents = 'auto';
+                    gsap.to(missionGrid, {
+                        opacity: 1,
+                        duration: 0.4,
+                        ease: "power2.out"
+                    });
+                    
+                    isDetailOpen = false;
+                    currentMission = null;
+
+                    // Reset content opacity
+                    document.getElementById('missionDate').style.opacity = '0';
+                    document.getElementById('missionLinks').style.opacity = '0';
+                    document.getElementById('missionInfoCard').style.opacity = '0';
+                    document.getElementById('missionInfoCard').style.transform = 'scale(0.95)';
+                }
+            });
+        }
+
+        // Update Mission Content
+        function updateMissionContent(mission) {
+            document.getElementById('detailTitle').textContent = mission.title;
+            document.getElementById('detailSubtitle').textContent = mission.subtitle;
+            document.getElementById('detailDay').textContent = mission.date.day;
+            document.getElementById('detailMonth').textContent = mission.date.month;
+            document.getElementById('detailYear').textContent = mission.date.year;
+            document.getElementById('link1Text').textContent = mission.link1;
+            document.getElementById('link2Text').textContent = mission.link2;
+            document.getElementById('detailOverview').textContent = mission.overview;
+
+            // Update objectives
+            const objectivesList = document.getElementById('detailObjectives');
+            objectivesList.innerHTML = mission.objectives.map(obj => `
+                <li class="flex items-start gap-3">
+                    <div class="w-2 h-2 rounded-full bg-purple-400 mt-2 flex-shrink-0"></div>
+                    <span>${obj}</span>
+                </li>
+            `).join('');
+            
+            // Re-initialize icons for explore button
+            lucide.createIcons();
+        }
+
+        // Navigate to detailed page with mission data
+        function navigateToDetailed() {
+            if (currentMission && missions[currentMission]) {
+                const mission = missions[currentMission];
+                // Store mission data in sessionStorage for detailed page
+                sessionStorage.setItem('selectedMission', JSON.stringify(mission));
+                window.location.href = 'detailed.html';
+            }
+        }
+
+        // Chat Toggle
+        let isChatOpen = false;
+        function toggleChat() {
+            const chatOverlay = document.getElementById('chatOverlay');
+            isChatOpen = !isChatOpen;
+            
+            if (isChatOpen) {
+                chatOverlay.classList.remove('hidden');
+                setTimeout(() => lucide.createIcons(), 10);
+            } else {
+                chatOverlay.classList.add('hidden');
+            }
+        }
+
+        // Close chat when clicking outside
+        document.getElementById('chatOverlay')?.addEventListener('click', function(e) {
+            if (e.target === this) {
+                toggleChat();
+            }
+        });
+
+        // Smooth Scroll to Mission Section (Slow)
+        function scrollToMissions() {
+            const missionSection = document.getElementById('missionSection');
+            if (missionSection) {
+                const targetPosition = missionSection.offsetTop;
+                const startPosition = window.pageYOffset;
+                const distance = targetPosition - startPosition;
+                const duration = 1500; // 1.5 seconds for slower scroll
+                let start = null;
+
+                function animation(currentTime) {
+                    if (start === null) start = currentTime;
+                    const timeElapsed = currentTime - start;
+                    const run = ease(timeElapsed, startPosition, distance, duration);
+                    window.scrollTo(0, run);
+                    if (timeElapsed < duration) requestAnimationFrame(animation);
+                }
+
+                function ease(t, b, c, d) {
+                    t /= d / 2;
+                    if (t < 1) return c / 2 * t * t + b;
+                    t--;
+                    return -c / 2 * (t * (t - 2) - 1) + b;
+                }
+
+                requestAnimationFrame(animation);
+            }
+        }
+
+        // Keyboard shortcut to close detail
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && isDetailOpen) {
+                closeMissionDetail();
+            }
+        });
+
+        // Initialize: Render immediately with fallback data, then load real data
+        console.log('🚀 ============ MISSION PAGE INITIALIZATION ============');
+        console.log('📋 Initial fallback categories:', missionCategories);
+        
+        // Load data FIRST before rendering
+        console.log('🔄 Loading mission data...');
+        
+        // Try to load from cache first
+        const hasCache = loadFromCache();
+        
+        if (!hasCache) {
+            // No cache, fetch fresh data
+            console.log('🌐 No cache found, fetching fresh data...');
+            fetchRealMissions().then(() => {
+                console.log('✅ Data loaded, rendering initial tab');
+                switchTab('active');
+                lucide.createIcons();
+            });
+        } else {
+            // Has cache, render immediately
+            console.log('✅ Cache loaded, rendering initial tab');
+            switchTab('active');
+            lucide.createIcons();
+            // Fetch fresh data in background
+            setTimeout(() => {
+                console.log('🔄 Fetching fresh data in background...');
+                fetchRealMissions();
+            }, 1000);
+        }
+    </script>
+</body>
+</html>

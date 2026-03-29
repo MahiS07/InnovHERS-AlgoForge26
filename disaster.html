@@ -1,0 +1,2359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Disaster Detection | Orbital</title>
+    <link rel="icon" type="image/jpeg" href="./codeathon-figma/orbi.jpg">
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Sansita:wght@300;400;700&display=swap" rel="stylesheet">
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- Tailwind Config -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'inter': ['Inter', 'sans-serif'],
+                        'sansita': ['Sansita', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+            background-color: #050505;
+            color: #FFFFFF;
+            overflow-x: hidden;
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Glassmorphism */
+        .glass {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+
+        /* Image Slider Styles */
+        .image-slider-container {
+            position: relative;
+            width: 100%;
+            height: 300px;
+            overflow: hidden;
+            border-radius: 12px;
+            cursor: ew-resize;
+            user-select: none;
+        }
+
+        .slider-image {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .slider-after {
+            clip-path: inset(0 0 0 50%);
+        }
+
+        .slider-handle {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            width: 4px;
+            height: 100%;
+            background: white;
+            cursor: ew-resize;
+            transform: translateX(-50%);
+            z-index: 10;
+        }
+
+        .slider-handle::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 40px;
+            height: 40px;
+            background: white;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .slider-handle::after {
+            content: '⟷';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 20px;
+            color: #050505;
+            font-weight: bold;
+            z-index: 1;
+        }
+
+        .slider-label {
+            position: absolute;
+            top: 20px;
+            padding: 8px 16px;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(10px);
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            z-index: 5;
+        }
+
+        .slider-label-before {
+            left: 20px;
+        }
+
+        .slider-label-after {
+            right: 20px;
+        }
+
+        /* Interactive tabs */
+        .tab-button {
+            transition: all 0.3s ease;
+        }
+
+        .tab-button.active {
+            background: rgba(255, 255, 255, 0.1);
+            border-bottom: 2px solid white;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Expandable details */
+        .expandable {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease;
+        }
+
+        .expandable.open {
+            max-height: 500px;
+        }
+
+        .expand-btn {
+            transition: transform 0.3s ease;
+        }
+
+        .expand-btn.rotated {
+            transform: rotate(180deg);
+        }
+
+        /* Simulator Styles */
+        .simulator-step {
+            display: none;
+        }
+
+        .simulator-step.active {
+            display: block;
+            animation: fadeIn 0.4s ease;
+        }
+
+        .simulator-step-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .simulator-step-dot.active {
+            background: white;
+            box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.2);
+        }
+
+        .observation-area {
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .observation-area.selected {
+            border-color: white;
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+        }
+
+        .indicator-card.selected {
+            border-color: white;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .prep-card.revealed {
+            border-color: white;
+            background: rgba(255, 255, 255, 0.05);
+            transform: scale(1.02);
+        }
+
+        .hotspot {
+            cursor: crosshair;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+
+        .hotspot:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .hotspot.found {
+            background: rgba(255, 255, 255, 0.2);
+            border: 3px solid white;
+            pointer-events: none;
+        }
+
+        .hotspot.found::after {
+            content: '✓';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 32px;
+            font-weight: bold;
+        }
+
+        .env-card:hover {
+            transform: translateY(-2px);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+    </style>
+    
+    <!-- Authentication Utilities -->
+    <script src="./auth.js"></script>
+    
+    <!-- ORBI - Space Assistant Module -->
+    <script src="./orbi.js"></script>
+</head>
+<body class="bg-[#050505]">
+    <!-- Header - Same as other pages -->
+    <header class="fixed top-0 left-0 right-0 z-50 py-4">
+        <div class="container mx-auto px-6 max-w-7xl">
+            <div class="flex items-center justify-between glass rounded-full p-2 shadow-2xl">
+                <!-- Logo -->
+                <button onclick="window.location.href='mission_page.html'" class="flex items-center rounded-full hover:opacity-90 transition-opacity">
+                    <img src="./codeathon-figma/image 68.png" alt="Orbital Logo" class="h-10 w-auto">
+                </button>
+
+                <!-- Navigation Links -->
+                <nav class="flex items-center gap-2">
+                    <a href="index.html" class="px-5 py-1.5 text-sm font-inter text-white/80 hover:text-white transition-colors">Home</a>
+                    <a href="mission_page.html" class="px-5 py-1.5 text-sm font-inter text-white/80 hover:text-white transition-colors">Mission</a>
+                    <a href="cosmic_page.html" class="px-5 py-1.5 text-sm font-inter text-white/80 hover:text-white transition-colors">Cosmic</a>
+                    <a href="learn.html" class="px-5 py-1.5 rounded-full bg-[#D9D9D9] text-black text-sm font-inter font-medium hover:bg-white transition-colors">Learn</a>
+                    <a href="blog.html" class="px-5 py-1.5 text-sm font-inter text-white/80 hover:text-white transition-colors">Blogs</a>
+                    <a href="committee.html" class="px-5 py-1.5 text-sm font-inter text-white/80 hover:text-white transition-colors">Committee</a>
+                </nav>
+
+                <!-- Right Actions -->
+                <div class="flex items-center gap-3">
+                    <!-- User Avatar -->
+                    <a href="profile.html" class="w-10 h-10 rounded-full overflow-hidden border border-white/20">
+                        <img src="./codeathon-figma/profile_pic.png" alt="User Avatar" class="w-full h-full object-cover">
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="h-screen w-full relative overflow-hidden flex items-center">
+        <!-- Background Image -->
+        <div class="absolute inset-0">
+            <img src="./codeathon-figma/Rectangle 76.jpg" alt="Disaster from Space" class="w-full h-full object-cover">
+            <div class="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-[#050505]"></div>
+        </div>
+
+        <!-- Content -->
+        <div class="relative z-10 container mx-auto px-24">
+            <h1 class="text-8xl font-sansita font-light text-white uppercase mb-6 tracking-wide">
+                Disaster<br>Management
+            </h1>
+            <p class="text-xl text-gray-400 font-inter max-w-3xl">
+                Learn how satellites in space help us spot floods, fires, earthquakes, and storms before they cause widespread damage.
+            </p>
+        </div>
+
+        <!-- Scroll Arrow -->
+        <button onclick="scrollToContent()" class="absolute bottom-10 left-1/2 transform -translate-x-1/2 z-10 cursor-pointer hover:opacity-80 transition-opacity">
+            <i data-lucide="chevron-down" class="w-10 h-10 text-white animate-bounce"></i>
+        </button>
+    </section>
+
+    <!-- Main Content Section -->
+    <section id="content" class="bg-[#050505] py-20">
+        <div class="container mx-auto px-6 max-w-7xl">
+            
+            <!-- Section Title -->
+            <h2 class="text-4xl text-white font-light mb-12 border-l-4 border-white pl-4">Disaster Types</h2>
+
+            <!-- Disaster Cards Grid -->
+            <div class="space-y-16 mb-20">
+                
+                <!-- Floods Card -->
+                <div class="border-l-4 border-white/20 pl-8">
+                    <h3 class="text-5xl font-light text-white mb-6">Floods</h3>
+                    
+                    <!-- Tabs -->
+                    <div class="flex gap-4 mb-6 border-b border-white/10">
+                        <button class="tab-button active px-4 py-2 text-white text-sm" onclick="switchTab(event, 'flood', 'detection')">Detection</button>
+                        <button class="tab-button px-4 py-2 text-white/60 hover:text-white text-sm" onclick="switchTab(event, 'flood', 'impact')">Impact</button>
+                        <button class="tab-button px-4 py-2 text-white/60 hover:text-white text-sm" onclick="switchTab(event, 'flood', 'analysis')">Analysis</button>
+                    </div>
+
+                    <!-- Tab Contents -->
+                    <div class="grid lg:grid-cols-2 gap-8 items-start">
+                        <div>
+                            <!-- Detection Tab -->
+                            <div class="tab-content active" id="flood-detection">
+                                <div class="flex items-start gap-3 mb-4 bg-white/5 p-4 rounded-lg">
+                                    <i data-lucide="info" class="w-5 h-5 text-blue-400 mt-0.5 flex-shrink-0"></i>
+                                    <p class="text-gray-300 text-sm leading-relaxed">
+                                        Satellites take pictures of Earth from space. When floods happen, water covers land that was dry before. 
+                                        Satellites can "see" this water because it reflects light differently than land or plants.
+                                    </p>
+                                </div>
+                                <p class="text-gray-300 mb-4 leading-relaxed">
+                                    Think of it like comparing two photos of your neighborhood — one before rain and one after. 
+                                    The satellite does the same thing, but from hundreds of kilometers above Earth.
+                                </p>
+                                <div class="space-y-3 text-sm">
+                                    <div class="flex items-start gap-3">
+                                        <i data-lucide="camera" class="w-4 h-4 text-white mt-0.5 flex-shrink-0"></i>
+                                        <span class="text-gray-400"><strong class="text-white">Special cameras</strong> see both visible light (like our eyes) and invisible infrared light</span>
+                                    </div>
+                                    <div class="flex items-start gap-3">
+                                        <i data-lucide="cloud-rain" class="w-4 h-4 text-white mt-0.5 flex-shrink-0"></i>
+                                        <span class="text-gray-400"><strong class="text-white">Radar sensors</strong> can see through clouds and work at night or during storms</span>
+                                    </div>
+                                    <div class="flex items-start gap-3">
+                                        <i data-lucide="layers" class="w-4 h-4 text-white mt-0.5 flex-shrink-0"></i>
+                                        <span class="text-gray-400"><strong class="text-white">Comparison</strong> of before and after images shows exactly where water has spread</span>
+                                    </div>
+                                </div>
+                                
+                                <!-- Expandable Details -->
+                                <button onclick="toggleExpand('flood-expand')" class="mt-4 text-white/60 hover:text-white text-sm flex items-center gap-2">
+                                    <span>Learn technical details</span>
+                                    <i data-lucide="chevron-down" class="w-4 h-4 expand-btn" id="flood-expand-icon"></i>
+                                </button>
+                                <div class="expandable mt-4 text-gray-500 text-sm space-y-2" id="flood-expand">
+                                    <p>Satellites like Sentinel-1 use C-band radar at 5.405 GHz frequency. Water appears smooth and dark because it reflects radar waves away from the sensor. Flooded vegetation creates a unique backscatter signature due to double-bounce reflection between water surface and plant stems.</p>
+                                    <p>Landsat and Sentinel-2 use NDWI formula: (Green - NIR) / (Green + NIR). Values above 0.3 typically indicate water presence.</p>
+                                </div>
+                            </div>
+
+                            <!-- Impact Tab -->
+                            <div class="tab-content" id="flood-impact">
+                                <div class="flex items-start gap-3 mb-4 bg-white/5 p-4 rounded-lg">
+                                    <i data-lucide="shield-check" class="w-5 h-5 text-green-400 mt-0.5 flex-shrink-0"></i>
+                                    <p class="text-gray-300 text-sm leading-relaxed">
+                                        When satellites spot floods early, governments can warn people to evacuate and move to safety. 
+                                        This early warning can save thousands of lives.
+                                    </p>
+                                </div>
+                                <p class="text-gray-300 mb-4 leading-relaxed">
+                                    Imagine knowing a flood is coming to your town 6-24 hours before it arrives. 
+                                    That's enough time to move people, animals, and important belongings to higher ground.
+                                </p>
+                                <div class="space-y-3 text-sm">
+                                    <div class="flex items-start gap-3">
+                                        <i data-lucide="bell" class="w-4 h-4 text-white mt-0.5 flex-shrink-0"></i>
+                                        <span class="text-gray-400"><strong class="text-white">Early warnings</strong> give people time to evacuate safely</span>
+                                    </div>
+                                    <div class="flex items-start gap-3">
+                                        <i data-lucide="map" class="w-4 h-4 text-white mt-0.5 flex-shrink-0"></i>
+                                        <span class="text-gray-400"><strong class="text-white">Live maps</strong> show which roads are blocked and where help is needed</span>
+                                    </div>
+                                    <div class="flex items-start gap-3">
+                                        <i data-lucide="clipboard-list" class="w-4 h-4 text-white mt-0.5 flex-shrink-0"></i>
+                                        <span class="text-gray-400"><strong class="text-white">Damage reports</strong> help governments plan rebuilding efforts</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Analysis Tab -->
+                            <div class="tab-content" id="flood-analysis">
+                                <div class="flex items-start gap-3 mb-4 bg-white/5 p-4 rounded-lg">
+                                    <i data-lucide="move-horizontal" class="w-5 h-5 text-purple-400 mt-0.5 flex-shrink-0"></i>
+                                    <p class="text-gray-300 text-sm leading-relaxed">
+                                        Use the slider on the right to compare images. Move it left and right to see how the landscape changes when water floods the area.
+                                    </p>
+                                </div>
+                                <p class="text-gray-300 mb-4 leading-relaxed">What to look for in the images:</p>
+                                <div class="space-y-3 text-sm">
+                                    <div class="flex items-start gap-3">
+                                        <i data-lucide="droplet" class="w-4 h-4 text-white mt-0.5 flex-shrink-0"></i>
+                                        <span class="text-gray-400"><strong class="text-white">Dark or blue areas</strong> are where water has covered the ground</span>
+                                    </div>
+                                    <div class="flex items-start gap-3">
+                                        <i data-lucide="home" class="w-4 h-4 text-white mt-0.5 flex-shrink-0"></i>
+                                        <span class="text-gray-400"><strong class="text-white">Buildings and roads</strong> appear as straight lines and shapes</span>
+                                    </div>
+                                    <div class="flex items-start gap-3">
+                                        <i data-lucide="trees" class="w-4 h-4 text-white mt-0.5 flex-shrink-0"></i>
+                                        <span class="text-gray-400"><strong class="text-white">Green areas</strong> are plants and trees, which turn dark when underwater</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Image Slider -->
+                        <div class="image-slider-container" id="flood-slider">
+                            <img src="./codeathon-figma/flood_before.png" alt="Before Flood" class="slider-image">
+                            <img src="./codeathon-figma/flood_after.png" alt="After Flood" class="slider-image slider-after" id="flood-after">
+                            <div class="slider-handle" id="flood-handle"></div>
+                            <div class="slider-label slider-label-before">Before</div>
+                            <div class="slider-label slider-label-after">After</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Wildfires Card -->
+                <div class="border-l-4 border-white/20 pl-8">
+                    <h3 class="text-5xl font-light text-white mb-6">Wildfires</h3>
+                    
+                    <!-- Tabs -->
+                    <div class="flex gap-4 mb-6 border-b border-white/10">
+                        <button class="tab-button active px-4 py-2 text-white text-sm" onclick="switchTab(event, 'fire', 'detection')">Detection</button>
+                        <button class="tab-button px-4 py-2 text-white/60 hover:text-white text-sm" onclick="switchTab(event, 'fire', 'impact')">Impact</button>
+                        <button class="tab-button px-4 py-2 text-white/60 hover:text-white text-sm" onclick="switchTab(event, 'fire', 'analysis')">Analysis</button>
+                    </div>
+
+                    <div class="grid lg:grid-cols-2 gap-8 items-start">
+                        <div class="order-2 lg:order-1">
+                            <div class="image-slider-container" id="fire-slider">
+                                <img src="./codeathon-figma/wildfire_before.png" alt="Before Fire" class="slider-image">
+                                <img src="./codeathon-figma/wildfire_after.jpeg" alt="After Fire" class="slider-image slider-after" id="fire-after">
+                                <div class="slider-handle" id="fire-handle"></div>
+                                <div class="slider-label slider-label-before">Before</div>
+                                <div class="slider-label slider-label-after">After</div>
+                            </div>
+                        </div>
+
+                        <div class="order-1 lg:order-2">
+                            <div class="tab-content active" id="fire-detection">
+                                <div class="flex items-start gap-3 mb-4 bg-white/5 p-4 rounded-lg">
+                                    <i data-lucide="thermometer" class="w-5 h-5 text-orange-400 mt-0.5 flex-shrink-0"></i>
+                                    <p class="text-gray-300 text-sm leading-relaxed">
+                                        Satellites have special heat-sensing cameras that detect hot spots on Earth's surface. 
+                                        When forests catch fire, they become very hot and satellites can detect this heat from space.
+                                    </p>
+                                </div>
+                                <p class="text-gray-300 mb-4 leading-relaxed">
+                                    It's like a thermal camera you might have seen that shows warm things in red and orange colors. 
+                                    Satellites scan Earth twice a day looking for these hot spots.
+                                </p>
+                                <div class="space-y-3 text-sm">
+                                    <div class="flex items-start gap-3">
+                                        <i data-lucide="flame" class="w-4 h-4 text-white mt-0.5 flex-shrink-0"></i>
+                                        <span class="text-gray-400"><strong class="text-white">Heat detection</strong> can spot fires as small as a basketball court</span>
+                                    </div>
+                                    <div class="flex items-start gap-3">
+                                        <i data-lucide="scan" class="w-4 h-4 text-white mt-0.5 flex-shrink-0"></i>
+                                        <span class="text-gray-400"><strong class="text-white">Daily scanning</strong> checks the entire planet twice every 24 hours</span>
+                                    </div>
+                                    <div class="flex items-start gap-3">
+                                        <i data-lucide="wind" class="w-4 h-4 text-white mt-0.5 flex-shrink-0"></i>
+                                        <span class="text-gray-400"><strong class="text-white">Smoke tracking</strong> shows which direction the fire is spreading</span>
+                                    </div>
+                                </div>
+                                
+                                <button onclick="toggleExpand('fire-expand')" class="mt-4 text-white/60 hover:text-white text-sm flex items-center gap-2">
+                                    <span>Learn technical details</span>
+                                    <i data-lucide="chevron-down" class="w-4 h-4 expand-btn" id="fire-expand-icon"></i>
+                                </button>
+                                <div class="expandable mt-4 text-gray-500 text-sm space-y-2" id="fire-expand">
+                                    <p>Fire radiative power (FRP) measures fire intensity in megawatts. Higher FRP indicates more intense combustion. Satellites calculate FRP using brightness temperature difference between mid-IR (4μm) and thermal-IR (11μm) channels.</p>
+                                    <p>Burned area mapping uses Normalized Burn Ratio (NBR): (NIR - SWIR) / (NIR + SWIR). Comparing pre and post-fire NBR reveals burn severity.</p>
+                                </div>
+                            </div>
+
+                            <div class="tab-content" id="fire-impact">
+                                <div class="flex items-start gap-3 mb-4 bg-white/5 p-4 rounded-lg">
+                                    <i data-lucide="siren" class="w-5 h-5 text-red-400 mt-0.5 flex-shrink-0"></i>
+                                    <p class="text-gray-300 text-sm leading-relaxed">
+                                        When satellites spot a wildfire, they send alerts to firefighters within hours. This helps fire crews know 
+                                        where to send resources and which communities need to evacuate.
+                                    </p>
+                                </div>
+                                <p class="text-gray-300 mb-4 leading-relaxed">
+                                    Wildfires can spread very fast, especially on windy days. Satellite data helps predict where the fire will go next, 
+                                    giving people time to escape safely.
+                                </p>
+                                <div class="space-y-3 text-sm">
+                                    <div class="flex items-start gap-3">
+                                        <i data-lucide="navigation" class="w-4 h-4 text-white mt-0.5 flex-shrink-0"></i>
+                                        <span class="text-gray-400"><strong class="text-white">Fire prediction</strong> shows where flames might spread next</span>
+                                    </div>
+                                    <div class="flex items-start gap-3">
+                                        <i data-lucide="users" class="w-4 h-4 text-white mt-0.5 flex-shrink-0"></i>
+                                        <span class="text-gray-400"><strong class="text-white">Evacuation alerts</strong> warn nearby towns to leave safely</span>
+                                    </div>
+                                    <div class="flex items-start gap-3">
+                                        <i data-lucide="activity" class="w-4 h-4 text-white mt-0.5 flex-shrink-0"></i>
+                                        <span class="text-gray-400"><strong class="text-white">Air quality</strong> monitoring protects people from harmful smoke</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="tab-content" id="fire-analysis">
+                                <div class="flex items-start gap-3 mb-4 bg-white/5 p-4 rounded-lg">
+                                    <i data-lucide="eye" class="w-5 h-5 text-yellow-400 mt-0.5 flex-shrink-0"></i>
+                                    <p class="text-gray-300 text-sm leading-relaxed">
+                                        Move the slider to see how the forest changes. Green forests turn black or dark brown after burning.
+                                    </p>
+                                </div>
+                                <p class="text-gray-300 mb-4 leading-relaxed">What to look for in fire images:</p>
+                                <div class="space-y-3 text-sm">
+                                    <div class="flex items-start gap-3">
+                                        <i data-lucide="alert-circle" class="w-4 h-4 text-white mt-0.5 flex-shrink-0"></i>
+                                        <span class="text-gray-400"><strong class="text-white">Red/orange spots</strong> show active flames still burning</span>
+                                    </div>
+                                    <div class="flex items-start gap-3">
+                                        <i data-lucide="circle" class="w-4 h-4 text-white mt-0.5 flex-shrink-0"></i>
+                                        <span class="text-gray-400"><strong class="text-white">Black areas</strong> are recently burned land with no plants left</span>
+                                    </div>
+                                    <div class="flex items-start gap-3">
+                                        <i data-lucide="cloud" class="w-4 h-4 text-white mt-0.5 flex-shrink-0"></i>
+                                        <span class="text-gray-400"><strong class="text-white">Gray clouds</strong> are smoke showing which way the fire is moving</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        
+                    </div>
+                </div>
+
+                <!-- Earthquakes Card -->
+                <div class="border-l-4 border-white/20 pl-8">
+                    <h3 class="text-5xl font-light text-white mb-6">Earthquakes</h3>
+                    
+                    <div class="flex gap-4 mb-6 border-b border-white/10">
+                        <button class="tab-button active px-4 py-2 text-white text-sm" onclick="switchTab(event, 'earthquake', 'detection')">Detection</button>
+                        <button class="tab-button px-4 py-2 text-white/60 hover:text-white text-sm" onclick="switchTab(event, 'earthquake', 'impact')">Impact</button>
+                        <button class="tab-button px-4 py-2 text-white/60 hover:text-white text-sm" onclick="switchTab(event, 'earthquake', 'analysis')">Analysis</button>
+                    </div>
+
+                    <div class="grid lg:grid-cols-2 gap-8 items-start">
+                        <div>
+                            <div class="tab-content active" id="earthquake-detection">
+                                <div class="flex items-start gap-3 mb-4 bg-white/5 p-4 rounded-lg">
+                                    <i data-lucide="waves" class="w-5 h-5 text-red-400 mt-0.5 flex-shrink-0"></i>
+                                    <p class="text-gray-300 text-sm leading-relaxed">
+                                        Satellites send radar signals to Earth and measure how the ground moves. After an earthquake, the ground shifts — 
+                                        sometimes by just a few centimeters, sometimes by meters. Satellites can detect these tiny movements.
+                                    </p>
+                                </div>
+                                <p class="text-gray-300 mb-4 leading-relaxed">
+                                    Think of it like taking two photos of your room from the exact same spot. If something moved between photos, 
+                                    you'd notice. Satellites do this with radar to see if the ground moved.
+                                </p>
+                                <div class="space-y-3 text-sm">
+                                    <div class="flex items-start gap-3">
+                                        <i data-lucide="radio" class="w-4 h-4 text-white mt-0.5 flex-shrink-0"></i>
+                                        <span class="text-gray-400"><strong class="text-white">Radar comparison</strong> checks the same area every 6 days</span>
+                                    </div>
+                                    <div class="flex items-start gap-3">
+                                        <i data-lucide="ruler" class="w-4 h-4 text-white mt-0.5 flex-shrink-0"></i>
+                                        <span class="text-gray-400"><strong class="text-white">Precise measurements</strong> detect ground shifts as small as 1 inch</span>
+                                    </div>
+                                    <div class="flex items-start gap-3">
+                                        <i data-lucide="building" class="w-4 h-4 text-white mt-0.5 flex-shrink-0"></i>
+                                        <span class="text-gray-400"><strong class="text-white">Damage maps</strong> show which buildings collapsed or were damaged</span>
+                                    </div>
+                                </div>
+                                
+                                <button onclick="toggleExpand('earthquake-expand')" class="mt-4 text-white/60 hover:text-white text-sm flex items-center gap-2">
+                                    <span>Learn technical details</span>
+                                    <i data-lucide="chevron-down" class="w-4 h-4 expand-btn" id="earthquake-expand-icon"></i>
+                                </button>
+                                <div class="expandable mt-4 text-gray-500 text-sm space-y-2" id="earthquake-expand">
+                                    <p>InSAR creates interferograms by calculating phase differences between radar acquisitions. Each color fringe represents 2.8cm of ground movement. Coherence loss indicates severe ground disruption or building collapse.</p>
+                                </div>
+                            </div>
+
+                            <div class="tab-content" id="earthquake-impact">
+                                <div class="flex items-start gap-3 mb-4 bg-white/5 p-4 rounded-lg">
+                                    <i data-lucide="life-buoy" class="w-5 h-5 text-blue-400 mt-0.5 flex-shrink-0"></i>
+                                    <p class="text-gray-300 text-sm leading-relaxed">
+                                        After an earthquake, rescue teams need to know which areas were hit hardest. Satellite images show them 
+                                        where buildings collapsed and which roads are blocked, helping them reach victims faster.
+                                    </p>
+                                </div>
+                                <p class="text-gray-300 mb-4 leading-relaxed">
+                                    Within 12-24 hours of an earthquake, satellites provide detailed maps showing damage across entire cities. 
+                                    This helps organize rescue efforts and medical supplies.
+                                </p>
+                                <div class="space-y-3 text-sm">
+                                    <div class="flex items-start gap-3">
+                                        <i data-lucide="clock" class="w-4 h-4 text-white mt-0.5 flex-shrink-0"></i>
+                                        <span class="text-gray-400"><strong class="text-white">Quick assessment</strong> within one day of the earthquake</span>
+                                    </div>
+                                    <div class="flex items-start gap-3">
+                                        <i data-lucide="map-pin" class="w-4 h-4 text-white mt-0.5 flex-shrink-0"></i>
+                                        <span class="text-gray-400"><strong class="text-white">Priority zones</strong> guide rescue teams to hardest-hit areas</span>
+                                    </div>
+                                    <div class="flex items-start gap-3">
+                                        <i data-lucide="zap" class="w-4 h-4 text-white mt-0.5 flex-shrink-0"></i>
+                                        <span class="text-gray-400"><strong class="text-white">Utility analysis</strong> shows which power lines and water pipes broke</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="tab-content" id="earthquake-analysis">
+                                <div class="flex items-start gap-3 mb-4 bg-white/5 p-4 rounded-lg">
+                                    <i data-lucide="split" class="w-5 h-5 text-purple-400 mt-0.5 flex-shrink-0"></i>
+                                    <p class="text-gray-300 text-sm leading-relaxed">
+                                        Compare the images to see earthquake damage. Buildings change shape or disappear. Ground cracks appear as dark lines.
+                                    </p>
+                                </div>
+                                <p class="text-gray-300 mb-4 leading-relaxed">What to look for:</p>
+                                <div class="space-y-3 text-sm">
+                                    <div class="flex items-start gap-3">
+                                        <i data-lucide="minus" class="w-4 h-4 text-white mt-0.5 flex-shrink-0"></i>
+                                        <span class="text-gray-400"><strong class="text-white">Cracks in ground</strong> appear as straight dark lines across the land</span>
+                                    </div>
+                                    <div class="flex items-start gap-3">
+                                        <i data-lucide="mountain" class="w-4 h-4 text-white mt-0.5 flex-shrink-0"></i>
+                                        <span class="text-gray-400"><strong class="text-white">Landslides</strong> on hills and mountains triggered by shaking</span>
+                                    </div>
+                                    <div class="flex items-start gap-3">
+                                        <i data-lucide="move-down" class="w-4 h-4 text-white mt-0.5 flex-shrink-0"></i>
+                                        <span class="text-gray-400"><strong class="text-white">Sunken areas</strong> where ground liquefied and sank down</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="image-slider-container" id="earthquake-slider">
+                            <img src="./codeathon-figma/earthquack_before.png" alt="Before Earthquake" class="slider-image">
+                            <img src="./codeathon-figma/earthquack_after.jpeg" alt="After Earthquake" class="slider-image slider-after" id="earthquake-after">
+                            <div class="slider-handle" id="earthquake-handle"></div>
+                            <div class="slider-label slider-label-before">Before</div>
+                            <div class="slider-label slider-label-after">After</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Cyclones Card -->
+                <div class="border-l-4 border-white/20 pl-8">
+                    <h3 class="text-5xl font-light text-white mb-6">Cyclones</h3>
+                    
+                    <div class="flex gap-4 mb-6 border-b border-white/10">
+                        <button class="tab-button active px-4 py-2 text-white text-sm" onclick="switchTab(event, 'cyclone', 'detection')">Detection</button>
+                        <button class="tab-button px-4 py-2 text-white/60 hover:text-white text-sm" onclick="switchTab(event, 'cyclone', 'impact')">Impact</button>
+                        <button class="tab-button px-4 py-2 text-white/60 hover:text-white text-sm" onclick="switchTab(event, 'cyclone', 'analysis')">Analysis</button>
+                    </div>
+
+                    <div class="grid lg:grid-cols-2 gap-8 items-start">
+                        <div class="order-2 lg:order-1">
+                            <div class="image-slider-container" id="cyclone-slider">
+                                <img src="./codeathon-figma/cyclon_before.png" alt="Before Cyclone" class="slider-image">
+                                <img src="./codeathon-figma/cyclon_after.jpeg" alt="After Cyclone" class="slider-image slider-after" id="cyclone-after">
+                                <div class="slider-handle" id="cyclone-handle"></div>
+                                <div class="slider-label slider-label-before">Before</div>
+                                <div class="slider-label slider-label-after">After</div>
+                            </div>
+                        </div>
+
+                        <div class="order-1 lg:order-2">
+                            <div class="tab-content active" id="cyclone-detection">
+                                <div class="flex items-start gap-3 mb-4 bg-white/5 p-4 rounded-lg">
+                                    <i data-lucide="rotate-cw" class="w-5 h-5 text-cyan-400 mt-0.5 flex-shrink-0"></i>
+                                    <p class="text-gray-300 text-sm leading-relaxed">
+                                        Special satellites stay positioned above one spot on Earth 24/7, watching for storms. They take pictures every 
+                                        15 minutes to track how fast the storm is spinning and growing.
+                                    </p>
+                                </div>
+                                <p class="text-gray-300 mb-4 leading-relaxed">
+                                    These satellites measure cloud temperature (colder clouds mean stronger storms) and wind speed to determine 
+                                    if a hurricane is Category 1, 2, 3, 4, or 5.
+                                </p>
+                                <div class="space-y-3 text-sm">
+                                    <div class="flex items-start gap-3">
+                                        <i data-lucide="clock" class="w-4 h-4 text-white mt-0.5 flex-shrink-0"></i>
+                                        <span class="text-gray-400"><strong class="text-white">Every 15 minutes</strong> new images show storm's movement and growth</span>
+                                    </div>
+                                    <div class="flex items-start gap-3">
+                                        <i data-lucide="eye" class="w-4 h-4 text-white mt-0.5 flex-shrink-0"></i>
+                                        <span class="text-gray-400"><strong class="text-white">See through clouds</strong> using special cameras to find the eye</span>
+                                    </div>
+                                    <div class="flex items-start gap-3">
+                                        <i data-lucide="wind" class="w-4 h-4 text-white mt-0.5 flex-shrink-0"></i>
+                                        <span class="text-gray-400"><strong class="text-white">Wind measurements</strong> show how fast the storm is spinning</span>
+                                    </div>
+                                </div>
+                                
+                                <button onclick="toggleExpand('cyclone-expand')" class="mt-4 text-white/60 hover:text-white text-sm flex items-center gap-2">
+                                    <span>Learn technical details</span>
+                                    <i data-lucide="chevron-down" class="w-4 h-4 expand-btn" id="cyclone-expand-icon"></i>
+                                </button>
+                                <div class="expandable mt-4 text-gray-500 text-sm space-y-2" id="cyclone-expand">
+                                    <p>Dvorak technique analyzes cloud patterns to estimate intensity. Central Dense Overcast (CDO) temperature below -70°C indicates strong convection. Eye diameter inversely correlates with wind speed.</p>
+                                </div>
+                            </div>
+
+                            <div class="tab-content" id="cyclone-impact">
+                                <div class="flex items-start gap-3 mb-4 bg-white/5 p-4 rounded-lg">
+                                    <i data-lucide="alert-triangle" class="w-5 h-5 text-yellow-400 mt-0.5 flex-shrink-0"></i>
+                                    <p class="text-gray-300 text-sm leading-relaxed">
+                                        Satellites predict where and when the storm will hit land, giving people 2-5 days to evacuate safely. 
+                                        This early warning saves thousands of lives.
+                                    </p>
+                                </div>
+                                <p class="text-gray-300 mb-4 leading-relaxed">
+                                    By tracking the storm's path, officials know which cities need to evacuate and where to send emergency supplies.
+                                </p>
+                                <div class="space-y-3 text-sm">
+                                    <div class="flex items-start gap-3">
+                                        <i data-lucide="calendar" class="w-4 h-4 text-white mt-0.5 flex-shrink-0"></i>
+                                        <span class="text-gray-400"><strong class="text-white">2-5 days warning</strong> before the storm reaches land</span>
+                                    </div>
+                                    <div class="flex items-start gap-3">
+                                        <i data-lucide="waves" class="w-4 h-4 text-white mt-0.5 flex-shrink-0"></i>
+                                        <span class="text-gray-400"><strong class="text-white">Flood predictions</strong> show which coastal areas will be underwater</span>
+                                    </div>
+                                    <div class="flex items-start gap-3">
+                                        <i data-lucide="cloud-rain" class="w-4 h-4 text-white mt-0.5 flex-shrink-0"></i>
+                                        <span class="text-gray-400"><strong class="text-white">Rainfall forecasts</strong> help prepare for flooding even far from coast</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="tab-content" id="cyclone-analysis">
+                                <div class="flex items-start gap-3 mb-4 bg-white/5 p-4 rounded-lg">
+                                    <i data-lucide="compass" class="w-5 h-5 text-green-400 mt-0.5 flex-shrink-0"></i>
+                                    <p class="text-gray-300 text-sm leading-relaxed">
+                                        Look at the spiral shape. Tighter spirals mean faster spinning. A clear circular hole in the center (the "eye") 
+                                        means the storm is very strong.
+                                    </p>
+                                </div>
+                                <p class="text-gray-300 mb-4 leading-relaxed">What to look for:</p>
+                                <div class="space-y-3 text-sm">
+                                    <div class="flex items-start gap-3">
+                                        <i data-lucide="circle-dot" class="w-4 h-4 text-white mt-0.5 flex-shrink-0"></i>
+                                        <span class="text-gray-400"><strong class="text-white">The eye</strong> is the calm center where skies are clear</span>
+                                    </div>
+                                    <div class="flex items-start gap-3">
+                                        <i data-lucide="rotate-ccw" class="w-4 h-4 text-white mt-0.5 flex-shrink-0"></i>
+                                        <span class="text-gray-400"><strong class="text-white">Spiral arms</strong> bring wind and rain as they rotate</span>
+                                    </div>
+                                    <div class="flex items-start gap-3">
+                                        <i data-lucide="cloud" class="w-4 h-4 text-white mt-0.5 flex-shrink-0"></i>
+                                        <span class="text-gray-400"><strong class="text-white">Bright white clouds</strong> at the top mean very cold temperatures = strong storm</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Landslides Card -->
+                <div class="border-l-4 border-white/20 pl-8">
+                    <h3 class="text-5xl font-light text-white mb-6">Landslides</h3>
+                    
+                    <div class="flex gap-4 mb-6 border-b border-white/10">
+                        <button class="tab-button active px-4 py-2 text-white text-sm" onclick="switchTab(event, 'landslide', 'detection')">Detection</button>
+                        <button class="tab-button px-4 py-2 text-white/60 hover:text-white text-sm" onclick="switchTab(event, 'landslide', 'impact')">Impact</button>
+                        <button class="tab-button px-4 py-2 text-white/60 hover:text-white text-sm" onclick="switchTab(event, 'landslide', 'analysis')">Analysis</button>
+                    </div>
+
+                    <div class="grid lg:grid-cols-2 gap-8 items-start">
+                        <div>
+                            <div class="tab-content active" id="landslide-detection">
+                                <div class="flex items-start gap-3 mb-4 bg-white/5 p-4 rounded-lg">
+                                    <i data-lucide="mountain" class="w-5 h-5 text-amber-400 mt-0.5 flex-shrink-0"></i>
+                                    <p class="text-gray-300 text-sm leading-relaxed">
+                                        Satellites watch mountainsides and hills, looking for changes. When a landslide happens, green forest suddenly 
+                                        turns brown as trees are swept away, exposing dirt and rocks.
+                                    </p>
+                                </div>
+                                <p class="text-gray-300 mb-4 leading-relaxed">
+                                    Some satellites can even detect tiny movements in the ground (a few millimeters per month) before a landslide happens, 
+                                    giving early warnings.
+                                </p>
+                                <div class="space-y-3 text-sm">
+                                    <div class="flex items-start gap-3">
+                                        <i data-lucide="tree-deciduous" class="w-4 h-4 text-white mt-0.5 flex-shrink-0"></i>
+                                        <span class="text-gray-400"><strong class="text-white">Vegetation loss</strong> shows where trees were swept away</span>
+                                    </div>
+                                    <div class="flex items-start gap-3">
+                                        <i data-lucide="move-down" class="w-4 h-4 text-white mt-0.5 flex-shrink-0"></i>
+                                        <span class="text-gray-400"><strong class="text-white">Ground movement</strong> detected before slides happen</span>
+                                    </div>
+                                    <div class="flex items-start gap-3">
+                                        <i data-lucide="triangle-alert" class="w-4 h-4 text-white mt-0.5 flex-shrink-0"></i>
+                                        <span class="text-gray-400"><strong class="text-white">Risk zones</strong> identified by analyzing slope steepness</span>
+                                    </div>
+                                </div>
+                                
+                                <button onclick="toggleExpand('landslide-expand')" class="mt-4 text-white/60 hover:text-white text-sm flex items-center gap-2">
+                                    <span>Learn technical details</span>
+                                    <i data-lucide="chevron-down" class="w-4 h-4 expand-btn" id="landslide-expand-icon"></i>
+                                </button>
+                                <div class="expandable mt-4 text-gray-500 text-sm space-y-2" id="landslide-expand">
+                                    <p>Susceptibility mapping combines slope angle, geology, rainfall, and vegetation data. Slopes >30° with sparse vegetation after heavy rain show highest risk. Persistent scatterer InSAR tracks mm/year creep that precedes failures.</p>
+                                </div>
+                            </div>
+
+                            <div class="tab-content" id="landslide-impact">
+                                <div class="flex items-start gap-3 mb-4 bg-white/5 p-4 rounded-lg">
+                                    <i data-lucide="route" class="w-5 h-5 text-orange-400 mt-0.5 flex-shrink-0"></i>
+                                    <p class="text-gray-300 text-sm leading-relaxed">
+                                        After heavy rain, satellites quickly map new landslides to find blocked roads and identify areas at risk 
+                                        for more slides.
+                                    </p>
+                                </div>
+                                <p class="text-gray-300 mb-4 leading-relaxed">
+                                    Sometimes landslides block rivers, creating temporary dams. If these dams break, they cause massive floods downstream. 
+                                    Satellites help monitor these dangerous situations.
+                                </p>
+                                <div class="space-y-3 text-sm">
+                                    <div class="flex items-start gap-3">
+                                        <i data-lucide="ban" class="w-4 h-4 text-white mt-0.5 flex-shrink-0"></i>
+                                        <span class="text-gray-400"><strong class="text-white">Blocked roads</strong> found so emergency crews can plan new routes</span>
+                                    </div>
+                                    <div class="flex items-start gap-3">
+                                        <i data-lucide="waves" class="w-4 h-4 text-white mt-0.5 flex-shrink-0"></i>
+                                        <span class="text-gray-400"><strong class="text-white">River blockages</strong> monitored to prevent deadly downstream floods</span>
+                                    </div>
+                                    <div class="flex items-start gap-3">
+                                        <i data-lucide="eye" class="w-4 h-4 text-white mt-0.5 flex-shrink-0"></i>
+                                        <span class="text-gray-400"><strong class="text-white">High-risk areas</strong> watched closely after first landslides</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="tab-content" id="landslide-analysis">
+                                <div class="flex items-start gap-3 mb-4 bg-white/5 p-4 rounded-lg">
+                                    <i data-lucide="trending-down" class="w-5 h-5 text-red-400 mt-0.5 flex-shrink-0"></i>
+                                    <p class="text-gray-300 text-sm leading-relaxed">
+                                        Look for brown streaks down the mountainside against green forest. The top of the landslide looks like a 
+                                        horseshoe shape where the ground broke away.
+                                    </p>
+                                </div>
+                                <p class="text-gray-300 mb-4 leading-relaxed">What to look for:</p>
+                                <div class="space-y-3 text-sm">
+                                    <div class="flex items-start gap-3">
+                                        <i data-lucide="circle-slash" class="w-4 h-4 text-white mt-0.5 flex-shrink-0"></i>
+                                        <span class="text-gray-400"><strong class="text-white">Scar at the top</strong> where the ground first broke loose</span>
+                                    </div>
+                                    <div class="flex items-start gap-3">
+                                        <i data-lucide="arrow-down" class="w-4 h-4 text-white mt-0.5 flex-shrink-0"></i>
+                                        <span class="text-gray-400"><strong class="text-white">Flow path</strong> shows the track of rocks and mud sliding down</span>
+                                    </div>
+                                    <div class="flex items-start gap-3">
+                                        <i data-lucide="disc" class="w-4 h-4 text-white mt-0.5 flex-shrink-0"></i>
+                                        <span class="text-gray-400"><strong class="text-white">Pile at bottom</strong> where debris spreads out and stops</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="image-slider-container" id="landslide-slider">
+                            <img src="./codeathon-figma/landslide_before.jpeg" alt="Before Landslide" class="slider-image">
+                            <img src="./codeathon-figma/landslide_after.jpeg" alt="After Landslide" class="slider-image slider-after" id="landslide-after">
+                            <div class="slider-handle" id="landslide-handle"></div>
+                            <div class="slider-label slider-label-before">Before</div>
+                            <div class="slider-label slider-label-after">After</div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- How to Read Satellite Images Section -->
+            <div class="mb-20">
+                <h2 class="text-4xl text-white font-light mb-12 border-l-4 border-white pl-4">Reading Satellite Images</h2>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div class="border-l-2 border-white/20 pl-6">
+                        <div class="flex items-center gap-2 mb-3">
+                            <i data-lucide="palette" class="w-5 h-5 text-white"></i>
+                            <h3 class="text-xl font-medium text-white">Color Changes</h3>
+                        </div>
+                        <p class="text-gray-400 text-sm">
+                            Water looks darker or blue, fires show bright red or orange. Green areas are forests, brown/gray are cities or bare ground.
+                        </p>
+                    </div>
+
+                    <div class="border-l-2 border-white/20 pl-6">
+                        <div class="flex items-center gap-2 mb-3">
+                            <i data-lucide="grid-3x3" class="w-5 h-5 text-white"></i>
+                            <h3 class="text-xl font-medium text-white">Texture Changes</h3>
+                        </div>
+                        <p class="text-gray-400 text-sm">
+                            Smooth surfaces become rough and broken after earthquakes. Buildings that collapsed look messy and unorganized.
+                        </p>
+                    </div>
+
+                    <div class="border-l-2 border-white/20 pl-6">
+                        <div class="flex items-center gap-2 mb-3">
+                            <i data-lucide="shapes" class="w-5 h-5 text-white"></i>
+                            <h3 class="text-xl font-medium text-white">Shape Changes</h3>
+                        </div>
+                        <p class="text-gray-400 text-sm">
+                            Coastlines move inland during floods. Rivers become wider. Forests have new burned-out gaps after fires.
+                        </p>
+                    </div>
+
+                    <div class="border-l-2 border-white/20 pl-6">
+                        <div class="flex items-center gap-2 mb-3">
+                            <i data-lucide="thermometer" class="w-5 h-5 text-white"></i>
+                            <h3 class="text-xl font-medium text-white">Heat Signatures</h3>
+                        </div>
+                        <p class="text-gray-400 text-sm">
+                            Special heat-sensing cameras see fires even through thick smoke. Bright spots show where fires are actively burning.
+                        </p>
+                    </div>
+
+                    <div class="border-l-2 border-white/20 pl-6">
+                        <div class="flex items-center gap-2 mb-3">
+                            <i data-lucide="cloud" class="w-5 h-5 text-white"></i>
+                            <h3 class="text-xl font-medium text-white">Cloud Patterns</h3>
+                        </div>
+                        <p class="text-gray-400 text-sm">
+                            Spiral swirls are cyclones or hurricanes. Dense white clusters mean heavy rain and storm systems approaching.
+                        </p>
+                    </div>
+
+                    <div class="border-l-2 border-white/20 pl-6">
+                        <div class="flex items-center gap-2 mb-3">
+                            <i data-lucide="split" class="w-5 h-5 text-white"></i>
+                            <h3 class="text-xl font-medium text-white">Before vs After</h3>
+                        </div>
+                        <p class="text-gray-400 text-sm">
+                            Comparing two images of the same place shows what changed. This helps understand how severe the disaster was.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Disaster Awareness Simulator -->
+            <div class="mb-20">
+                <h2 class="text-4xl text-white font-light mb-12 border-l-4 border-white pl-4">Disaster Awareness Simulator</h2>
+                
+                <!-- Step Progress -->
+                <div class="flex items-center justify-center gap-2 mb-8">
+                    <div class="simulator-step-dot active" data-step="1"></div>
+                    <div class="w-12 h-0.5 bg-white/20"></div>
+                    <div class="simulator-step-dot" data-step="2"></div>
+                    <div class="w-12 h-0.5 bg-white/20"></div>
+                    <div class="simulator-step-dot" data-step="3"></div>
+                    <div class="w-12 h-0.5 bg-white/20"></div>
+                    <div class="simulator-step-dot" data-step="4"></div>
+                    <div class="w-12 h-0.5 bg-white/20"></div>
+                    <div class="simulator-step-dot" data-step="5"></div>
+                </div>
+
+                <div class="glass rounded-lg overflow-hidden">
+                    
+                    <!-- Step 1: Observation -->
+                    <div class="simulator-step active" id="sim-step-1">
+                        <div class="p-8 space-y-6">
+                            <div class="text-center">
+                                <h3 class="text-3xl font-light text-white mb-2">Spot the Early Warning Signs</h3>
+                                <p class="text-gray-400">Satellites detect changes before disasters strike. Click on 3 warning signs in the right image</p>
+                                <div class="mt-2 text-sm text-gray-500">
+                                    <span id="differences-found">0</span> / 3 early signs detected
+                                </div>
+                            </div>
+                            
+                            <div class="grid lg:grid-cols-2 gap-6 max-w-6xl mx-auto">
+                                <div class="space-y-2">
+                                    <div class="relative h-80 rounded-lg overflow-hidden border border-white/20">
+                                        <img src="./codeathon-figma/before.png" alt="Normal conditions" class="w-full h-full object-cover">
+                                        <div class="absolute top-3 left-3 px-3 py-1 bg-black/70 backdrop-blur-sm rounded text-xs text-white">
+                                            Day 1 - Normal Conditions
+                                        </div>
+                                    </div>
+                                    <p class="text-gray-400 text-sm">Baseline satellite view - Everything looks normal</p>
+                                </div>
+                                
+                                <div class="space-y-2">
+                                    <div class="relative h-80 rounded-lg overflow-hidden border border-white/20 cursor-crosshair" id="difference-image">
+                                        <img src="./codeathon-figma/early_sign.png" alt="Early warning signs" class="w-full h-full object-cover">
+                                        <div class="absolute top-3 left-3 px-3 py-1 bg-black/70 backdrop-blur-sm rounded text-xs text-white">
+                                            Day 3 - Early Detection
+                                        </div>
+                                        
+                                        <!-- Clickable hotspots -->
+                                        <div class="hotspot" data-spot="1" style="position: absolute; top: 20%; left: 15%; width: 90px; height: 90px;" onclick="findDifference(1, event)"></div>
+                                        <div class="hotspot" data-spot="2" style="position: absolute; top: 50%; left: 70%; width: 90px; height: 90px;" onclick="findDifference(2, event)"></div>
+                                        <div class="hotspot" data-spot="3" style="position: absolute; top: 65%; left: 35%; width: 90px; height: 90px;" onclick="findDifference(3, event)"></div>
+                                        
+                                        <!-- Hint markers (hidden by default) -->
+                                        <div id="hint-1" class="hint-marker" style="position: absolute; top: 20%; left: 15%; width: 90px; height: 90px; border: 2px dashed rgba(255, 255, 0, 0.6); border-radius: 50%; display: none; pointer-events: none; animation: pulse 2s infinite;"></div>
+                                        <div id="hint-2" class="hint-marker" style="position: absolute; top: 50%; left: 70%; width: 90px; height: 90px; border: 2px dashed rgba(255, 255, 0, 0.6); border-radius: 50%; display: none; pointer-events: none; animation: pulse 2s infinite;"></div>
+                                        <div id="hint-3" class="hint-marker" style="position: absolute; top: 65%; left: 35%; width: 90px; height: 90px; border: 2px dashed rgba(255, 255, 0, 0.6); border-radius: 50%; display: none; pointer-events: none; animation: pulse 2s infinite;"></div>
+                                    </div>
+                                    <p class="text-gray-400 text-sm">Satellites detect subtle changes - Can you spot the warning signs?</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Hints Section -->
+                            <div id="hints-section" class="max-w-4xl mx-auto mt-6">
+                                <div class="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-4">
+                                    <div class="flex items-center justify-between mb-3">
+                                        <div class="flex items-center gap-2">
+                                            <i data-lucide="lightbulb" class="w-5 h-5 text-yellow-400"></i>
+                                            <h4 class="text-white font-medium">Need help finding the changes?</h4>
+                                        </div>
+                                        <button onclick="toggleHints()" class="px-4 py-1.5 bg-yellow-500/20 hover:bg-yellow-500/30 text-yellow-300 text-sm rounded transition-all">
+                                            Show Hints
+                                        </button>
+                                    </div>
+                                    <div id="hint-text" class="text-yellow-200 text-sm space-y-2 hidden">
+                                        <p><strong>Hint 1:</strong> Look in the upper-left area - notice any color or texture changes compared to the before image</p>
+                                        <p><strong>Hint 2:</strong> Check the right side of the image, around the middle - look for water patterns or moisture</p>
+                                        <p><strong>Hint 3:</strong> Scan the lower-center region - spot any ground surface changes or unusual patterns</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="text-center pt-4">
+                                <button onclick="nextSimStep()" class="sim-next-btn px-8 py-3 bg-white/10 text-white/40 rounded cursor-not-allowed" disabled>
+                                    Continue
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 2: Understanding -->
+                    <div class="simulator-step" id="sim-step-2">
+                        <div class="p-8 text-center space-y-6">
+                            <h3 class="text-3xl font-light text-white">What do these changes mean?</h3>
+                            <p class="text-gray-400">Select which indicators suggest a potential disaster (choose 2 correct ones)</p>
+                            
+                            <div class="grid md:grid-cols-2 gap-4 max-w-4xl mx-auto text-left">
+                                <div class="indicator-card p-4 rounded-lg border-2 border-white/10 cursor-pointer transition-all hover:border-white/30" onclick="selectIndicator(this, true)">
+                                    <div class="flex items-start gap-3">
+                                        <i data-lucide="droplet" class="w-5 h-5 text-blue-400 mt-1"></i>
+                                        <div>
+                                            <p class="text-white font-medium">Rapid moisture increase detected</p>
+                                            <p class="text-gray-400 text-sm">Ground water content rose 280% in 48 hours</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="indicator-card p-4 rounded-lg border-2 border-white/10 cursor-pointer transition-all hover:border-white/30" onclick="selectIndicator(this, false)">
+                                    <div class="flex items-start gap-3">
+                                        <i data-lucide="cloud" class="w-5 h-5 text-white mt-1"></i>
+                                        <div>
+                                            <p class="text-white font-medium">Normal cloud formation</p>
+                                            <p class="text-gray-400 text-sm">Typical weather pattern for this season</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="indicator-card p-4 rounded-lg border-2 border-white/10 cursor-pointer transition-all hover:border-white/30" onclick="selectIndicator(this, true)">
+                                    <div class="flex items-start gap-3">
+                                        <i data-lucide="alert-triangle" class="w-5 h-5 text-orange-400 mt-1"></i>
+                                        <div>
+                                            <p class="text-white font-medium">Unusual terrain changes spotted</p>
+                                            <p class="text-gray-400 text-sm">Surface deformation in vulnerable areas</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="indicator-card p-4 rounded-lg border-2 border-white/10 cursor-pointer transition-all hover:border-white/30" onclick="selectIndicator(this, false)">
+                                    <div class="flex items-start gap-3">
+                                        <i data-lucide="sun" class="w-5 h-5 text-white mt-1"></i>
+                                        <div>
+                                            <p class="text-white font-medium">Temperature slightly warmer</p>
+                                            <p class="text-gray-400 text-sm">Within normal seasonal variation</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="flex gap-3 justify-center pt-4">
+                                <button onclick="prevSimStep()" class="px-6 py-2 border border-white/20 text-white rounded hover:bg-white/5">
+                                    Back
+                                </button>
+                                <button onclick="nextSimStep()" class="sim-next-btn px-8 py-3 bg-white/10 text-white/40 rounded cursor-not-allowed" disabled>
+                                    Continue
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 3: Outcome -->
+                    <div class="simulator-step" id="sim-step-3">
+                        <div class="p-8 space-y-6">
+                            <div class="text-center">
+                                <h3 class="text-3xl font-light text-white mb-2">The disaster unfolded</h3>
+                                <p class="text-gray-400">Compare satellite images before and after. Drag the slider to see the full impact</p>
+                            </div>
+                            
+                            <div class="max-w-4xl mx-auto space-y-4">
+                                <div class="image-slider-container" id="simulator-slider">
+                                    <img src="./codeathon-figma/before.png" alt="Before disaster" class="slider-image">
+                                    <img src="./codeathon-figma/after.png" alt="After disaster" class="slider-image slider-after" id="simulator-after">
+                                    <div class="slider-handle" id="simulator-handle"></div>
+                                    <div class="slider-label slider-label-before">Before</div>
+                                    <div class="slider-label slider-label-after">After</div>
+                                </div>
+                                
+                                <div class="grid grid-cols-3 gap-4 text-center text-sm">
+                                    <div class="p-3 bg-red-500/10 border border-red-500/20 rounded">
+                                        <p class="text-gray-400 mb-1">Area affected</p>
+                                        <p class="text-white font-medium">2,100+ km²</p>
+                                    </div>
+                                    <div class="p-3 bg-orange-500/10 border border-orange-500/20 rounded">
+                                        <p class="text-gray-400 mb-1">Communities impacted</p>
+                                        <p class="text-white font-medium">~450,000 people</p>
+                                    </div>
+                                    <div class="p-3 bg-green-500/10 border border-green-500/20 rounded">
+                                        <p class="text-gray-400 mb-1">Early warning gave</p>
+                                        <p class="text-white font-medium">48-72 hours</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="flex gap-3 justify-center pt-4">
+                                <button onclick="prevSimStep()" class="px-6 py-2 border border-white/20 text-white rounded hover:bg-white/5">
+                                    Back
+                                </button>
+                                <button onclick="nextSimStep()" class="px-8 py-3 bg-white text-black rounded hover:bg-gray-200">
+                                    Continue
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 4: Preparedness -->
+                    <div class="simulator-step" id="sim-step-4">
+                        <div class="p-8 text-center space-y-6">
+                            <h3 class="text-3xl font-light text-white">How to prepare</h3>
+                            <p class="text-gray-400">Select 4 actions you would take</p>
+                            
+                            <div class="grid md:grid-cols-3 gap-4 max-w-5xl mx-auto text-left">
+                                <div class="prep-card p-4 rounded-lg border-2 border-white/10 cursor-pointer transition-all hover:border-white/30" onclick="revealPrep(this)">
+                                    <div class="flex items-start gap-3">
+                                        <i data-lucide="map-pin" class="w-5 h-5 text-white mt-1 flex-shrink-0"></i>
+                                        <div>
+                                            <p class="text-white font-medium mb-1">Know Your Location</p>
+                                            <p class="text-gray-400 text-sm">Identify risk zones in your area</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="prep-card p-4 rounded-lg border-2 border-white/10 cursor-pointer transition-all hover:border-white/30" onclick="revealPrep(this)">
+                                    <div class="flex items-start gap-3">
+                                        <i data-lucide="alert-triangle" class="w-5 h-5 text-white mt-1 flex-shrink-0"></i>
+                                        <div>
+                                            <p class="text-white font-medium mb-1">Stay Informed</p>
+                                            <p class="text-gray-400 text-sm">Monitor official alerts</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="prep-card p-4 rounded-lg border-2 border-white/10 cursor-pointer transition-all hover:border-white/30" onclick="revealPrep(this)">
+                                    <div class="flex items-start gap-3">
+                                        <i data-lucide="package" class="w-5 h-5 text-white mt-1 flex-shrink-0"></i>
+                                        <div>
+                                            <p class="text-white font-medium mb-1">Prepare Essentials</p>
+                                            <p class="text-gray-400 text-sm">Keep emergency supplies ready</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="prep-card p-4 rounded-lg border-2 border-white/10 cursor-pointer transition-all hover:border-white/30" onclick="revealPrep(this)">
+                                    <div class="flex items-start gap-3">
+                                        <i data-lucide="move" class="w-5 h-5 text-white mt-1 flex-shrink-0"></i>
+                                        <div>
+                                            <p class="text-white font-medium mb-1">Plan Routes</p>
+                                            <p class="text-gray-400 text-sm">Know evacuation paths</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="prep-card p-4 rounded-lg border-2 border-white/10 cursor-pointer transition-all hover:border-white/30" onclick="revealPrep(this)">
+                                    <div class="flex items-start gap-3">
+                                        <i data-lucide="users" class="w-5 h-5 text-white mt-1 flex-shrink-0"></i>
+                                        <div>
+                                            <p class="text-white font-medium mb-1">Check on Others</p>
+                                            <p class="text-gray-400 text-sm">Ensure community awareness</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="prep-card p-4 rounded-lg border-2 border-white/10 cursor-pointer transition-all hover:border-white/30" onclick="revealPrep(this)">
+                                    <div class="flex items-start gap-3">
+                                        <i data-lucide="shield-check" class="w-5 h-5 text-white mt-1 flex-shrink-0"></i>
+                                        <div>
+                                            <p class="text-white font-medium mb-1">Follow Guidance</p>
+                                            <p class="text-gray-400 text-sm">Trust local authorities</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="flex gap-3 justify-center pt-4">
+                                <button onclick="prevSimStep()" class="px-6 py-2 border border-white/20 text-white rounded hover:bg-white/5">
+                                    Back
+                                </button>
+                                <button onclick="nextSimStep()" class="sim-next-btn px-8 py-3 bg-white/10 text-white/40 rounded cursor-not-allowed" disabled>
+                                    Continue
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 5: Reflection -->
+                    <div class="simulator-step" id="sim-step-5">
+                        <div class="p-8 text-center space-y-8">
+                            <div class="space-y-4">
+                                <div class="w-16 h-16 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                                    <i data-lucide="check-circle" class="w-10 h-10 text-white"></i>
+                                </div>
+                                <h3 class="text-3xl font-light text-white">Now you know</h3>
+                                <p class="text-gray-300 max-w-2xl mx-auto">
+                                    What early warning signs look like from space
+                                </p>
+                                <p class="text-gray-500 text-sm max-w-xl mx-auto">
+                                    This helps you stay informed and calm during real events
+                                </p>
+                            </div>
+                            
+                            <div class="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-4 max-w-2xl mx-auto">
+                                <p class="text-yellow-200 text-sm">
+                                    <span class="font-medium">Remember:</span> Always follow official advisories from local authorities
+                                </p>
+                            </div>
+                            
+                            <div class="flex gap-3 justify-center pt-4">
+                                <button onclick="prevSimStep()" class="px-6 py-2 border border-white/20 text-white rounded hover:bg-white/5">
+                                    Back
+                                </button>
+                                <button onclick="resetSimulator()" class="px-8 py-3 bg-white text-black rounded hover:bg-gray-200">
+                                    Start Over
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- If This Was Your City -->
+            <div class="mb-20">
+                <h2 class="text-4xl text-white font-light mb-12 border-l-4 border-white pl-4">If This Was Your City</h2>
+                
+                <div class="glass rounded-lg overflow-hidden">
+                    <!-- Initial State -->
+                    <div id="cityStep1" class="p-12 text-center">
+                        <div class="max-w-2xl mx-auto space-y-8">
+                            <div>
+                                <div class="w-20 h-20 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                                    <i data-lucide="map-pin" class="w-10 h-10 text-white"></i>
+                                </div>
+                                <p class="text-gray-300 text-lg leading-relaxed mb-2">
+                                    You've learned how satellites detect flood warnings.
+                                </p>
+                                <p class="text-white text-2xl font-light">
+                                    Now let's see what this means for <span class="font-medium">your area</span>.
+                                </p>
+                            </div>
+                            
+                            <button onclick="requestLocation()" id="locationBtn" class="px-10 py-4 bg-white/5 hover:bg-white/10 border border-white/20 text-white text-base rounded-lg transition-all flex items-center gap-3 mx-auto">
+                                <i data-lucide="crosshair" class="w-5 h-5"></i>
+                                <span>Get My Location</span>
+                            </button>
+                            
+                            <p class="text-gray-500 text-sm">We'll use your location to show relevant risk information</p>
+                        </div>
+                    </div>
+
+                    <!-- Location Loading -->
+                    <div id="cityLoading" class="hidden p-12 text-center">
+                        <div class="max-w-2xl mx-auto space-y-6">
+                            <div class="w-16 h-16 border-4 border-white/20 border-t-white rounded-full animate-spin mx-auto"></div>
+                            <p class="text-gray-300">Analyzing your location...</p>
+                        </div>
+                    </div>
+
+                    <!-- Disaster Type Selection -->
+                    <div id="cityStep2" class="hidden p-8">
+                        <div class="text-center mb-8">
+                            <div class="inline-flex items-center gap-2 px-4 py-2 bg-white/10 rounded-full mb-4">
+                                <i data-lucide="map-pin" class="w-4 h-4 text-green-400"></i>
+                                <span class="text-white text-sm" id="detectedLocation">Your Location</span>
+                            </div>
+                            <h3 class="text-3xl font-light text-white mb-2">
+                                What if this happened in <span class="font-medium" id="cityName">your city</span>?
+                            </h3>
+                            <p class="text-gray-400 text-sm">Select a disaster type to simulate</p>
+                        </div>
+                        
+                        <div class="grid md:grid-cols-3 gap-4 max-w-4xl mx-auto">
+                            <button class="p-6 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg transition-all text-center" onclick="selectDisaster('flood')">
+                                <i data-lucide="droplet" class="w-8 h-8 text-white/60 mx-auto mb-3"></i>
+                                <p class="text-white font-medium">Flood</p>
+                            </button>
+                            
+                            <button class="p-6 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg transition-all text-center" onclick="selectDisaster('earthquake')">
+                                <i data-lucide="activity" class="w-8 h-8 text-white/60 mx-auto mb-3"></i>
+                                <p class="text-white font-medium">Earthquake</p>
+                            </button>
+                            
+                            <button class="p-6 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg transition-all text-center" onclick="selectDisaster('wildfire')">
+                                <i data-lucide="flame" class="w-8 h-8 text-white/60 mx-auto mb-3"></i>
+                                <p class="text-white font-medium">Wildfire</p>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Environment Selection -->
+                    <div id="cityStep2b" class="hidden p-8">
+                        <div class="text-center mb-8">
+                            <h3 class="text-3xl font-light text-white mb-2">
+                                <span class="font-medium" id="disasterType">Flood</span> in <span class="font-medium" id="cityName2">your city</span>
+                            </h3>
+                            <p class="text-gray-400 text-sm">Select your environment type to see personalized impact</p>
+                        </div>
+                        
+                        <div class="grid md:grid-cols-4 gap-4 max-w-5xl mx-auto mb-8">
+                            <button class="p-6 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg transition-all text-center" onclick="selectEnvironment('coastal')">
+                                <i data-lucide="waves" class="w-8 h-8 text-white/60 mx-auto mb-3"></i>
+                                <p class="text-white font-medium mb-1">Coastal</p>
+                                <p class="text-gray-500 text-xs">Near ocean/sea</p>
+                            </button>
+                            
+                            <button class="p-6 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg transition-all text-center" onclick="selectEnvironment('urban')">
+                                <i data-lucide="building-2" class="w-8 h-8 text-white/60 mx-auto mb-3"></i>
+                                <p class="text-white font-medium mb-1">Urban</p>
+                                <p class="text-gray-500 text-xs">City center</p>
+                            </button>
+                            
+                            <button class="p-6 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg transition-all text-center" onclick="selectEnvironment('hilly')">
+                                <i data-lucide="mountain" class="w-8 h-8 text-white/60 mx-auto mb-3"></i>
+                                <p class="text-white font-medium mb-1">Hilly</p>
+                                <p class="text-gray-500 text-xs">Mountainous</p>
+                            </button>
+                            
+                            <button class="p-6 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg transition-all text-center" onclick="selectEnvironment('rural')">
+                                <i data-lucide="trees" class="w-8 h-8 text-white/60 mx-auto mb-3"></i>
+                                <p class="text-white font-medium mb-1">Rural</p>
+                                <p class="text-gray-500 text-xs">Plains/farmland</p>
+                            </button>
+                        </div>
+
+                        <button onclick="goBackToDisasterSelection()" class="mx-auto flex items-center gap-2 text-gray-400 hover:text-white transition-all">
+                            <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                            <span class="text-sm">Back to disaster selection</span>
+                        </button>
+
+                        <!-- Mini Map Preview -->
+                        <div class="max-w-3xl mx-auto bg-white/5 rounded-lg p-4 flex items-center gap-4">
+                            <div class="w-16 h-16 bg-white/5 rounded-lg flex items-center justify-center flex-shrink-0">
+                                <i data-lucide="map" class="w-8 h-8 text-white/40"></i>
+                            </div>
+                            <div>
+                                <p class="text-white text-sm font-medium mb-1">Your coordinates:</p>
+                                <p class="text-gray-400 text-xs font-mono" id="coordinates">Loading...</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Results Section -->
+                    <div id="cityStep3" class="hidden p-8 space-y-6">
+                        <!-- Personalized Header -->
+                        <div class="text-center pb-6 border-b border-white/10">
+                            <h3 class="text-3xl font-light text-white mb-2">
+                                Impact Analysis for <span class="font-medium" id="cityNameResult">Your City</span>
+                            </h3>
+                            <p class="text-gray-400 text-sm">Based on your <span id="envTypeDisplay">coastal</span> environment</p>
+                        </div>
+
+                        <!-- Risk Assessment -->
+                        <div class="max-w-3xl mx-auto">
+                            <div class="bg-white/5 p-6 rounded-lg border border-white/10">
+                                <div class="flex items-center justify-between mb-4">
+                                    <span class="text-gray-400 text-sm">Risk Level</span>
+                                    <div class="flex items-center gap-2">
+                                        <div class="w-2 h-2 rounded-full" id="riskDot"></div>
+                                        <span class="text-white" id="riskLevel">Moderate</span>
+                                    </div>
+                                </div>
+                                <p class="text-gray-400 text-sm" id="riskExplanation">Loading...</p>
+                            </div>
+                        </div>
+
+                        <!-- Expected Impact -->
+                        <div class="border-l-2 border-white/20 pl-6">
+                            <h3 class="text-xl font-medium text-white mb-4 flex items-center gap-2">
+                                <i data-lucide="alert-circle" class="w-5 h-5"></i>
+                                Expected Impact in <span id="cityNameImpact">Your Area</span>
+                            </h3>
+                            <div class="space-y-3" id="impactList">
+                                <div class="bg-white/5 p-4 rounded-lg border border-white/10">
+                                    <p class="text-gray-300 text-sm">Loading...</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- What to Watch For -->
+                        <div class="border-l-2 border-white/20 pl-6">
+                            <h3 class="text-xl font-medium text-white mb-4 flex items-center gap-2">
+                                <i data-lucide="eye" class="w-5 h-5"></i>
+                                Satellite Patterns to Watch
+                            </h3>
+                            <div class="bg-white/5 p-5 rounded-lg border border-white/10">
+                                <div class="flex items-start gap-3 mb-4">
+                                    <div class="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center flex-shrink-0">
+                                        <img src="./codeathon-figma/orbi.jpg" alt="Orbi" class="w-full h-full object-cover rounded-full">
+                                    </div>
+                                    <div>
+                                        <p class="text-white font-medium text-sm mb-1">Orbi's Guidance</p>
+                                        <p class="text-gray-300 text-sm" id="orbiAdvice">Loading...</p>
+                                    </div>
+                                </div>
+                                <div class="space-y-2 pl-13" id="watchList">
+                                    <div class="flex items-start gap-2 hover:bg-white/5 p-2 rounded transition-all">
+                                        <i data-lucide="check" class="w-4 h-4 text-blue-400 mt-0.5 flex-shrink-0"></i>
+                                        <p class="text-gray-400 text-sm">Loading...</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- What to Do - Expandable Sections -->
+                        <div class="border-l-2 border-white/20 pl-6">
+                            <h3 class="text-xl font-medium text-white mb-4 flex items-center gap-2">
+                                <i data-lucide="shield-check" class="w-5 h-5"></i>
+                                Your Action Plan
+                            </h3>
+                            <div class="space-y-3">
+                                <!-- Before -->
+                                <div class="bg-white/5 rounded-lg border border-white/10 overflow-hidden">
+                                    <button onclick="toggleActionSection('before')" class="w-full p-4 flex items-center justify-between hover:bg-white/10 transition-all">
+                                        <div class="flex items-center gap-3">
+                                            <i data-lucide="clock" class="w-4 h-4 text-white/60"></i>
+                                            <span class="text-white font-medium" id="beforeHeading">Before the Disaster</span>
+                                        </div>
+                                        <i data-lucide="chevron-down" class="w-5 h-5 text-gray-400 transition-transform" id="beforeChevron"></i>
+                                    </button>
+                                    <div id="beforeContent" class="hidden p-4 pt-0 space-y-2">
+                                        <!-- Content populated by JS -->
+                                    </div>
+                                </div>
+
+                                <!-- During -->
+                                <div class="bg-white/5 rounded-lg border border-white/10 overflow-hidden">
+                                    <button onclick="toggleActionSection('during')" class="w-full p-4 flex items-center justify-between hover:bg-white/10 transition-all">
+                                        <div class="flex items-center gap-3">
+                                            <i data-lucide="alert-triangle" class="w-4 h-4 text-white/60"></i>
+                                            <span class="text-white font-medium" id="duringHeading">During the Disaster</span>
+                                        </div>
+                                        <i data-lucide="chevron-down" class="w-5 h-5 text-gray-400 transition-transform" id="duringChevron"></i>
+                                    </button>
+                                    <div id="duringContent" class="hidden p-4 pt-0 space-y-2">
+                                        <!-- Content populated by JS -->
+                                    </div>
+                                </div>
+
+                                <!-- After -->
+                                <div class="bg-white/5 rounded-lg border border-white/10 overflow-hidden">
+                                    <button onclick="toggleActionSection('after')" class="w-full p-4 flex items-center justify-between hover:bg-white/10 transition-all">
+                                        <div class="flex items-center gap-3">
+                                            <i data-lucide="check-circle" class="w-4 h-4 text-white/60"></i>
+                                            <span class="text-white font-medium" id="afterHeading">After the Disaster</span>
+                                        </div>
+                                        <i data-lucide="chevron-down" class="w-5 h-5 text-gray-400 transition-transform" id="afterChevron"></i>
+                                    </button>
+                                    <div id="afterContent" class="hidden p-4 pt-0 space-y-2">
+                                        <!-- Content populated by JS -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="text-center pt-6 flex gap-3 justify-center">
+                            <button onclick="resetCityScenario()" class="px-6 py-3 bg-white/5 border border-white/10 text-white rounded-lg hover:bg-white/10 transition-all flex items-center gap-2">
+                                <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+                                Try Different Environment
+                            </button>
+                            <button onclick="shareScenario()" class="px-6 py-3 bg-white/5 border border-white/10 text-white rounded-lg hover:bg-white/10 transition-all flex items-center gap-2">
+                                <i data-lucide="share-2" class="w-4 h-4"></i>
+                                Share
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Test Your Skills -->
+            <div onclick="window.location.href='decoder_challenge.html'" class="cursor-pointer group">
+                <h2 class="text-4xl text-white font-light mb-12 border-l-4 border-white pl-4">Test Your Skills</h2>
+                
+                <div class="relative h-[40vh] overflow-hidden">
+                    <img src="./codeathon-figma/7058.jpg" alt="Decoder Challenge" class="w-full h-full object-cover transition-transform duration-500 filter brightness-75 group-hover:brightness-100 group-hover:scale-105">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent"></div>
+                    <div class="absolute inset-0 flex flex-col items-center justify-center text-center">
+                        <h3 class="text-5xl font-light text-white mb-4">Decoder Challenge</h3>
+                        <p class="text-xl text-gray-300 mb-6">Apply what you've learned</p>
+                        <button class="px-8 py-3 bg-white text-black font-medium hover:bg-gray-200 transition-colors">
+                            Start Challenge →
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- Footer - Same as other pages -->
+    <footer class="relative bg-gray-200 py-16 px-5 overflow-hidden">
+        <!-- Background Image -->
+        <div class="absolute inset-0">
+            <img src="./codeathon-figma/image 46.png" alt="Background" class="w-full h-full object-cover">
+        </div>
+        <!-- Dark translucent overlay above image -->
+        <div class="absolute inset-0 bg-black/20"></div>
+
+        <div class="max-w-7xl mx-auto relative z-10">
+            <div class="grid grid-cols-1 lg:grid-cols-[1fr_3fr] gap-12">
+                
+                <!-- Left Column: Logo & Social Icons -->
+                <div>
+                    <a href="index.html" class="inline-block mb-6">
+                        <img src="./codeathon-figma/image 68.png" alt="Orbital Logo" class="h-12 w-auto">
+                    </a>
+                    
+                    <!-- Social Media Icons -->
+                    <div class="flex gap-4">
+                        <a href="#" class="text-gray-800 hover:text-purple-700 transition-colors">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                            </svg>
+                        </a>
+                        <a href="#" class="text-gray-800 hover:text-purple-700 transition-colors">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                            </svg>
+                        </a>
+                        <a href="#" class="text-gray-800 hover:text-purple-700 transition-colors">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                            </svg>
+                        </a>
+                        <a href="#" class="text-gray-800 hover:text-purple-700 transition-colors">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Right Columns: Links -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    
+                    <!-- Column 1: Explore -->
+                    <div>
+                        <h3 class="text-gray-900 font-bold text-base mb-4">Explore</h3>
+                        <ul class="space-y-2">
+                            <li><a href="mission_page.html" class="text-gray-700 text-sm hover:text-purple-700 transition-colors">Space Missions</a></li>
+                            <li><a href="cosmic_page.html" class="text-gray-700 text-sm hover:text-purple-700 transition-colors">Cosmic Events</a></li>
+                            <li><a href="learn.html" class="text-gray-700 text-sm hover:text-purple-700 transition-colors">Learning Hub</a></li>
+                            <li><a href="index.html#events" class="text-gray-700 text-sm hover:text-purple-700 transition-colors">Community Events</a></li>
+                        </ul>
+                    </div>
+
+                    <!-- Column 2: Features -->
+                    <div>
+                        <h3 class="text-gray-900 font-bold text-base mb-4">Features</h3>
+                        <ul class="space-y-2">
+                            <li><a href="index.html#sky" class="text-gray-700 text-sm hover:text-purple-700 transition-colors">Tonight's Sky</a></li>
+                            <li><a href="mission_page.html" class="text-gray-700 text-sm hover:text-purple-700 transition-colors">Mission Tracking</a></li>
+                            <li><a href="cosmic_page.html" class="text-gray-700 text-sm hover:text-purple-700 transition-colors">Geomagnetic Data</a></li>
+                            <li><a href="profile.html" class="text-gray-700 text-sm hover:text-purple-700 transition-colors">Your Profile</a></li>
+                        </ul>
+                    </div>
+
+                    <!-- Column 3: Resources -->
+                    <div>
+                        <h3 class="text-gray-900 font-bold text-base mb-4">Resources</h3>
+                        <ul class="space-y-2">
+                            <li><a href="learn.html" class="text-gray-700 text-sm hover:text-purple-700 transition-colors">Educational Content</a></li>
+                            <li><a href="decoder_challenge.html" class="text-gray-700 text-sm hover:text-purple-700 transition-colors">Decoder Challenge</a></li>
+                            <li><a href="#" class="text-gray-700 text-sm hover:text-purple-700 transition-colors">API Documentation</a></li>
+                            <li><a href="#" class="text-gray-700 text-sm hover:text-purple-700 transition-colors">About Orbital</a></li>
+                        </ul>
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+
+        // Smooth scroll to content
+        function scrollToContent() {
+            const contentSection = document.getElementById('content');
+            const targetPosition = contentSection.offsetTop;
+            const startPosition = window.pageYOffset;
+            const distance = targetPosition - startPosition;
+            const duration = 1500;
+            let start = null;
+
+            function animation(currentTime) {
+                if (start === null) start = currentTime;
+                const timeElapsed = currentTime - start;
+                const run = ease(timeElapsed, startPosition, distance, duration);
+                window.scrollTo(0, run);
+                if (timeElapsed < duration) requestAnimationFrame(animation);
+            }
+
+            function ease(t, b, c, d) {
+                t /= d / 2;
+                if (t < 1) return c / 2 * t * t + b;
+                t--;
+                return -c / 2 * (t * (t - 2) - 1) + b;
+            }
+
+            requestAnimationFrame(animation);
+        }
+
+        // Before/After Image Slider Functionality
+        function initSlider(sliderId) {
+            const container = document.getElementById(sliderId);
+            const handle = container.querySelector('.slider-handle');
+            const afterImage = container.querySelector('.slider-after');
+            
+            let isDragging = false;
+
+            function updateSlider(x) {
+                const rect = container.getBoundingClientRect();
+                let position = ((x - rect.left) / rect.width) * 100;
+                position = Math.max(0, Math.min(100, position));
+                
+                handle.style.left = position + '%';
+                afterImage.style.clipPath = `inset(0 0 0 ${position}%)`;
+            }
+
+            handle.addEventListener('mousedown', () => {
+                isDragging = true;
+            });
+
+            container.addEventListener('mousedown', (e) => {
+                isDragging = true;
+                updateSlider(e.clientX);
+            });
+
+            document.addEventListener('mousemove', (e) => {
+                if (isDragging) {
+                    updateSlider(e.clientX);
+                }
+            });
+
+            document.addEventListener('mouseup', () => {
+                isDragging = false;
+            });
+
+            // Touch events for mobile
+            handle.addEventListener('touchstart', (e) => {
+                isDragging = true;
+                e.preventDefault();
+            });
+
+            container.addEventListener('touchstart', (e) => {
+                isDragging = true;
+                updateSlider(e.touches[0].clientX);
+            });
+
+            document.addEventListener('touchmove', (e) => {
+                if (isDragging) {
+                    updateSlider(e.touches[0].clientX);
+                }
+            });
+
+            document.addEventListener('touchend', () => {
+                isDragging = false;
+            });
+        }
+
+        // Initialize all sliders
+        initSlider('flood-slider');
+        initSlider('fire-slider');
+        initSlider('earthquake-slider');
+        initSlider('cyclone-slider');
+        initSlider('landslide-slider');
+        initSlider('simulator-slider');
+
+        // Simulator Interactive Functions
+        let currentSimStep = 1;
+        let differencesFound = 0;
+        let correctIndicators = 0;
+        let prepsRevealed = 0;
+
+        function findDifference(spotId, event) {
+            event.stopPropagation();
+            const hotspot = document.querySelector(`.hotspot[data-spot="${spotId}"]`);
+            
+            if (!hotspot.classList.contains('found')) {
+                hotspot.classList.add('found');
+                differencesFound++;
+                
+                document.getElementById('differences-found').textContent = differencesFound;
+                
+                // Hide the corresponding hint marker when found
+                const hintMarker = document.getElementById(`hint-${spotId}`);
+                if (hintMarker) {
+                    hintMarker.style.display = 'none';
+                }
+                
+                if (differencesFound >= 3) {
+                    enableNextButton();
+                }
+            }
+        }
+
+        function toggleHints() {
+            const hintText = document.getElementById('hint-text');
+            const hintMarkers = document.querySelectorAll('.hint-marker');
+            
+            if (hintText.classList.contains('hidden')) {
+                // Show hints
+                hintText.classList.remove('hidden');
+                
+                // Show visual markers for unfound spots
+                hintMarkers.forEach((marker, index) => {
+                    const spotId = index + 1;
+                    const hotspot = document.querySelector(`.hotspot[data-spot="${spotId}"]`);
+                    if (hotspot && !hotspot.classList.contains('found')) {
+                        marker.style.display = 'block';
+                    }
+                });
+            } else {
+                // Hide hints
+                hintText.classList.add('hidden');
+                hintMarkers.forEach(marker => {
+                    marker.style.display = 'none';
+                });
+            }
+            
+            lucide.createIcons();
+        }
+
+        function selectIndicator(card, isCorrect) {
+            if (!card.classList.contains('selected')) {
+                card.classList.add('selected');
+                
+                if (isCorrect) {
+                    correctIndicators++;
+                    card.style.borderColor = 'rgb(96, 165, 250)'; // Blue for correct
+                    
+                    if (correctIndicators >= 2) {
+                        enableNextButton();
+                    }
+                } else {
+                    card.style.borderColor = 'rgb(248, 113, 113)'; // Red for incorrect
+                    setTimeout(() => {
+                        card.classList.remove('selected');
+                        card.style.borderColor = '';
+                    }, 1000);
+                }
+            }
+        }
+
+        function revealPrep(card) {
+            if (!card.classList.contains('revealed')) {
+                card.classList.add('revealed');
+                prepsRevealed++;
+                
+                if (prepsRevealed >= 4) {
+                    enableNextButton();
+                }
+            }
+        }
+
+        function enableNextButton() {
+            const btn = document.querySelector(`#sim-step-${currentSimStep} .sim-next-btn`);
+            if (btn) {
+                btn.disabled = false;
+                btn.classList.remove('bg-white/10', 'text-white/40', 'cursor-not-allowed');
+                btn.classList.add('bg-white', 'text-black', 'hover:bg-gray-200');
+            }
+        }
+
+        function nextSimStep() {
+            if (currentSimStep < 5) {
+                document.getElementById(`sim-step-${currentSimStep}`).classList.remove('active');
+                document.querySelector(`.simulator-step-dot[data-step="${currentSimStep}"]`).classList.remove('active');
+                
+                currentSimStep++;
+                
+                document.getElementById(`sim-step-${currentSimStep}`).classList.add('active');
+                document.querySelector(`.simulator-step-dot[data-step="${currentSimStep}"]`).classList.add('active');
+                
+                lucide.createIcons();
+            }
+        }
+
+        function prevSimStep() {
+            if (currentSimStep > 1) {
+                document.getElementById(`sim-step-${currentSimStep}`).classList.remove('active');
+                document.querySelector(`.simulator-step-dot[data-step="${currentSimStep}"]`).classList.remove('active');
+                
+                currentSimStep--;
+                
+                document.getElementById(`sim-step-${currentSimStep}`).classList.add('active');
+                document.querySelector(`.simulator-step-dot[data-step="${currentSimStep}"]`).classList.add('active');
+                
+                lucide.createIcons();
+            }
+        }
+
+        function resetSimulator() {
+            // Reset to step 1
+            document.getElementById(`sim-step-${currentSimStep}`).classList.remove('active');
+            document.querySelector(`.simulator-step-dot[data-step="${currentSimStep}"]`).classList.remove('active');
+            
+            currentSimStep = 1;
+            differencesFound = 0;
+            correctIndicators = 0;
+            prepsRevealed = 0;
+            
+            // Reset differences counter
+            document.getElementById('differences-found').textContent = '0';
+            
+            // Reset all hotspots
+            document.querySelectorAll('.hotspot').forEach(hotspot => {
+                hotspot.classList.remove('found');
+            });
+            
+            // Reset indicators
+            document.querySelectorAll('.indicator-card').forEach(card => {
+                card.classList.remove('selected');
+                card.style.borderColor = '';
+            });
+            
+            // Reset prep cards
+            document.querySelectorAll('.prep-card').forEach(card => {
+                card.classList.remove('revealed');
+            });
+            
+            // Reset step dots
+            document.querySelectorAll('.simulator-step-dot').forEach(dot => {
+                dot.classList.remove('active');
+            });
+            
+            // Show step 1
+            document.getElementById('sim-step-1').classList.add('active');
+            document.querySelector('.simulator-step-dot[data-step="1"]').classList.add('active');
+            
+            lucide.createIcons();
+        }
+
+        // "If This Was Your City" Functions
+        let userLocation = { lat: 0, lng: 0, city: 'Your City', country: '' };
+        let selectedEnv = '';
+        let selectedDisasterType = '';
+
+        async function requestLocation() {
+            const btn = document.getElementById('locationBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<div class="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div><span>Getting location...</span>';
+            
+            if ('geolocation' in navigator) {
+                try {
+                    const position = await new Promise((resolve, reject) => {
+                        navigator.geolocation.getCurrentPosition(resolve, reject, {
+                            enableHighAccuracy: true,
+                            timeout: 10000
+                        });
+                    });
+                    
+                    userLocation.lat = position.coords.latitude;
+                    userLocation.lng = position.coords.longitude;
+                    
+                    // Show loading state
+                    document.getElementById('cityStep1').classList.add('hidden');
+                    document.getElementById('cityLoading').classList.remove('hidden');
+                    
+                    // Get city name from coordinates using reverse geocoding
+                    await getCityName(userLocation.lat, userLocation.lng);
+                    
+                    // Show disaster selection
+                    document.getElementById('cityLoading').classList.add('hidden');
+                    document.getElementById('cityStep2').classList.remove('hidden');
+                    
+                    // Update UI with location
+                    document.getElementById('detectedLocation').textContent = `${userLocation.city}${userLocation.country ? ', ' + userLocation.country : ''}`;
+                    document.getElementById('cityName').textContent = userLocation.city;
+                    
+                    lucide.createIcons();
+                    
+                } catch (error) {
+                    console.error('Location error:', error);
+                    btn.disabled = false;
+                    btn.innerHTML = '<i data-lucide="crosshair" class="w-5 h-5"></i><span>Get My Location</span>';
+                    alert('Could not access your location. Please enable location permissions and try again.');
+                    lucide.createIcons();
+                }
+            } else {
+                alert('Geolocation is not supported by your browser');
+                btn.disabled = false;
+                btn.innerHTML = '<i data-lucide="crosshair" class="w-5 h-5"></i><span>Get My Location</span>';
+                lucide.createIcons();
+            }
+        }
+
+        async function getCityName(lat, lng) {
+            try {
+                // Using OpenStreetMap Nominatim API for reverse geocoding
+                const response = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`);
+                const data = await response.json();
+                
+                if (data.address) {
+                    userLocation.city = data.address.city || data.address.town || data.address.village || data.address.county || 'Your Area';
+                    userLocation.country = data.address.country || '';
+                }
+            } catch (error) {
+                console.error('Geocoding error:', error);
+                userLocation.city = 'Your Area';
+            }
+        }
+
+        function selectDisaster(disasterType) {
+            selectedDisasterType = disasterType;
+            document.getElementById('cityStep2').classList.add('hidden');
+            document.getElementById('cityStep2b').classList.remove('hidden');
+            
+            // Update disaster type display
+            const disasterNames = {
+                'flood': 'Flood',
+                'earthquake': 'Earthquake',
+                'wildfire': 'Wildfire'
+            };
+            document.getElementById('disasterType').textContent = disasterNames[disasterType];
+            document.getElementById('cityName2').textContent = userLocation.city;
+            
+            lucide.createIcons();
+        }
+
+        function goBackToDisasterSelection() {
+            document.getElementById('cityStep2b').classList.add('hidden');
+            document.getElementById('cityStep2').classList.remove('hidden');
+            lucide.createIcons();
+        }
+
+        function selectEnvironment(envType) {
+            selectedEnv = envType;
+            document.getElementById('cityStep2b').classList.add('hidden');
+            document.getElementById('cityStep3').classList.remove('hidden');
+            
+            // Update city names in result section
+            document.getElementById('cityNameResult').textContent = userLocation.city;
+            document.getElementById('cityNameImpact').textContent = userLocation.city;
+            document.getElementById('envTypeDisplay').textContent = envType;
+            
+            // Update action plan headings based on disaster type
+            const disasterName = selectedDisasterType.charAt(0).toUpperCase() + selectedDisasterType.slice(1);
+            document.getElementById('beforeHeading').textContent = `Before the ${disasterName}`;
+            document.getElementById('duringHeading').textContent = `During the ${disasterName}`;
+            document.getElementById('afterHeading').textContent = `After the ${disasterName}`;
+            
+            // Show loading state
+            document.getElementById('riskLevel').textContent = 'Analyzing...';
+            document.getElementById('riskExplanation').textContent = 'Generating scenario based on your location...';
+            document.getElementById('orbiAdvice').textContent = 'Processing...';
+            document.getElementById('impactList').innerHTML = '<div class="bg-white/5 p-4 rounded-lg border border-white/10"><p class="text-gray-300 text-sm">Loading impacts...</p></div>';
+            
+            // Generate content based on disaster type and environment using Groq
+            generateEnvironmentContent(selectedDisasterType, envType);
+            lucide.createIcons();
+        }
+
+        async function generateEnvironmentContent(disasterType, envType) {
+            const prompt = `You are a disaster awareness expert. Generate a detailed disaster scenario analysis.
+
+Location: ${userLocation.city}${userLocation.country ? ', ' + userLocation.country : ''}
+Coordinates: ${userLocation.lat.toFixed(4)}°N, ${userLocation.lng.toFixed(4)}°E
+Disaster Type: ${disasterType}
+Environment: ${envType}
+
+Provide a realistic scenario in this EXACT JSON format:
+{
+  "riskLevel": "Low/Moderate/High",
+  "riskColor": "bg-green-500/bg-yellow-500/bg-red-500",
+  "riskExplanation": "Brief explanation of why this risk level (2 sentences max, casual tone)",
+  "orbiAdvice": "How to read satellite images for this disaster in this environment (2-3 sentences, direct and practical)",
+  "impacts": [
+    "4 specific impacts for this location and disaster (brief, factual)"
+  ],
+  "watchFor": [
+    "3 satellite image patterns to watch for this disaster (what colors/changes mean)"
+  ],
+  "before": [
+    "4 specific actions before the disaster"
+  ],
+  "during": [
+    "4 specific actions during the disaster"
+  ],
+  "after": [
+    "4 specific actions after the disaster"
+  ]
+}
+
+Keep the tone educational but natural - not AI-generated. Use short sentences. Be specific to ${userLocation.city} geography and ${disasterType} in ${envType} areas.`;
+
+            try {
+                const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer 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'
+                    },
+                    body: JSON.stringify({
+                        model: 'llama-3.3-70b-versatile',
+                        messages: [{
+                            role: 'user',
+                            content: prompt
+                        }],
+                        temperature: 0.7,
+                        max_tokens: 2000
+                    })
+                });
+
+                const result = await response.json();
+                const content = result.choices[0].message.content;
+                
+                // Extract JSON from response
+                const jsonMatch = content.match(/\{[\s\S]*\}/);
+                if (!jsonMatch) throw new Error('No JSON found in response');
+                
+                const data = JSON.parse(jsonMatch[0]);
+                
+                // Update risk level
+                document.getElementById('riskLevel').textContent = data.riskLevel;
+                document.getElementById('riskDot').className = `w-2 h-2 rounded-full ${data.riskColor}`;
+                document.getElementById('riskExplanation').textContent = data.riskExplanation;
+                
+                // Update Orbi advice
+                document.getElementById('orbiAdvice').textContent = data.orbiAdvice;
+                
+                // Update impacts with simple cards
+                const impactList = document.getElementById('impactList');
+                impactList.innerHTML = data.impacts.map(impact => `
+                    <div class="bg-white/5 p-4 rounded-lg border border-white/10">
+                        <div class="flex items-start gap-3">
+                            <i data-lucide="alert-circle" class="w-4 h-4 text-white/60 flex-shrink-0 mt-0.5"></i>
+                            <p class="text-gray-300 text-sm">${impact}</p>
+                        </div>
+                    </div>
+                `).join('');
+                
+                // Update watch list
+                const watchList = document.getElementById('watchList');
+                watchList.innerHTML = data.watchFor.map(item => `
+                    <div class="flex items-start gap-2 p-2">
+                        <i data-lucide="check" class="w-4 h-4 text-white/60 mt-0.5 flex-shrink-0"></i>
+                        <p class="text-gray-400 text-sm">${item}</p>
+                    </div>
+                `).join('');
+                
+                // Store action data for expandable sections
+                window.actionData = data;
+                
+                // Re-initialize icons
+                lucide.createIcons();
+                
+            } catch (error) {
+                console.error('Error generating scenario:', error);
+                // Fallback to basic message
+                document.getElementById('riskLevel').textContent = 'Moderate';
+                document.getElementById('riskDot').className = 'w-2 h-2 rounded-full bg-yellow-500';
+                document.getElementById('riskExplanation').textContent = 'Unable to generate detailed scenario. Please try again.';
+                document.getElementById('orbiAdvice').textContent = 'Check satellite images for unusual patterns in your area.';
+            }
+        }
+
+        function toggleActionSection(section) {
+            const content = document.getElementById(`${section}Content`);
+            const chevron = document.getElementById(`${section}Chevron`);
+            const isHidden = content.classList.contains('hidden');
+            
+            if (isHidden) {
+                content.classList.remove('hidden');
+                chevron.style.transform = 'rotate(180deg)';
+                
+                // Populate content if empty
+                if (window.actionData && content.children.length === 0) {
+                    content.innerHTML = window.actionData[section].map(item => `
+                        <div class="flex items-start gap-2 hover:bg-white/5 p-2 rounded transition-all">
+                            <i data-lucide="arrow-right" class="w-4 h-4 text-white mt-0.5 flex-shrink-0"></i>
+                            <p class="text-gray-300 text-sm">${item}</p>
+                        </div>
+                    `).join('');
+                    lucide.createIcons();
+                }
+            } else {
+                content.classList.add('hidden');
+                chevron.style.transform = 'rotate(0deg)';
+            }
+        }
+
+        function shareScenario() {
+            const text = `Disaster awareness for ${userLocation.city}: Learn how a flood would impact your area. Check it out on Orbital!`;
+            
+            if (navigator.share) {
+                navigator.share({
+                    title: 'Disaster Impact Analysis',
+                    text: text,
+                    url: window.location.href
+                }).catch(err => console.log('Share cancelled'));
+            } else {
+                // Fallback: copy to clipboard
+                navigator.clipboard.writeText(text + ' ' + window.location.href);
+                alert('Link copied to clipboard!');
+            }
+        }
+
+        function resetCityScenario() {
+            document.getElementById('cityStep3').classList.add('hidden');
+            document.getElementById('cityStep2b').classList.remove('hidden');
+        }
+
+        // Tab switching function
+        function switchTab(event, disaster, tab) {
+            // Get the parent container for this disaster section
+            const disasterSection = event.target.closest('.border-l-4');
+            
+            // Get all tab buttons and contents within this section
+            const tabButtons = disasterSection.querySelectorAll('.tab-button');
+            const tabContents = disasterSection.querySelectorAll('.tab-content');
+            
+            // Remove active class from all tabs
+            tabButtons.forEach(btn => {
+                btn.classList.remove('active');
+                btn.classList.add('text-white/60');
+                btn.classList.remove('text-white');
+            });
+            
+            // Add active class to clicked tab
+            event.target.classList.add('active');
+            event.target.classList.remove('text-white/60');
+            event.target.classList.add('text-white');
+            
+            // Hide all tab contents
+            tabContents.forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // Show selected tab content
+            const selectedContent = document.getElementById(`${disaster}-${tab}`);
+            if (selectedContent) {
+                selectedContent.classList.add('active');
+            }
+        }
+
+        // Expand/collapse function
+        function toggleExpand(id) {
+            const element = document.getElementById(id);
+            const icon = document.getElementById(id + '-icon');
+            
+            element.classList.toggle('open');
+            icon.classList.toggle('rotated');
+            
+            // Re-initialize lucide icons
+            lucide.createIcons();
+        }
+
+        // ==================== ORBI CHATBOT ====================
+        // Groq API Configuration
+        const GROQ_API_KEY = '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';
+        const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
+
+        // Chat Toggle Functionality
+        let isChatOpen = false;
+
+        function toggleChat() {
+            const chatOverlay = document.getElementById('chatOverlay');
+            const chatButton = document.getElementById('chatButton');
+            
+            isChatOpen = !isChatOpen;
+            
+            if (isChatOpen) {
+                chatOverlay.classList.remove('hidden');
+                chatButton.classList.add('scale-95', 'rotate-90');
+                chatButton.classList.remove('hover:scale-110');
+                setTimeout(() => lucide.createIcons(), 10);
+            } else {
+                chatOverlay.classList.add('hidden');
+                chatButton.classList.remove('scale-95', 'rotate-90');
+                chatButton.classList.add('hover:scale-110');
+            }
+        }
+
+        // Close chat when clicking outside
+        document.getElementById('chatOverlay')?.addEventListener('click', function(e) {
+            if (e.target === this) {
+                toggleChat();
+            }
+        });
+
+        // Chat conversation history
+        let chatHistory = [
+            {
+                role: 'system',
+                content: `You are Orbi, a space assistant STRICTLY LIMITED to answering ONLY space-related questions.
+
+✅ ALLOWED TOPICS ONLY:
+- How satellites detect disasters from space (floods, wildfires, earthquakes, cyclones, landslides)
+- Satellite technology: NDWI, InSAR, thermal infrared, radar, remote sensing
+- Satellite imagery analysis from space
+- Earth observation satellites and their technology
+- Space missions, spacecraft, rockets, space exploration
+- Astronomy, planets, stars, galaxies, space weather
+- ISS, astronauts, space stations
+- Space science and technology
+
+❌ STRICTLY FORBIDDEN - DO NOT ANSWER:
+- General disaster management topics not involving satellites
+- General knowledge, trivia unrelated to space
+- Mathematics, coding (unless space-related)
+- Cooking, sports, entertainment, politics
+- Website navigation or technical questions
+- General science not related to space
+- ANY other non-space topics
+
+🚫 CRITICAL RULE: If ANY question is not specifically about space, satellites, astronomy, or space-related topics, you MUST respond EXACTLY:
+"I'm Orbi, a space assistant. I can ONLY answer questions about space, astronomy, space missions, and space-related topics. Please ask me something about space!"
+
+DISASTER PAGE TOPICS (space-related only):
+- FLOODS: Satellite water detection using NDWI, radar from space
+- WILDFIRES: Satellite heat signatures, thermal infrared detection
+- EARTHQUAKES: Satellite ground deformation with InSAR technology
+- CYCLONES: Satellite storm tracking, space-based early warning
+- LANDSLIDES: Satellite slope monitoring, terrain mapping from orbit
+
+Be educational, clear, beginner-friendly (2-3 sentences unless detail requested).`
+            }
+        ];
+
+
+    </script>
+
+    <!-- Fixed Chat Button - Bottom Right -->
+    <div class="fixed bottom-8 right-8 z-50 group">
+        <!-- Tooltip -->
+        <div id="chatTooltip" class="absolute bottom-20 right-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+            <div class="bg-white/95 backdrop-blur-md text-black px-4 py-2 rounded-xl shadow-xl border border-white/20 whitespace-nowrap">
+                <p class="text-sm font-inter font-medium">Hey! I'm Orbi 👋</p>
+                <p class="text-xs text-gray-600">Ask me about disasters!</p>
+            </div>
+            <div class="absolute -bottom-1 right-6 w-3 h-3 bg-white/95 backdrop-blur-md rotate-45 border-r border-b border-white/20"></div>
+        </div>
+        
+        <!-- Chat Button -->
+        <button id="chatButton" onclick="toggleChat()" class="w-16 h-16 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 border-2 border-white/40 flex items-center justify-center transition-all duration-300 shadow-2xl hover:shadow-purple-500/50 overflow-hidden hover:scale-110 active:scale-95">
+            <img src="./codeathon-figma/orbi.jpg" alt="Chat with Orbi" class="w-full h-full object-cover">
+        </button>
+    </div>
+
+    <!-- Chat Overlay -->
+    <div id="chatOverlay" class="hidden fixed inset-0 z-50 flex items-end justify-end p-4 md:p-8 bg-black/20 backdrop-blur-sm fade-in">
+        <div class="w-full md:w-96 h-[600px] bg-gradient-to-b from-purple-900/40 via-black/60 to-black/80 backdrop-blur-2xl border border-purple-500/30 rounded-3xl shadow-2xl overflow-hidden flex flex-col slide-in-bottom">
+            <!-- Header -->
+            <div class="flex items-center justify-between p-5 border-b border-purple-500/20 bg-gradient-to-r from-purple-600/20 to-pink-600/20">
+                <div class="flex items-center gap-3">
+                    <div class="w-11 h-11 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shadow-lg overflow-hidden">
+                        <img src="./codeathon-figma/orbi.jpg" alt="Orbi" class="w-full h-full object-cover">
+                    </div>
+                    <div>
+                        <p class="font-inter font-bold text-base text-white">Orbi</p>
+                        <div class="flex items-center gap-1">
+                            <div class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></div>
+                            <p class="text-xs text-gray-300 font-inter">Disaster Assistant</p>
+                        </div>
+                    </div>
+                </div>
+                <button onclick="toggleChat()" class="p-2 hover:bg-white/10 rounded-full transition-all duration-200 hover:rotate-90">
+                    <i data-lucide="x" class="w-5 h-5 text-white"></i>
+                </button>
+            </div>
+
+            <!-- Chat Messages -->
+            <div id="chatMessages" class="flex-1 p-5 space-y-4 overflow-y-auto custom-scrollbar">
+                <!-- Bot Message 1 -->
+                <div class="flex items-start gap-3 mb-2">
+                    <div class="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center flex-shrink-0 shadow-lg overflow-hidden">
+                        <img src="./codeathon-figma/orbi.jpg" alt="Orbi" class="w-full h-full object-cover">
+                    </div>
+                    <div class="flex-1 bg-gradient-to-br from-purple-500/20 to-pink-500/10 backdrop-blur-md rounded-2xl rounded-tl-sm p-4 border border-purple-400/30 shadow-lg">
+                        <p class="text-sm font-inter text-white leading-relaxed">Hi! I'm Orbi, your disaster management assistant. Ask me about satellite disaster detection, floods, wildfires, earthquakes, cyclones, or landslides!</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Input -->
+            <div class="p-5 border-t border-purple-500/20 bg-gradient-to-r from-purple-600/10 to-pink-600/10">
+                <div class="flex items-center gap-2 bg-white/10 backdrop-blur-md rounded-2xl p-3 border border-purple-400/30 focus-within:border-purple-400/60 transition-all">
+                    <input id="chatInput" type="text" placeholder="Ask about disaster detection..." class="flex-1 bg-transparent border-none outline-none text-sm font-inter text-white placeholder-gray-400 px-2" onkeypress="handleChatKeyPress(event)">
+                    <button id="chatSendBtn" onclick="sendMessage()" class="p-2 bg-gradient-to-br from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 rounded-xl transition-all duration-200 flex-shrink-0 hover:scale-110 active:scale-95 shadow-lg">
+                        <i data-lucide="send" class="w-5 h-5 text-white"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

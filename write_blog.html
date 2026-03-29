@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Write a Blog - Orbital</title>
+    <link rel="icon" type="image/jpeg" href="./codeathon-figma/orbi.jpg">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="styles.css">
+    
+    <!-- Authentication Utilities -->
+    <script src="./auth.js"></script>
+    
+    <!-- ORBI - Space Assistant Module -->
+    <script src="./orbi.js"></script>
+    
+    <style>
+        textarea {
+            resize: vertical;
+            min-height: 500px;
+        }
+
+        .formatting-toolbar button {
+            transition: all 0.2s;
+        }
+
+        .formatting-toolbar button:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .formatting-toolbar button:active {
+            transform: scale(0.95);
+        }
+    </style>
+</head>
+<body class="bg-black text-white">
+    <!-- Header -->
+    <header class="sticky top-0 z-50 py-4">
+        <div class="container mx-auto px-6 max-w-7xl">
+            <div class="flex items-center justify-between bg-white/5 backdrop-blur-2xl border border-white/20 rounded-full p-2 shadow-lg shadow-black/50">
+                <!-- Logo -->
+                <a href="index.html" class="flex items-center rounded-full hover:opacity-90 transition-opacity">
+                    <img src="./codeathon-figma/image 68.png" alt="Orbital Logo" class="h-10 w-auto">
+                </a>
+
+                <!-- Navigation Links -->
+                <nav class="flex items-center gap-2">
+                    <a href="index.html" class="px-5 py-1.5 text-sm font-inter text-white/80 hover:text-white transition-colors">Home</a>
+                    <a href="mission_page.html" class="px-5 py-1.5 text-sm font-inter text-white/80 hover:text-white transition-colors">Mission</a>
+                    <a href="cosmic_page.html" class="px-5 py-1.5 text-sm font-inter text-white/80 hover:text-white transition-colors">Cosmic</a>
+                    <a href="learn.html" class="px-5 py-1.5 text-sm font-inter text-white/80 hover:text-white transition-colors">Learn</a>
+                    <a href="blog.html" class="px-5 py-1.5 text-sm font-inter text-white/80 hover:text-white transition-colors">Blogs</a>
+                    <a href="committee.html" class="px-5 py-1.5 text-sm font-inter text-white/80 hover:text-white transition-colors">Committee</a>
+                </nav>
+
+                <!-- Right Actions -->
+                <div class="flex items-center gap-3">
+                    <!-- User Avatar -->
+                    <a href="profile.html" class="w-10 h-10 rounded-full overflow-hidden ">
+                        <img src="./codeathon-figma/profile_pic.png" alt="User Avatar" class="w-full h-full object-cover">
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-6 max-w-3xl py-16">
+        <!-- Author Info -->
+        <div class="mb-12 pb-8 border-b border-white/10">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 rounded-full overflow-hidden">
+                    <img src="./codeathon-figma/profile_pic.png" alt="Your Avatar" class="w-full h-full object-cover">
+                </div>
+                <div>
+                    <div class="text-sm text-white/60">Writing as</div>
+                    <div class="font-medium" id="authorName">Anonymous User</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Blog Form -->
+        <form id="blogForm" onsubmit="publishBlog(event)">
+            <!-- Title Input -->
+            <div class="mb-8">
+                <input 
+                    type="text" 
+                    id="blogTitle" 
+                    placeholder="Blog title..." 
+                    class="w-full bg-transparent border-none outline-none text-5xl font-bold placeholder-white/20 text-white"
+                    required
+                    maxlength="200"
+                />
+                <div class="text-xs text-white/40 mt-2" id="titleCount">0 / 200</div>
+            </div>
+
+            <!-- Formatting Toolbar -->
+            <div class="formatting-toolbar flex items-center gap-2 mb-6 pb-4 border-b border-white/10">
+                <button type="button" onclick="formatText('## ')" class="p-2 rounded hover:bg-white/5" title="Heading">
+                    <i data-lucide="heading-2" class="w-5 h-5"></i>
+                </button>
+                <button type="button" onclick="formatText('**', '**')" class="p-2 rounded hover:bg-white/5" title="Bold">
+                    <i data-lucide="bold" class="w-5 h-5"></i>
+                </button>
+                <button type="button" onclick="formatText('*', '*')" class="p-2 rounded hover:bg-white/5" title="Italic">
+                    <i data-lucide="italic" class="w-5 h-5"></i>
+                </button>
+                <button type="button" onclick="formatText('`', '`')" class="p-2 rounded hover:bg-white/5" title="Code">
+                    <i data-lucide="code" class="w-5 h-5"></i>
+                </button>
+                <button type="button" onclick="formatText('\n- ')" class="p-2 rounded hover:bg-white/5" title="List">
+                    <i data-lucide="list" class="w-5 h-5"></i>
+                </button>
+                <div class="ml-auto text-xs text-white/40">
+                    Markdown supported
+                </div>
+            </div>
+
+            <!-- Content Textarea -->
+            <div class="mb-8">
+                <textarea 
+                    id="blogContent" 
+                    placeholder="Tell your story... 
+
+Use markdown for formatting:
+# Heading 1
+## Heading 2
+**bold text**
+*italic text*
+- list item
+`code`" 
+                    class="w-full bg-transparent border border-white/10 rounded-lg p-6 outline-none text-lg placeholder-white/20 text-white/90 leading-relaxed focus:border-purple-500/50 transition-colors"
+                    required
+                ></textarea>
+                <div class="text-xs text-white/40 mt-2" id="wordCount">0 words · 0 min read</div>
+            </div>
+
+            <!-- Optional Settings -->
+            <div class="bg-white/5 rounded-lg p-6 border border-white/10">
+                <h3 class="text-sm font-semibold mb-4 text-white/80">Publishing Options</h3>
+                
+                <div class="flex items-center gap-3 mb-4">
+                    <input 
+                        type="checkbox" 
+                        id="editorsPick" 
+                        class="w-4 h-4 rounded bg-white/10 border-white/20 text-purple-600 focus:ring-purple-500"
+                    />
+                    <label for="editorsPick" class="text-sm text-white/70">
+                        Submit for Editor's Pick
+                    </label>
+                </div>
+
+                <div class="text-xs text-white/50 mt-4">
+                    Your blog will be publicly visible to all users once published. You can edit or delete it from your profile.
+                </div>
+            </div>
+
+            <!-- Mobile Publish Button -->
+            <div class="mt-8 lg:hidden">
+                <button type="submit" class="w-full px-6 py-3 bg-purple-600 hover:bg-purple-700 rounded-full text-sm font-medium transition-colors">
+                    Publish Blog
+                </button>
+            </div>
+
+            <!-- Desktop Publish Button -->
+            <div class="mt-8 hidden lg:block">
+                <button type="submit" class="w-full px-6 py-3 bg-purple-600 hover:bg-purple-700 rounded-full text-sm font-medium transition-colors">
+                    Publish Blog
+                </button>
+            </div>
+        </form>
+
+        <!-- Writing Tips -->
+        <div class="mt-16 p-6 bg-white/5 rounded-lg border border-white/10">
+            <h3 class="text-lg font-semibold mb-4">Writing Tips</h3>
+            <ul class="space-y-2 text-sm text-white/70">
+                <li class="flex items-start gap-2">
+                    <span class="text-purple-400 mt-1">•</span>
+                    <span>Keep your title clear and engaging</span>
+                </li>
+                <li class="flex items-start gap-2">
+                    <span class="text-purple-400 mt-1">•</span>
+                    <span>Start with a strong opening paragraph</span>
+                </li>
+                <li class="flex items-start gap-2">
+                    <span class="text-purple-400 mt-1">•</span>
+                    <span>Break up long paragraphs with headings</span>
+                </li>
+                <li class="flex items-start gap-2">
+                    <span class="text-purple-400 mt-1">•</span>
+                    <span>Use markdown to format your content beautifully</span>
+                </li>
+                <li class="flex items-start gap-2">
+                    <span class="text-purple-400 mt-1">•</span>
+                    <span>Aim for 5-15 minute read length (800-2500 words)</span>
+                </li>
+            </ul>
+        </div>
+    </main>
+
+    <!-- Fixed Chat Button -->
+    <div class="fixed bottom-8 right-8 z-50 group">
+        <!-- Tooltip -->
+        <div id="chatTooltip" class="absolute bottom-20 right-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+            <div class="bg-white/95 backdrop-blur-md text-black px-4 py-2 rounded-xl shadow-xl border border-white/20 whitespace-nowrap">
+                <p class="text-sm font-inter font-medium">Hey! I'm Orbi 👋</p>
+                <p class="text-xs text-gray-600">Ask me anything!</p>
+            </div>
+            <div class="absolute -bottom-1 right-6 w-3 h-3 bg-white/95 backdrop-blur-md rotate-45 border-r border-b border-white/20"></div>
+        </div>
+        
+        <button id="chatButton" onclick="toggleChat()" class="w-16 h-16 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 border-2 border-white/40 flex items-center justify-center transition-all duration-300 shadow-2xl hover:shadow-purple-500/50 overflow-hidden hover:scale-110 active:scale-95">
+            <img src="./codeathon-figma/orbi.jpg" alt="Chat with Orbi" class="w-full h-full object-cover">
+        </button>
+    </div>
+
+    <!-- Chat Overlay -->
+    <div id="chatOverlay" class="hidden fixed inset-0 z-[60] flex items-end justify-end p-4 md:p-8 bg-black/20 backdrop-blur-sm">
+        <div class="w-full md:w-96 h-[600px] bg-gradient-to-b from-purple-900/40 via-black/60 to-black/80 backdrop-blur-2xl border border-purple-500/30 rounded-3xl shadow-2xl overflow-hidden flex flex-col">
+            <!-- Header -->
+            <div class="flex items-center justify-between p-5 border-b border-purple-500/20 bg-gradient-to-r from-purple-600/20 to-pink-600/20">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center overflow-hidden">
+                        <img src="./codeathon-figma/orbi.jpg" alt="Orbi" class="w-full h-full object-cover">
+                    </div>
+                    <span class="font-medium text-white">Orbi</span>
+                </div>
+                <button onclick="toggleChat()" class="p-2 hover:bg-white/10 rounded-full transition-all duration-200">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <!-- Chat Messages -->
+            <div id="chatMessages" class="flex-1 p-5 space-y-4 overflow-y-auto custom-scrollbar">
+                <div class="flex items-start gap-3 mb-2">
+                    <div class="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center flex-shrink-0 shadow-lg overflow-hidden">
+                        <img src="./codeathon-figma/orbi.jpg" alt="Orbi" class="w-full h-full object-cover">
+                    </div>
+                    <div class="flex-1 bg-gradient-to-br from-purple-500/20 to-pink-500/10 backdrop-blur-md rounded-2xl rounded-tl-sm p-4 border border-purple-400/30 shadow-lg">
+                        <p class="text-sm font-inter text-white leading-relaxed">Hi! I'm Orbi, your space assistant. Ask me anything about space, astronomy, or our cosmic exploration mission! 🚀</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Input -->
+            <div class="p-5 border-t border-purple-500/20 bg-gradient-to-r from-purple-600/10 to-pink-600/10">
+                <div class="flex items-center gap-2 bg-white/10 backdrop-blur-md rounded-2xl p-3 border border-purple-400/30 focus-within:border-purple-400/60 transition-all">
+                    <input type="text" id="chatInput" placeholder="Ask Orbi..." class="flex-1 bg-transparent outline-none text-sm text-white placeholder-white/40" onkeypress="handleChatKeyPress(event)" />
+                    <button onclick="sendMessage()" class="p-2 hover:bg-white/10 rounded-lg transition-all">
+                        <i data-lucide="send" class="w-4 h-4"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        try { if (window.lucide) { lucide.createIcons(); } } catch (e) {}
+
+        // ==================== ORBI CHATBOT ====================
+        // Groq API Configuration
+        const GROQ_API_KEY = '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';
+        const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
+
+        // Chat functionality is handled by orbi.js
+
+        // Initialize Lucide icons
+        lucide.createIcons();
+
+        // Get author name from profile (mock for now)
+        const authorName = localStorage.getItem('orbital_user_name') || 'Anonymous User';
+        document.getElementById('authorName').textContent = authorName;
+
+        // Title character count
+        const titleInput = document.getElementById('blogTitle');
+        titleInput.addEventListener('input', () => {
+            const count = titleInput.value.length;
+            document.getElementById('titleCount').textContent = `${count} / 200`;
+        });
+
+        // Content word count
+        const contentTextarea = document.getElementById('blogContent');
+        contentTextarea.addEventListener('input', () => {
+            const words = contentTextarea.value.trim().split(/\s+/).filter(w => w.length > 0).length;
+            const readTime = Math.ceil(words / 200);
+            document.getElementById('wordCount').textContent = `${words} words · ${readTime} min read`;
+        });
+
+        // Format text function
+        function formatText(before, after = '') {
+            const textarea = document.getElementById('blogContent');
+            const start = textarea.selectionStart;
+            const end = textarea.selectionEnd;
+            const selectedText = textarea.value.substring(start, end);
+            const beforeText = textarea.value.substring(0, start);
+            const afterText = textarea.value.substring(end);
+
+            if (selectedText) {
+                // Wrap selected text
+                textarea.value = beforeText + before + selectedText + after + afterText;
+                textarea.selectionStart = start + before.length;
+                textarea.selectionEnd = end + before.length;
+            } else {
+                // Insert at cursor
+                textarea.value = beforeText + before + after + afterText;
+                textarea.selectionStart = textarea.selectionEnd = start + before.length;
+            }
+
+            textarea.focus();
+            
+            // Trigger word count update
+            textarea.dispatchEvent(new Event('input'));
+        }
+
+        // Publish blog function
+        function publishBlog(event) {
+            if (event) event.preventDefault();
+
+            const title = document.getElementById('blogTitle').value.trim();
+            const content = document.getElementById('blogContent').value.trim();
+            const editorsPick = document.getElementById('editorsPick').checked;
+
+            if (!title || !content) {
+                alert('Please fill in both title and content');
+                return;
+            }
+
+            // Create blog object
+            const blog = {
+                id: 'blog-' + Date.now(),
+                title: title,
+                content: content,
+                author: authorName,
+                publishedDate: new Date().toISOString(),
+                views: 0,
+                editorsPick: editorsPick
+            };
+
+            // Save to localStorage
+            const blogs = JSON.parse(localStorage.getItem('orbital_blogs') || '[]');
+            blogs.unshift(blog); // Add to beginning
+            localStorage.setItem('orbital_blogs', JSON.stringify(blogs));
+
+            // Show success message
+            showSuccessMessage();
+
+            // Redirect to blog detail page after short delay
+            setTimeout(() => {
+                window.location.href = `blog_detail.html?id=${blog.id}`;
+            }, 1500);
+        }
+
+        // Show success message
+        function showSuccessMessage() {
+            const message = document.createElement('div');
+            message.className = 'fixed top-24 left-1/2 transform -translate-x-1/2 bg-purple-600 text-white px-8 py-4 rounded-full shadow-2xl z-[100] flex items-center gap-3';
+            message.innerHTML = `
+                <i data-lucide="check-circle" class="w-5 h-5"></i>
+                <span class="font-medium">Blog published successfully!</span>
+            `;
+            document.body.appendChild(message);
+            lucide.createIcons();
+
+            setTimeout(() => {
+                message.style.transition = 'opacity 0.3s';
+                message.style.opacity = '0';
+                setTimeout(() => message.remove(), 300);
+            }, 1200);
+        }
+
+        // Auto-save draft (optional feature)
+        let autoSaveTimer;
+        function autoSave() {
+            clearTimeout(autoSaveTimer);
+            autoSaveTimer = setTimeout(() => {
+                const title = document.getElementById('blogTitle').value;
+                const content = document.getElementById('blogContent').value;
+                
+                if (title || content) {
+                    localStorage.setItem('orbital_blog_draft', JSON.stringify({
+                        title: title,
+                        content: content,
+                        savedAt: new Date().toISOString()
+                    }));
+                }
+            }, 2000);
+        }
+
+        // Restore draft on load
+        document.addEventListener('DOMContentLoaded', () => {
+            const draft = localStorage.getItem('orbital_blog_draft');
+            if (draft) {
+                const { title, content } = JSON.parse(draft);
+                if (confirm('You have an unsaved draft. Would you like to restore it?')) {
+                    document.getElementById('blogTitle').value = title || '';
+                    document.getElementById('blogContent').value = content || '';
+                    
+                    // Trigger counters
+                    titleInput.dispatchEvent(new Event('input'));
+                    contentTextarea.dispatchEvent(new Event('input'));
+                }
+            }
+        });
+
+        // Add auto-save listeners
+        titleInput.addEventListener('input', autoSave);
+        contentTextarea.addEventListener('input', autoSave);
+
+        // Clear draft on publish
+        const originalPublish = publishBlog;
+        publishBlog = function(event) {
+            localStorage.removeItem('orbital_blog_draft');
+            originalPublish(event);
+        };
+    </script>
+</body>
+</html>
+

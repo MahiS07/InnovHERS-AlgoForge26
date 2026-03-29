@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile - Orbital</title>
+    <link rel="icon" type="image/jpeg" href="./codeathon-figma/orbi.jpg">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="sticky top-0 z-50 py-4">
+        <div class="container mx-auto px-6 max-w-7xl">
+            <div class="flex items-center justify-between bg-white/5 backdrop-blur-2xl border border-white/20 rounded-full p-2 shadow-lg shadow-black/50">
+                <!-- Logo -->
+                <a href="index.html" class="flex items-center rounded-full hover:opacity-90 transition-opacity">
+                    <img src="./codeathon-figma/image 68.png" alt="Orbital Logo" class="h-10 w-auto">
+                </a>
+
+                <!-- Navigation Links -->
+                <nav class="flex items-center gap-2">
+                    <a href="index.html" class="px-5 py-1.5 text-sm font-inter text-white/80 hover:text-white transition-colors">Home</a>
+                    <a href="mission_page.html" class="px-5 py-1.5 text-sm font-inter text-white/80 hover:text-white transition-colors">Mission</a>
+                    <a href="cosmic_page.html" class="px-5 py-1.5 text-sm font-inter text-white/80 hover:text-white transition-colors">Cosmic</a>
+                    <a href="learn.html" class="px-5 py-1.5 text-sm font-inter text-white/80 hover:text-white transition-colors">Learn</a>
+                    <a href="blog.html" class="px-5 py-1.5 text-sm font-inter text-white/80 hover:text-white transition-colors">Blogs</a>
+                    <a href="committee.html" class="px-5 py-1.5 text-sm font-inter text-white/80 hover:text-white transition-colors">Committee</a>
+                </nav>
+
+                <!-- Right Actions -->
+                <div class="flex items-center gap-3">
+                    <!-- Logout Button (icon only) -->
+                    <button onclick="handleLogout()" title="Log Out" class="p-3 bg-white/10 hover:bg-white/20 rounded-full transition-colors flex items-center justify-center">
+                        <i data-lucide="log-out" class="w-5 h-5 text-white/80"></i>
+                    </button>
+
+                    <!-- User Avatar - Active State with White Ring -->
+                    <a href="profile.html" class="w-10 h-10 rounded-full overflow-hidden border-2 border-white shadow-lg shadow-white/50">
+                        <img src="./codeathon-figma/profile_pic.png" alt="User Avatar" class="w-full h-full object-cover">
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="bg-black min-h-screen pt-6">
+        
+        <!-- ROW 1: Profile + Favorites -->
+        <section class="max-w-7xl mx-auto px-5 py-10">
+            <div class="grid grid-cols-[40%_60%] gap-6 items-start">
+                
+                <!-- Profile Card -->
+                <div class="bg-green-200 rounded-3xl p-6 flex flex-col items-center shadow-md w-full max-w-sm">
+                    <img src="./codeathon-figma/profile_pic.png" alt="User Avatar" class="w-16 h-16 rounded-full object-cover mb-3 border-4 border-white">
+                    <h3 class="text-gray-900 text-xl font-bold mb-5">Sameera A</h3>
+
+                    <!-- Metrics: match second design with divider -->
+                    <div class="w-full grid grid-cols-3 items-center mb-6">
+                        <!-- Reading Time -->
+                        <div class="flex flex-col items-center">
+                            <div class="text-2xl">🔥</div>
+                            <div id="readingTimeValue" class="text-gray-900 text-4xl font-extrabold leading-tight">0</div>
+                            <div class="mt-2 text-gray-700 text-sm font-medium uppercase tracking-wide text-center">
+                                <div>Reading</div>
+                                <div>Time (mins)</div>
+                            </div>
+                        </div>
+
+                        <!-- Divider -->
+                        <div class="h-full flex items-center justify-center">
+                            <div class="w-px h-20 bg-gray-800"></div>
+                        </div>
+
+                        <!-- User Active Time -->
+                        <div class="flex flex-col items-center">
+                            <div class="text-2xl">☄️</div>
+                            <div id="activeTimeValue" class="text-gray-900 text-4xl font-extrabold leading-tight">0</div>
+                            <div class="mt-2 text-gray-700 text-sm font-medium uppercase tracking-wide text-center">
+                                <div>User Active</div>
+                                <div>Time (mins)</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button onclick="handleLogout()" aria-label="Log Out" class="w-full max-w-sm mx-auto bg-red-600 hover:bg-red-700 text-white h-10 rounded-2xl text-sm font-semibold transition-colors shadow-md shadow-black/30 flex items-center justify-center gap-2">
+                        Log Out
+                    </button>
+                </div>
+                
+                <!-- Favorites Section -->
+                <div class="-ml-3 md:-ml-4">
+                    <div class="flex items-center justify-between mb-6">
+                        <div class="flex items-center gap-3">
+                            <div class="w-1 h-8 bg-orange-500 rounded"></div>
+                            <h2 class="text-white text-2xl font-bold">Favorites</h2>
+                            <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+                        </div>
+                        <button class="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center hover:bg-gray-700 transition-colors">
+                            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                            </svg>
+                        </button>
+                    </div>
+                    
+                    <div id="favoritesGrid" class="grid grid-cols-2 gap-4">
+                        <!-- Dynamic favorites will be loaded here -->
+                    </div>
+                </div>
+                
+            </div>
+        </section>
+
+        <!-- ROW 2: Continue Reading + Registered Events -->
+        <section class="max-w-7xl mx-auto px-5 py-10">
+            <div class="grid grid-cols-2 gap-8">
+                
+                <!-- Continue Reading -->
+                <div>
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="w-1 h-8 bg-orange-500 rounded"></div>
+                        <h2 class="text-white text-2xl font-bold">Continue Reading</h2>
+                        <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+                    </div>
+                    
+                    <div id="continueReadingList" class="space-y-0">
+                        <!-- Dynamic continue reading items will be loaded here -->
+                    </div>
+                </div>
+                
+                <!-- Registered Events -->
+                <div>
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="w-1 h-8 bg-orange-500 rounded"></div>
+                        <h2 class="text-white text-2xl font-bold">Registered Events</h2>
+                        <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+                    </div>
+                    
+                    <div id="registeredEventsGrid" class="grid grid-cols-2 gap-6">
+                        <!-- Dynamic registered events will be loaded here -->
+                    </div>
+                </div>
+                
+            </div>
+        </section>
+
+        <!-- ROW 3: Calendar Added -->
+        <section class="max-w-7xl mx-auto px-5 py-10 pb-20">
+            <div class="flex items-center gap-3 mb-8">
+                <div class="w-1 h-8 bg-orange-500 rounded"></div>
+                <h2 class="text-white text-2xl font-bold">Calender Added</h2>
+                <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+            </div>
+            
+            <div id="calendarAddedList" class="space-y-0">
+                <!-- Dynamic calendar events will be loaded here -->
+            </div>
+        </section>
+
+    </div>
+
+    <!-- Footer Section -->
+    <footer class="relative bg-gray-200 py-16 px-5 overflow-hidden">
+        <!-- Background Image -->
+        <div class="absolute inset-0">
+            <img src="./codeathon-figma/image 46.png" alt="Background" class="w-full h-full object-cover">
+        </div>
+        <!-- Dark translucent overlay above image -->
+        <div class="absolute inset-0 bg-black/20"></div>
+
+        <div class="max-w-7xl mx-auto relative z-10">
+            <div class="grid grid-cols-1 lg:grid-cols-[1fr_3fr] gap-12">
+                
+                <!-- Left Column: Logo & Social Icons -->
+                <div>
+                    <a href="index.html" class="inline-block mb-6">
+                        <img src="./codeathon-figma/image 68.png" alt="Orbital Logo" class="h-12 w-auto">
+                    </a>
+                    
+                    <!-- Social Media Icons -->
+                    <div class="flex gap-4">
+                        <a href="#" class="text-gray-800 hover:text-purple-700 transition-colors">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                            </svg>
+                        </a>
+                        <a href="#" class="text-gray-800 hover:text-purple-700 transition-colors">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                            </svg>
+                        </a>
+                        <a href="#" class="text-gray-800 hover:text-purple-700 transition-colors">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                            </svg>
+                        </a>
+                        <a href="#" class="text-gray-800 hover:text-purple-700 transition-colors">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Right Columns: Links -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    
+                    <!-- Column 1: Explore -->
+                    <div>
+                        <h3 class="text-gray-900 font-bold text-base mb-4">Explore</h3>
+                        <ul class="space-y-2">
+                            <li><a href="mission_page.html" class="text-gray-700 text-sm hover:text-purple-700 transition-colors">Space Missions</a></li>
+                            <li><a href="cosmic_page.html" class="text-gray-700 text-sm hover:text-purple-700 transition-colors">Cosmic Events</a></li>
+                            <li><a href="learn.html" class="text-gray-700 text-sm hover:text-purple-700 transition-colors">Learning Hub</a></li>
+                            <li><a href="index.html#events" class="text-gray-700 text-sm hover:text-purple-700 transition-colors">Community Events</a></li>
+                        </ul>
+                    </div>
+
+                    <!-- Column 2: Features -->
+                    <div>
+                        <h3 class="text-gray-900 font-bold text-base mb-4">Features</h3>
+                        <ul class="space-y-2">
+                            <li><a href="index.html#sky" class="text-gray-700 text-sm hover:text-purple-700 transition-colors">Tonight's Sky</a></li>
+                            <li><a href="mission_page.html" class="text-gray-700 text-sm hover:text-purple-700 transition-colors">Mission Tracking</a></li>
+                            <li><a href="cosmic_page.html" class="text-gray-700 text-sm hover:text-purple-700 transition-colors">Geomagnetic Data</a></li>
+                            <li><a href="profile.html" class="text-gray-700 text-sm hover:text-purple-700 transition-colors">Your Profile</a></li>
+                        </ul>
+                    </div>
+
+                    <!-- Column 3: Resources -->
+                    <div>
+                        <h3 class="text-gray-900 font-bold text-base mb-4">Resources</h3>
+                        <ul class="space-y-2">
+                            <li><a href="learn.html" class="text-gray-700 text-sm hover:text-purple-700 transition-colors">Educational Content</a></li>
+                            <li><a href="decoder_challenge.html" class="text-gray-700 text-sm hover:text-purple-700 transition-colors">Decoder Challenge</a></li>
+                            <li><a href="#" class="text-gray-700 text-sm hover:text-purple-700 transition-colors">API Documentation</a></li>
+                            <li><a href="#" class="text-gray-700 text-sm hover:text-purple-700 transition-colors">About Orbital</a></li>
+                        </ul>
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+    </footer>
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+    </footer>
+</body>
+<script>
+    try { if (window.lucide) { lucide.createIcons(); } } catch (e) {}
+
+    // ==================== USER AUTHENTICATION & PROFILE ====================
+    const API_URL = 'http://localhost:3000/api';
+    let currentUser = null;
+    let userProfile = null;
+
+    // Helper to namespace localStorage per logged-in user
+    function getUserStorageKey(baseKey) {
+        const userId = localStorage.getItem('user_id');
+        return userId ? `${baseKey}_${userId}` : baseKey;
+    }
+
+    // Logout function
+    async function handleLogout() {
+        try {
+            await fetch(`${API_URL}/logout`, {
+                method: 'POST',
+                credentials: 'include'
+            });
+
+            // Only clear auth info; keep reading history, favorites, calendar, etc.
+            localStorage.removeItem('user_id');
+            localStorage.removeItem('username');
+
+            window.location.href = 'login.html';
+        } catch (error) {
+            console.error('Logout error:', error);
+            window.location.href = 'login.html';
+        }
+    }
+
+    // Check if user is logged in
+    async function checkAuth() {
+        let apiSaysLoggedIn = false;
+
+        // Try to validate session with the backend first
+        try {
+            const response = await fetch(`${API_URL}/check-session`, {
+                credentials: 'include'
+            });
+            const data = await response.json();
+            
+            if (data.logged_in) {
+                apiSaysLoggedIn = true;
+                currentUser = data;
+                localStorage.setItem('user_id', data.user_id);
+                localStorage.setItem('username', data.username);
+                loadUserProfile();
+                return;
+            }
+        } catch (error) {
+            console.error('Auth check error (falling back to localStorage):', error);
+        }
+
+        // Fallback: trust localStorage if it has a user
+        const storedId = localStorage.getItem('user_id');
+        const storedName = localStorage.getItem('username');
+
+        if (storedId && storedName) {
+            currentUser = {
+                user_id: storedId,
+                username: storedName
+            };
+
+            // We may not have a valid server session, but we can still
+            // show local data (favorites, continue reading, etc.)
+            updateProfileUI();
+            loadFavorites();
+            loadSavedCommittees();
+            loadContinueReading();
+            loadRegisteredEvents();
+            loadCalendarAdded();
+        } else {
+            // No server session and no local user -> send to login
+            window.location.href = 'login.html';
+        }
+    }
+
+    // Load user profile from database
+    async function loadUserProfile() {
+        try {
+            const response = await fetch(`${API_URL}/profile`, {
+                credentials: 'include'
+            });
+            const data = await response.json();
+            
+            if (response.ok) {
+                userProfile = data;
+                updateProfileUI();
+                loadFavorites();
+                loadSavedCommittees();
+                loadContinueReading();
+                loadRegisteredEvents();
+                loadCalendarAdded();
+            }
+        } catch (error) {
+            console.error('Load profile error:', error);
+        }
+    }
+
+    // Update profile UI with user data
+    function updateProfileUI() {
+        if (!currentUser) return;
+        
+        // Update username
+        const usernameEl = document.querySelector('h3.text-gray-900.text-xl.font-bold');
+        if (usernameEl) {
+            usernameEl.textContent = currentUser.username || 'User';
+        }
+        
+        if (userProfile) {
+            // Update reading time using ID
+            const readingTimeEl = document.getElementById('readingTimeValue');
+            if (readingTimeEl) {
+                readingTimeEl.textContent = userProfile.reading_time || 0;
+            }
+            
+            // Update active time using ID
+            const activeTimeEl = document.getElementById('activeTimeValue');
+            if (activeTimeEl) {
+                activeTimeEl.textContent = userProfile.user_active_time || 0;
+            }
+        }
+    }
+
+    // ============================================
+    // PROFILE DATA LOADER - SYNCS WITH DATABASE
+    // ============================================
+
+    // Load favorites and render them
+    function loadFavorites() {
+        // Try database first, fall back to localStorage
+        const favorites = userProfile ? userProfile.favorites : JSON.parse(localStorage.getItem(getUserStorageKey('favorites')) || '[]');
+        const grid = document.getElementById('favoritesGrid');
+        
+        if (!grid) return;
+        
+        if (favorites.length === 0) {
+            grid.innerHTML = '<div class="col-span-2 text-center py-12 text-gray-400">No favorites yet. Like events from the home page to add them here!</div>';
+            return;
+        }
+
+        // Show only first 2 favorites (can add navigation later for more)
+        const displayFavorites = favorites.slice(0, 2);
+        
+        grid.innerHTML = displayFavorites.map(fav => {
+            const isImageBg = fav.color === 'purple' || fav.color === 'green';
+            const isSolidColor = fav.color === 'blue' || fav.color === 'orange';
+            
+            if (isImageBg) {
+                return `
+                    <div class="rounded-2xl relative overflow-hidden h-[234px]">
+                        <img src="${fav.image}" alt="${fav.title}" class="absolute inset-0 w-full h-full object-cover">
+                        <div class="absolute inset-0 bg-gradient-to-b from-black/40 to-black/70"></div>
+                        <div class="relative p-6 h-full flex flex-col justify-between">
+                            <div>
+                                <div class="text-white text-2xl font-bold leading-tight">${fav.title.split(' ').map(w => w + '<br>').join('')}</div>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <a href="details.html?event=${fav.id}" class="bg-white/20 hover:bg-white/30 text-white px-5 py-2 rounded-full text-sm font-semibold flex items-center gap-2 transition-colors">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                                    </svg>
+                                    View
+                                </a>
+                                <button class="text-white" onclick="removeFavorite('${fav.id}')">
+                                    <svg class="w-6 h-6" fill="currentColor" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                const bgClass = fav.color === 'blue' ? 'bg-blue-600' : 'bg-gradient-to-br from-orange-300 to-orange-400';
+                const textColor = fav.color === 'orange' ? 'text-gray-900' : 'text-white';
+                const btnClass = fav.color === 'orange' ? 'bg-white/30 hover:bg-white/40 text-gray-900' : 'bg-white/20 hover:bg-white/30 text-white';
+                
+                return `
+                    <div class="rounded-2xl ${bgClass} p-6 h-[234px] flex flex-col justify-between">
+                        <div>
+                            <div class="${textColor} text-2xl font-bold leading-tight">${fav.title.split(' ').map(w => w + '<br>').join('')}</div>
+                            ${fav.subtitle ? `<div class="${textColor === 'text-gray-900' ? 'text-gray-800' : 'text-white/80'} text-sm font-bold mt-1">${fav.subtitle}</div>` : ''}
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <a href="details.html?event=${fav.id}" class="${btnClass} px-5 py-2 rounded-full text-sm font-semibold flex items-center gap-2 transition-colors">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                                </svg>
+                                View
+                            </a>
+                            <button class="${textColor}" onclick="removeFavorite('${fav.id}')">
+                                <svg class="w-6 h-6" fill="currentColor" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }
+        }).join('');
+    }
+
+    // Load saved committees and render them
+    function loadSavedCommittees() {
+        const savedCommittees = JSON.parse(localStorage.getItem('savedCommittees') || '[]');
+        const grid = document.getElementById('savedCommitteesGrid');
+        
+        if (!grid) return;
+        
+        if (savedCommittees.length === 0) {
+            grid.innerHTML = '<div class="col-span-2 text-center py-12 text-gray-400">No saved committees yet. Visit the Committee page and save your favorites!</div>';
+            return;
+        }
+
+        // Show only first 2 saved committees
+        const displayCommittees = savedCommittees.slice(0, 2);
+        
+        grid.innerHTML = displayCommittees.map(committee => `
+            <div class="bg-white rounded-3xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300">
+                <div class="p-4 border-b border-gray-200">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h4 class="text-gray-900 font-semibold text-sm">${committee.name}</h4>
+                            <p class="text-gray-600 text-xs">Student Committee</p>
+                        </div>
+                        <button class="text-purple-700 hover:text-purple-800" onclick="removeSavedCommittee('${committee.id}')">
+                            <svg class="w-6 h-6" fill="currentColor" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                <a href="committee.html" class="block">
+                    <div class="h-32 bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+                        <span class="text-white font-bold text-lg">${committee.name}</span>
+                    </div>
+                </a>
+                <div class="p-4">
+                    <a href="committee.html" class="text-purple-700 hover:text-purple-800 text-sm font-semibold flex items-center gap-2 transition-colors">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                        </svg>
+                        View
+                    </a>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    // Remove saved committee from profile
+    function removeSavedCommittee(committeeId) {
+        let savedCommittees = JSON.parse(localStorage.getItem('savedCommittees') || '[]');
+        savedCommittees = savedCommittees.filter(c => c.id !== committeeId);
+        localStorage.setItem('savedCommittees', JSON.stringify(savedCommittees));
+        loadSavedCommittees();
+    }
+
+    // Load continue reading items
+    function loadContinueReading() {
+        const continueReading = JSON.parse(localStorage.getItem(getUserStorageKey('continueReading')) || '[]');
+        const list = document.getElementById('continueReadingList');
+        
+        if (!list) return;
+        
+        if (continueReading.length === 0) {
+            list.innerHTML = '<div class="py-12 text-center text-gray-400">No reading history yet. Click "Read Now" on events to track them here!</div>';
+            return;
+        }
+
+        // Show only last 3 items
+        const displayItems = continueReading.slice(-3);
+        
+        list.innerHTML = displayItems.map((item, index) => {
+            const isLast = index === displayItems.length - 1;
+            return `
+                <div class="py-6 ${isLast ? '' : 'border-b border-gray-800'}">
+                    <h3 class="text-white text-xl font-bold mb-2">${item.title}</h3>
+                    <p class="text-gray-400 text-sm mb-4">${item.source || 'Event details and information'}</p>
+                    <a href="details.html?event=${item.id}" class="inline-block bg-gray-800 hover:bg-gray-700 text-white px-6 py-2 rounded-full text-sm font-semibold transition-colors">
+                        Continue Reading
+                    </a>
+                </div>
+            `;
+        }).join('');
+    }
+
+    // Load registered events
+    function loadRegisteredEvents() {
+        const registeredEvents = JSON.parse(localStorage.getItem(getUserStorageKey('registeredEvents')) || '[]');
+        const grid = document.getElementById('registeredEventsGrid');
+        
+        if (!grid) return;
+        
+        if (registeredEvents.length === 0) {
+            grid.innerHTML = '<div class="col-span-2 text-center py-12 text-gray-400">No registered events yet. Like gatherings from the home page to register!</div>';
+            return;
+        }
+
+        const colors = ['bg-blue-600', 'bg-gradient-to-br from-purple-500 to-purple-600', 'bg-gradient-to-br from-orange-400 to-orange-500', 'bg-[#D49B77]'];
+        const avatars = [
+            './codeathon-figma/profile_pic.png',
+            './codeathon-figma/7058.jpg',
+            './codeathon-figma/539451.jpg',
+            './codeathon-figma/3865467.jpg'
+        ];
+        
+        grid.innerHTML = registeredEvents.slice(0, 4).map((event, index) => {
+            const bgClass = colors[index % colors.length];
+            const hasImage = event.image && event.image.startsWith('./codeathon-figma/');
+            
+            if (hasImage) {
+                return `
+                    <div class="relative rounded-3xl overflow-hidden h-[180px]">
+                        <img src="${event.image}" alt="${event.title}" class="absolute inset-0 w-full h-full object-cover">
+                        <div class="absolute inset-0 bg-gradient-to-br from-black/40 via-black/20 to-black/40"></div>
+                        <div class="relative p-6 h-full">
+                            <div class="flex items-start justify-between">
+                                <div>
+                                    <div class="text-white text-2xl font-bold leading-tight">${event.title.split(' ').slice(0, 2).join('<br>')}</div>
+                                    <div class="text-gray-200 text-xs mt-2">${event.organizer || 'Event Organizer'}</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="absolute left-6 bottom-5 flex items-center gap-1">
+                            ${avatars.slice(0, 3).map((img, i) => `<img src="${img}" alt="u${i+1}" class="w-7 h-7 rounded-full border-2 border-white/70 ${i > 0 ? '-ml-2' : ''} shadow-sm object-cover">`).join('')}
+                            <span class="-ml-2 px-2 h-7 rounded-full bg-gray-100 text-gray-900 text-xs font-semibold flex items-center">+1</span>
+                        </div>
+                    </div>
+                `;
+            } else {
+                return `
+                    <div class="relative rounded-3xl ${bgClass} p-6 h-[180px] overflow-hidden">
+                        <div class="flex items-start justify-between">
+                            <div>
+                                <div class="text-white text-2xl font-bold leading-tight">${event.title.split(' ').slice(0, 2).join('<br>')}</div>
+                                <div class="text-white/80 text-xs mt-2">${event.organizer || 'Event Organizer'}</div>
+                            </div>
+                        </div>
+                        <div class="absolute left-6 bottom-5 flex items-center gap-1">
+                            ${avatars.slice(0, 3).map((img, i) => `<img src="${img}" alt="u${i+1}" class="w-7 h-7 rounded-full border-2 border-white/60 ${i > 0 ? '-ml-2' : ''} shadow-sm object-cover">`).join('')}
+                            <span class="-ml-2 px-2 h-7 rounded-full bg-gray-100 text-gray-900 text-xs font-semibold flex items-center">+1</span>
+                        </div>
+                    </div>
+                `;
+            }
+        }).join('');
+    }
+
+    // Load calendar added events
+    function loadCalendarAdded() {
+        const calendarAdded = JSON.parse(localStorage.getItem(getUserStorageKey('calendarAdded')) || '[]');
+        const list = document.getElementById('calendarAddedList');
+        
+        if (!list) return;
+        
+        if (calendarAdded.length === 0) {
+            list.innerHTML = '<div class="py-12 text-center text-gray-400">No calendar events yet. Like events from the calendar to add them here!</div>';
+            return;
+        }
+
+        list.innerHTML = calendarAdded.map((event, index) => {
+            const isLast = index === calendarAdded.length - 1;
+            return `
+                <div class="py-6 ${isLast ? '' : 'border-b border-gray-800'}">
+                    <div class="flex items-start justify-between">
+                        <div class="flex gap-6">
+                            <div class="text-white">
+                                <div class="text-base font-medium">${event.date}</div>
+                                <div class="text-6xl font-bold leading-none">${event.day || '--'}</div>
+                            </div>
+                            <div class="flex-1">
+                                <div class="flex items-center gap-3 mb-2">
+                                    <div class="text-white text-base font-bold">/ ${event.title}</div>
+                                    <div class="text-gray-500 text-sm">${event.time || 'All day'}</div>
+                                </div>
+                                <p class="text-gray-400 text-sm">${event.description || 'Calendar event'}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    // Remove favorite (called from onclick)
+    window.removeFavorite = function(eventId) {
+        const favorites = JSON.parse(localStorage.getItem(getUserStorageKey('favorites')) || '[]');
+        const updated = favorites.filter(f => f.id !== eventId);
+        localStorage.setItem(getUserStorageKey('favorites'), JSON.stringify(updated));
+        loadFavorites();
+    };
+
+    // Initialize profile page
+    function initializeProfile() {
+        checkAuth();
+    }
+
+    // Load profile data on page load
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initializeProfile);
+    } else {
+        initializeProfile();
+    }
+</script>
+</html>

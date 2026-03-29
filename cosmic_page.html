@@ -1,0 +1,1063 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Orbital - Geomagnetic Storm Dashboard</title>
+    <link rel="icon" type="image/jpeg" href="./codeathon-figma/orbi.jpg">
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Oxanium:wght@300;600;700&family=Inter:wght@300;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- Tailwind Config -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'oxanium': ['Oxanium', 'sans-serif'],
+                        'inter': ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        'status-red': '#F41518',
+                        'status-green': '#3BAA13',
+                        'status-yellow': '#E6C910',
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+            background-color: #050505;
+            color: #FFFFFF;
+            min-height: 100vh;
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Custom scrollbar for chat */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(147, 51, 234, 0.1);
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: linear-gradient(to bottom, #a855f7, #ec4899);
+            border-radius: 10px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(to bottom, #9333ea, #db2777);
+        }
+
+        /* Animation classes */
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .animate-pulse {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        @keyframes slideInFromBottom {
+            from {
+                opacity: 0;
+                transform: translateY(1rem);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .slide-in-bottom {
+            animation: slideInFromBottom 0.3s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.2s ease-out;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+    
+    <!-- Authentication Utilities -->
+    <script src="./auth.js"></script>
+    
+    <!-- ORBI - Space Assistant Module -->
+    <script src="./orbi.js"></script>
+</head>
+<body>
+    <div class="min-h-screen relative bg-black">
+        <!-- Starry Background -->
+        <div class="absolute inset-0 opacity-60" style="background-image: url('./codeathon-figma/pexels-roboseal34-35272009.jpg'); background-size: cover; background-position: center; background-attachment: fixed;"></div>
+        
+        <!-- Stars overlay -->
+        <div class="absolute inset-0 bg-gradient-to-b from-black/50 via-transparent to-black/70"></div>
+        
+        <!-- Content -->
+        <div class="relative z-10">
+            <!-- Header -->
+            <header class="sticky top-0 z-50 py-4">
+                <div class="container mx-auto px-6 max-w-7xl">
+                    <div class="flex items-center justify-between bg-white/5 backdrop-blur-2xl border border-white/20 rounded-full p-2 shadow-lg shadow-black/50">
+                        <!-- Logo -->
+                        <button onclick="toggleChat()" class="flex items-center rounded-full hover:opacity-90 transition-opacity">
+                            <img src="./codeathon-figma/image 68.png" alt="Orbital Logo" class="h-10 w-auto">
+                        </button>
+
+                        <!-- Navigation Links -->
+                        <nav class="flex items-center gap-2">
+                            <a href="index.html" class="px-5 py-1.5 text-sm font-inter text-white/80 hover:text-white transition-colors">Home</a>
+                            <a href="mission_page.html" class="px-5 py-1.5 text-sm font-inter text-white/80 hover:text-white transition-colors">Mission</a>
+                            <a href="cosmic_page.html" class="px-5 py-1.5 rounded-full bg-white/80 text-black text-sm font-inter font-medium hover:bg-white transition-colors">Cosmic</a>
+                            <a href="learn.html" class="px-5 py-1.5 text-sm font-inter text-white/80 hover:text-white transition-colors">Learn</a>
+                            <a href="blog.html" class="px-5 py-1.5 text-sm font-inter text-white/80 hover:text-white transition-colors">Blogs</a>
+                            <a href="committee.html" class="px-5 py-1.5 text-sm font-inter text-white/80 hover:text-white transition-colors">Committee</a>
+                        </nav>
+
+                        <!-- Right Actions -->
+                        <div class="flex items-center gap-3">
+                            <!-- User Avatar -->
+                            <a href="profile.html" class="w-10 h-10 rounded-full overflow-hidden border border-white/20">
+                                <img src="./codeathon-figma/profile_pic.png" alt="User Avatar" class="w-full h-full object-cover">
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </header>
+            
+            <!-- Main Content -->
+            <main class="container mx-auto px-6 py-8 max-w-7xl">
+                <!-- Main Content Grid -->
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-16">
+                    <!-- Left Side - Hero + Info Cards -->
+                    <div class="lg:col-span-8 space-y-6">
+                        <!-- Hero Section -->
+                        <div style="margin-top: -1rem;">
+                            <div class="flex items-center gap-3 mb-4">
+                                <div class="inline-flex items-center gap-2 px-3 py-1.5 bg-white/5 backdrop-blur-sm border border-white/20 rounded-full">
+                                    <div class="w-2 h-2 rounded-full bg-status-red animate-pulse"></div>
+                                    <span class="text-xs font-inter font-medium tracking-wider uppercase">LIVE</span>
+                                </div>
+                                <div class="inline-flex items-center gap-2 px-3 py-1.5 bg-white/5 backdrop-blur-sm border border-white/10 rounded-full">
+                                    <i data-lucide="clock" class="w-3 h-3 text-gray-400"></i>
+                                    <span class="text-[10px] font-inter text-gray-400" id="lastUpdated">Loading...</span>
+                                </div>
+                            </div>
+                            
+                            <h1 class="text-5xl md:text-6xl lg:text-7xl font-inter font-bold mb-5 leading-tight">
+                                <span data-storm-heading-line1>Strong</span><br>
+                                <span class="font-oxanium" data-storm-heading-line2>Geomagnetic Storm</span>
+                            </h1>
+                            
+                            <p class="text-gray-300 font-inter font-light max-w-xl text-base leading-relaxed border-l-4 border-white/40 pl-6" data-storm-explanation>
+                                "A solar storm has reached Earth. While this creates beautiful auroras in the sky tonight, you may notice minor glitches with GPS navigation or satellite TV signals."
+                            </p>
+                        </div>
+
+                        <!-- Info Cards Grid -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5" style="margin-top: 2.2rem;">
+                            <!-- What Changed -->
+                            <div class="bg-white/5 backdrop-blur-2xl border border-white/20 rounded-2xl p-6 shadow-xl shadow-black/50">
+                                <h2 class="text-base font-inter font-medium mb-6">What Changed ?</h2>
+                            
+                                <div class="space-y-5" id="whatChangedContainer">
+                                    <div class="flex items-start gap-3">
+                                        <div class="p-2.5 bg-white/10 rounded-lg flex-shrink-0">
+                                            <i data-lucide="zap" class="w-5 h-5"></i>
+                                        </div>
+                                        <div class="flex-1">
+                                            <p class="text-xs text-gray-400 mb-1.5 font-inter">Solar wind speed increased :</p>
+                                            <p class="font-oxanium text-base">
+                                                <span class="text-gray-400">400</span>
+                                                <span class="mx-2 text-gray-500">→</span>
+                                                <span class="text-white font-semibold">650 km/s</span>
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <div class="flex items-start gap-3">
+                                        <div class="p-2.5 bg-white/10 rounded-lg flex-shrink-0">
+                                            <i data-lucide="arrow-down-up" class="w-5 h-5"></i>
+                                        </div>
+                                        <div class="flex-1">
+                                            <p class="text-xs text-gray-400 mb-1.5 font-inter">Magnetic field cracked :</p>
+                                            <p class="font-inter text-sm text-white">Southward Shift Detected</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="flex items-start gap-3">
+                                        <div class="p-2.5 bg-white/10 rounded-lg flex-shrink-0">
+                                            <i data-lucide="clock" class="w-5 h-5"></i>
+                                        </div>
+                                        <div class="flex-1">
+                                            <p class="text-xs text-gray-400 mb-1.5 font-inter">Storm Intensity :</p>
+                                            <p class="font-inter text-sm text-white">Rising Fast</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Earth Impact -->
+                            <div class="bg-white/5 backdrop-blur-2xl border border-white/20 rounded-2xl p-6 shadow-xl shadow-black/50">
+                                <h2 class="text-base font-inter font-medium mb-6">Earth Impact :</h2>
+                            
+                                <div class="space-y-5" id="earthImpactContainer">
+                                    <div class="flex items-start gap-3">
+                                        <div class="p-2.5 bg-white/10 rounded-lg flex-shrink-0">
+                                            <i data-lucide="map-pin" class="w-5 h-5"></i>
+                                        </div>
+                                        <p class="text-sm text-gray-300 font-inter leading-relaxed flex-1">GPS may be less accurate for a few hours</p>
+                                    </div>
+
+                                    <div class="flex items-start gap-3">
+                                        <div class="p-2.5 bg-white/10 rounded-lg flex-shrink-0">
+                                            <i data-lucide="server" class="w-5 h-5"></i>
+                                        </div>
+                                        <p class="text-sm text-gray-300 font-inter leading-relaxed flex-1">Increased drag on low-orbit spacecraft</p>
+                                    </div>
+
+                                    <div class="flex items-start gap-3">
+                                        <div class="p-2.5 bg-white/10 rounded-lg flex-shrink-0">
+                                            <i data-lucide="zap" class="w-5 h-5"></i>
+                                        </div>
+                                        <p class="text-sm text-gray-300 font-inter leading-relaxed flex-1">Voltage alarms possible on high-latitude power grids.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Side - Data Cards -->
+                    <div class="lg:col-span-4 space-y-4" style="margin-top: -1rem;">
+                        <!-- Planetary K-Index -->
+                        <div class="bg-black/40 backdrop-blur-xl border border-white/10 rounded-2xl p-5 relative overflow-hidden min-h-[180px]" style="background-image: url('./codeathon-figma/pexels-pixabay-76969.jpg'); background-size: cover; background-position: center;">
+                            <div class="absolute inset-0 bg-gradient-to-br from-black/70 via-black/50 to-transparent"></div>
+                            <div class="relative flex flex-col h-full">
+                                <p class="text-[10px] text-gray-400 font-inter uppercase tracking-widest mb-3" style="margin-top: 0.8rem;">PLANETARY K - INDEX</p>
+                                <p class="text-6xl font-oxanium font-bold mb-auto leading-none" data-kp-value>6.33</p>
+                                <div class="flex items-center gap-2 mt-auto">
+                                    <div class="w-2 h-2 rounded-full bg-status-red" style="margin-top: 0.5rem;" data-storm-dot></div>
+                                    <p class="text-xs text-status-red font-inter font-normal" style="margin-top: 0.5rem;" data-storm-level>Storm Level: Moderate</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4">
+                            <!-- Solar Winds -->
+                            <div class="bg-black/40 backdrop-blur-xl border border-white/10 rounded-2xl p-5 relative overflow-hidden min-h-[200px]" style="background-image: url('./codeathon-figma/184341.jpg'); background-size: cover; background-position: left;">
+                                <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent"></div>
+                                <div class="relative flex flex-col h-full">
+                                    <p class="text-[10px] text-gray-400 font-inter uppercase tracking-widest mb-2">SOLAR WINDS</p>
+                                    <div class="mb-2">
+                                        <p class="text-[9px] text-gray-400 font-inter mb-1">speed</p>
+                                        <p class="text-5xl font-oxanium font-bold leading-none" data-solar-speed>
+                                            612 <span class="text-sm text-gray-400">km/s</span>
+                                        </p>
+                                    </div>
+                                    <div class="mb-auto">
+                                        <p class="text-[9px] text-gray-400 font-inter mb-1">density</p>
+                                        <p class="text-2xl font-oxanium font-bold leading-none" data-solar-density>
+                                            1.01 <span class="text-xs text-gray-400">p/cm³</span>
+                                        </p>
+                                    </div>
+                                    <div class="flex items-center gap-2 mt-auto">
+                                        <div class="w-2 h-2 rounded-full bg-status-yellow" data-wind-dot></div>
+                                        <p class="text-xs text-gray-300 font-inter" data-wind-status>Medium</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Magnetic Bz -->
+                            <div class="bg-black/40 backdrop-blur-xl border border-white/10 rounded-2xl p-5 min-h-[200px] relative overflow-hidden" style="background-image: url('./codeathon-figma/6183488.jpg'); background-size: cover; background-position: left;">
+                                <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent"></div>
+                                <div class="relative flex flex-col h-full">
+                                    <p class="text-[10px] text-gray-400 font-inter uppercase tracking-widest mb-3">MAGNETIC BZ</p>
+                                    <div class="mb-2">
+                                        <p class="text-[9px] text-gray-400 font-inter mb-1">bz field</p>
+                                        <p class="text-4xl font-oxanium font-bold leading-none" data-bz-value>
+                                            -14 <span class="text-xs text-gray-400">nT</span>
+                                        </p>
+                                    </div>
+                                    <div class="mb-auto">
+                                        <p class="text-[9px] text-gray-400 font-inter mb-1">bt</p>
+                                        <p class="text-3xl font-oxanium font-bold leading-none" data-bt-value>
+                                            6.45 <span class="text-xs text-gray-400">nT</span>
+                                        </p>
+                                    </div>
+                                    <div class="flex items-center gap-2 mt-auto">
+                                        <div class="w-2 h-2 rounded-full bg-status-green" data-mag-dot></div>
+                                        <p class="text-xs text-status-green font-inter font-normal" data-mag-status>Normal</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Aurora Chances -->
+                        <div class="bg-black/40 backdrop-blur-xl border border-white/10 rounded-2xl p-5 relative overflow-hidden min-h-[180px]" style="background-image: url('./codeathon-figma/539451.jpg'); background-size: cover; background-position: center;">
+                            <div class="absolute inset-0 bg-gradient-to-t from-purple-900/80 via-purple-900/40 to-transparent"></div>
+                            <div class="relative flex flex-col h-full">
+                                <p class="text-[10px] text-gray-300 font-inter uppercase tracking-widest mb-3">AURORA CHANCES</p>
+                                <p class="text-6xl font-oxanium font-bold mb-auto leading-none" data-aurora-prob>
+                                    65 <span class="text-2xl text-gray-300">%</span> <span class="text-lg text-gray-400 font-inter font-normal">Prob</span>
+                                </p>
+                                <div class="flex items-center gap-2 mt-auto">
+                                    <div class="w-2 h-2 rounded-full bg-status-yellow" data-aurora-dot></div>
+                                    <p class="text-xs text-gray-200 font-inter font-normal" data-aurora-status>Medium</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+
+            <!-- Footer Section -->
+            <footer class="relative bg-gray-200 py-16 px-5 overflow-hidden">
+                <!-- Background Image -->
+                <div class="absolute inset-0">
+                    <img src="./codeathon-figma/image 46.png" alt="Background" class="w-full h-full object-cover">
+                </div>
+                <!-- Dark translucent overlay above image -->
+                <div class="absolute inset-0 bg-black/20"></div>
+
+                <div class="max-w-7xl mx-auto relative z-10">
+                    <div class="grid grid-cols-1 lg:grid-cols-[1fr_3fr] gap-12">
+                        
+                        <!-- Left Column: Logo & Social Icons -->
+                        <div>
+                            <a href="index.html" class="inline-block mb-6">
+                                <img src="./codeathon-figma/image 68.png" alt="Orbital Logo" class="h-12 w-auto">
+                            </a>
+                            
+                            <!-- Social Media Icons -->
+                            <div class="flex gap-4">
+                                <a href="#" class="text-gray-800 hover:text-purple-700 transition-colors">
+                                    <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                                    </svg>
+                                </a>
+                                <a href="#" class="text-gray-800 hover:text-purple-700 transition-colors">
+                                    <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                                    </svg>
+                                </a>
+                                <a href="#" class="text-gray-800 hover:text-purple-700 transition-colors">
+                                    <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                                    </svg>
+                                </a>
+                                <a href="#" class="text-gray-800 hover:text-purple-700 transition-colors">
+                                    <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                                    </svg>
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- Right Columns: Links -->
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                            
+                            <!-- Column 1: Explore -->
+                            <div>
+                                <h3 class="text-gray-900 font-bold text-base mb-4">Explore</h3>
+                                <ul class="space-y-2">
+                                    <li><a href="mission_page.html" class="text-gray-700 text-sm hover:text-purple-700 transition-colors">Space Missions</a></li>
+                                    <li><a href="cosmic_page.html" class="text-gray-700 text-sm hover:text-purple-700 transition-colors">Cosmic Events</a></li>
+                                    <li><a href="learn.html" class="text-gray-700 text-sm hover:text-purple-700 transition-colors">Learning Hub</a></li>
+                                    <li><a href="index.html#events" class="text-gray-700 text-sm hover:text-purple-700 transition-colors">Community Events</a></li>
+                                </ul>
+                            </div>
+
+                            <!-- Column 2: Features -->
+                            <div>
+                                <h3 class="text-gray-900 font-bold text-base mb-4">Features</h3>
+                                <ul class="space-y-2">
+                                    <li><a href="index.html#sky" class="text-gray-700 text-sm hover:text-purple-700 transition-colors">Tonight's Sky</a></li>
+                                    <li><a href="mission_page.html" class="text-gray-700 text-sm hover:text-purple-700 transition-colors">Mission Tracking</a></li>
+                                    <li><a href="cosmic_page.html" class="text-gray-700 text-sm hover:text-purple-700 transition-colors">Geomagnetic Data</a></li>
+                                    <li><a href="profile.html" class="text-gray-700 text-sm hover:text-purple-700 transition-colors">Your Profile</a></li>
+                                </ul>
+                            </div>
+
+                            <!-- Column 3: Resources -->
+                            <div>
+                                <h3 class="text-gray-900 font-bold text-base mb-4">Resources</h3>
+                                <ul class="space-y-2">
+                                    <li><a href="learn.html" class="text-gray-700 text-sm hover:text-purple-700 transition-colors">Educational Content</a></li>
+                                    <li><a href="decoder_challenge.html" class="text-gray-700 text-sm hover:text-purple-700 transition-colors">Decoder Challenge</a></li>
+                                    <li><a href="#" class="text-gray-700 text-sm hover:text-purple-700 transition-colors">API Documentation</a></li>
+                                    <li><a href="#" class="text-gray-700 text-sm hover:text-purple-700 transition-colors">About Orbital</a></li>
+                                </ul>
+                            </div>
+
+                        </div>
+
+                    </div>
+                </div>
+            </footer>
+        </div>
+
+        <!-- Fixed Chat Button - Bottom Right -->
+        <div class="fixed bottom-8 right-8 z-50 group">
+            <!-- Tooltip -->
+            <div id="chatTooltip" class="absolute bottom-20 right-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+                <div class="bg-white/95 backdrop-blur-md text-black px-4 py-2 rounded-xl shadow-xl border border-white/20 whitespace-nowrap">
+                    <p class="text-sm font-inter font-medium">Hey! I'm Orbi 👋</p>
+                    <p class="text-xs text-gray-600">Ask me anything!</p>
+                </div>
+                <div class="absolute -bottom-1 right-6 w-3 h-3 bg-white/95 backdrop-blur-md rotate-45 border-r border-b border-white/20"></div>
+            </div>
+            
+            <!-- Chat Button -->
+            <button id="chatButton" onclick="toggleChat()" class="w-16 h-16 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 border-2 border-white/40 flex items-center justify-center transition-all duration-300 shadow-2xl hover:shadow-purple-500/50 overflow-hidden hover:scale-110 active:scale-95">
+                <img src="./codeathon-figma/orbi.jpg" alt="Chat with Orbi" class="w-full h-full object-cover">
+            </button>
+        </div>
+
+        <!-- Chat Overlay -->
+        <div id="chatOverlay" class="hidden fixed inset-0 z-50 flex items-end justify-end p-4 md:p-8 bg-black/20 backdrop-blur-sm fade-in">
+            <div class="w-full md:w-96 h-[600px] bg-gradient-to-b from-purple-900/40 via-black/60 to-black/80 backdrop-blur-2xl border border-purple-500/30 rounded-3xl shadow-2xl overflow-hidden flex flex-col slide-in-bottom">
+                <!-- Header -->
+                <div class="flex items-center justify-between p-5 border-b border-purple-500/20 bg-gradient-to-r from-purple-600/20 to-pink-600/20">
+                    <div class="flex items-center gap-3">
+                        <div class="w-11 h-11 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shadow-lg overflow-hidden">
+                            <img src="./codeathon-figma/orbi.jpg" alt="Orbi" class="w-full h-full object-cover">
+                        </div>
+                        <div>
+                            <p class="font-oxanium font-bold text-base text-white">Orbi</p>
+                            <div class="flex items-center gap-1">
+                                <div class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></div>
+                                <p class="text-xs text-gray-300 font-inter">Space Weather Assistant</p>
+                            </div>
+                        </div>
+                    </div>
+                    <button onclick="toggleChat()" class="p-2 hover:bg-white/10 rounded-full transition-all duration-200 hover:rotate-90">
+                        <i data-lucide="x" class="w-5 h-5 text-white"></i>
+                    </button>
+                </div>
+
+                <!-- Chat Messages -->
+                <div id="chatMessages" class="flex-1 p-5 space-y-4 overflow-y-auto custom-scrollbar">
+                    <!-- Bot Message 1 -->
+                    <div class="flex items-start gap-3 mb-2">
+                        <div class="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center flex-shrink-0 shadow-lg overflow-hidden">
+                            <img src="./codeathon-figma/orbi.jpg" alt="Orbi" class="w-full h-full object-cover">
+                        </div>
+                        <div class="flex-1 bg-gradient-to-br from-purple-500/20 to-pink-500/10 backdrop-blur-md rounded-2xl rounded-tl-sm p-4 border border-purple-400/30 shadow-lg">
+                            <p class="text-sm font-inter text-white leading-relaxed">Hi! I'm Orbi, your space weather assistant. Ask me about today's conditions, what they mean, or how they affect Earth.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Input -->
+                <div class="p-5 border-t border-purple-500/20 bg-gradient-to-r from-purple-600/10 to-pink-600/10">
+                    <div class="flex items-center gap-2 bg-white/10 backdrop-blur-md rounded-2xl p-3 border border-purple-400/30 focus-within:border-purple-400/60 transition-all">
+                        <input id="chatInput" type="text" placeholder="Ask me anything about space weather..." class="flex-1 bg-transparent border-none outline-none text-sm font-inter text-white placeholder-gray-400 px-2" onkeypress="handleChatKeyPress(event)">
+                        <button id="chatSendBtn" onclick="sendMessage()" class="p-2 bg-gradient-to-br from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 rounded-xl transition-all duration-200 flex-shrink-0 hover:scale-110 active:scale-95 shadow-lg">
+                            <i data-lucide="send" class="w-5 h-5 text-white"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Lucide Icons
+        lucide.createIcons();
+
+        // Groq API Configuration
+        const GROQ_API_KEY = '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'; // Replace with your actual API key
+        const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
+
+        // Store current space weather data for LLM
+        let currentSpaceWeatherData = {
+            kpIndex: 0,
+            solarWindSpeed: 0,
+            solarWindDensity: 0,
+            magneticBz: 0,
+            magneticBt: 0,
+            auroraProb: 0,
+            stormLevel: 'Unknown'
+        };
+
+        // Store historical data (keep last 10 updates)
+        let historicalSpaceWeatherData = [];
+
+        // Function to save current data to history
+        function saveToHistory() {
+            const timestamp = new Date().toLocaleString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: true
+            });
+            
+            historicalSpaceWeatherData.unshift({
+                timestamp: timestamp,
+                ...currentSpaceWeatherData
+            });
+            
+            // Keep only last 10 entries
+            if (historicalSpaceWeatherData.length > 10) {
+                historicalSpaceWeatherData = historicalSpaceWeatherData.slice(0, 10);
+            }
+        }
+
+        // Chat Toggle Functionality
+        let isChatOpen = false;
+
+        function toggleChat() {
+            const chatOverlay = document.getElementById('chatOverlay');
+            const chatButton = document.getElementById('chatButton');
+            
+            isChatOpen = !isChatOpen;
+            
+            if (isChatOpen) {
+                chatOverlay.classList.remove('hidden');
+                chatButton.classList.add('scale-95', 'rotate-90');
+                chatButton.classList.remove('hover:scale-110');
+                // Re-initialize icons in the chat overlay
+                setTimeout(() => lucide.createIcons(), 10);
+            } else {
+                chatOverlay.classList.add('hidden');
+                chatButton.classList.remove('scale-95', 'rotate-90');
+                chatButton.classList.add('hover:scale-110');
+            }
+        }
+
+        // Close chat when clicking outside
+        document.getElementById('chatOverlay')?.addEventListener('click', function(e) {
+            if (e.target === this) {
+                toggleChat();
+            }
+        });
+
+        // Chat conversation history
+        let chatHistory = [
+            {
+                role: 'system',
+                content: `You are Orbi, a space weather assistant STRICTLY LIMITED to answering ONLY space-related questions.
+
+✅ ALLOWED TOPICS ONLY:
+- Space weather, geomagnetic storms, solar activity
+- Astronomy, planets, stars, galaxies, cosmic events
+- Space missions, satellites, rockets, spacecraft
+- Auroras, solar wind, CMEs, space radiation
+- ISS, astronauts, space exploration
+- Telescopes, space technology, orbital mechanics
+
+❌ STRICTLY FORBIDDEN - DO NOT ANSWER:
+- General knowledge, trivia, facts unrelated to space
+- Mathematics, coding, programming (unless space-related)
+- Cooking, recipes, food
+- Sports, games, entertainment
+- Politics, current events (unless space-related)
+- History (unless space history)
+- Science topics not related to space/astronomy
+- ANY other non-space topics
+
+🚫 CRITICAL RULE: If ANY question is not specifically about space, astronomy, or space-related topics, you MUST respond EXACTLY:
+"I'm Orbi, a space assistant. I can ONLY answer questions about space, astronomy, space missions, and space-related topics. Please ask me something about space!"
+
+COSMIC PAGE FEATURES (where you are now):
+- Real-time Kp index (geomagnetic activity: 0-9 scale)
+- Solar wind speed and density
+- Aurora predictions (visibility forecasts)
+- Space weather impacts on Earth
+- Historical storm data
+
+Current Space Weather Data:
+- Kp Index: ${currentSpaceWeatherData.kpIndex}
+- Storm Level: ${currentSpaceWeatherData.stormLevel}
+- Solar Wind Speed: ${currentSpaceWeatherData.solarWindSpeed} km/s
+- Solar Wind Density: ${currentSpaceWeatherData.solarWindDensity} p/cm³
+- Magnetic Bz: ${currentSpaceWeatherData.magneticBz} nT
+- Magnetic Bt: ${currentSpaceWeatherData.magneticBt} nT
+- Aurora Probability: ${currentSpaceWeatherData.auroraProb}%
+- How storms affect satellites, power grids, communications
+- Disaster detection, missions, cosmic events
+- General astronomy and space topics
+
+Be helpful, clear, and concise (2-3 sentences unless detail requested).`
+            }
+        ];
+
+        // Handle Enter key press in chat input
+
+
+        // Generate dynamic content using Groq LLM
+        async function generateDynamicContent() {
+            console.log('Generating dynamic content with data:', currentSpaceWeatherData);
+            
+            if (!GROQ_API_KEY || GROQ_API_KEY === 'YOUR_GROQ_API_KEY_HERE') {
+                console.warn('Groq API key not configured. Using default content.');
+                return;
+            }
+
+            // Check if we have valid data to send
+            if (currentSpaceWeatherData.kpIndex === 0 && currentSpaceWeatherData.solarWindSpeed === 0) {
+                console.warn('No valid space weather data yet. Skipping LLM generation.');
+                return;
+            }
+
+            try {
+                const prompt = `You are a space weather expert explaining conditions to the general public. Based on the following real-time space weather data, generate content for a geomagnetic storm dashboard:
+
+Current Data:
+- Kp Index: ${currentSpaceWeatherData.kpIndex}
+- Storm Level: ${currentSpaceWeatherData.stormLevel}
+- Solar Wind Speed: ${currentSpaceWeatherData.solarWindSpeed} km/s
+- Solar Wind Density: ${currentSpaceWeatherData.solarWindDensity} p/cm³
+- Magnetic Bz: ${currentSpaceWeatherData.magneticBz} nT
+- Magnetic Bt: ${currentSpaceWeatherData.magneticBt} nT
+- Aurora Probability: ${currentSpaceWeatherData.auroraProb}%
+
+Generate the following in JSON format:
+1. "headingLine1": A one-word dramatic descriptor matching the intensity (e.g., "Quiet", "Calm", "Minor", "Moderate", "Strong", "Severe", "Extreme")
+2. "headingLine2": A two-word description that matches the current conditions. Be creative and varied based on the storm level:
+   - For Quiet/Calm (Kp<4): use "Space Weather", "Solar Conditions", "Cosmic Activity"
+   - For Minor/Moderate (Kp 4-6): use "Solar Activity", "Space Event", "Magnetic Disturbance"
+   - For Strong/Severe (Kp>6): use "Geomagnetic Storm", "Solar Storm", "Magnetic Storm"
+   Do NOT always use "Geomagnetic Storm" - vary it based on the actual conditions!
+3. "explanation": Write a simple 1-2 sentence explanation in quotes. Use everyday language that anyone can understand. Mention what's happening and what people might notice (like GPS issues, auroras, etc.)
+4. "whatChanged": An array of exactly 3 objects, each with "label" (short title like "Solar Wind", "Magnetic Field", "Activity Level") and "description" (simple 4-8 word explanation of what changed). Focus on what's different in simple terms.
+5. "earthImpacts": An array of exactly 3 simple, clear impact statements. Each should be 6-12 words using everyday language. Start each with what IS happening, not what "may" happen. Examples: "GPS signals are less accurate right now", "Radio communications experiencing interference", "Beautiful auroras visible in northern regions"
+
+Use simple, direct language that anyone can understand. Avoid technical jargon. Be specific and practical. Return ONLY valid JSON, no other text. Do not include markdown formatting or code fences.`;
+
+                console.log('Sending request to Groq API...');
+                
+                const response = await fetch(GROQ_API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${GROQ_API_KEY}`
+                    },
+                    body: JSON.stringify({
+                        model: 'llama-3.3-70b-versatile',
+                        messages: [
+                            {
+                                role: 'system',
+                                content: 'You are a space weather expert who generates accurate, concise content for a real-time geomagnetic storm dashboard. Always respond with valid JSON only.'
+                            },
+                            {
+                                role: 'user',
+                                content: prompt
+                            }
+                        ],
+                        temperature: 0.7,
+                        max_tokens: 500,
+                        response_format: { type: "json_object" }
+                    })
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('Groq API error response:', errorText);
+                    throw new Error(`Groq API error: ${response.status} - ${errorText}`);
+                }
+
+                const data = await response.json();
+                let content = data.choices[0].message.content;
+                
+                console.log('LLM Response:', content);
+                
+                // Clean up the response - remove markdown code fences if present
+                content = content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+                
+                // Parse the JSON response
+                const generatedContent = JSON.parse(content);
+                
+                console.log('Parsed Content:', generatedContent);
+                
+                // Update the UI with generated content
+                updateDynamicContent(generatedContent);
+                
+            } catch (error) {
+                console.error('Error generating dynamic content:', error);
+                console.error('Full error details:', error.message);
+            }
+        }
+
+        // Update UI with LLM-generated content
+        function updateDynamicContent(content) {
+            console.log('Updating UI with content:', content);
+            
+            // Update heading
+            const headingLine1 = document.querySelector('[data-storm-heading-line1]');
+            const headingLine2 = document.querySelector('[data-storm-heading-line2]');
+            if (headingLine1 && content.headingLine1) {
+                headingLine1.textContent = content.headingLine1;
+                console.log('Updated heading line 1:', content.headingLine1);
+            }
+            if (headingLine2 && content.headingLine2) {
+                headingLine2.textContent = content.headingLine2;
+                console.log('Updated heading line 2:', content.headingLine2);
+            }
+
+            // Update explanation
+            const explanation = document.querySelector('[data-storm-explanation]');
+            if (explanation && content.explanation) {
+                explanation.textContent = content.explanation;
+                console.log('Updated explanation:', content.explanation);
+            }
+
+            // Update What Changed section
+            if (content.whatChanged && Array.isArray(content.whatChanged) && content.whatChanged.length === 3) {
+                console.log('Updating what changed:', content.whatChanged);
+                const container = document.getElementById('whatChangedContainer');
+                if (container) {
+                    const icons = ['zap', 'arrow-down-up', 'clock'];
+                    container.innerHTML = content.whatChanged.map((item, index) => `
+                        <div class="flex items-start gap-3">
+                            <div class="p-2.5 bg-white/10 rounded-lg flex-shrink-0">
+                                <i data-lucide="${icons[index]}" class="w-5 h-5"></i>
+                            </div>
+                            <div class="flex-1">
+                                <p class="text-xs text-gray-400 mb-1.5 font-inter">${item.label} :</p>
+                                <p class="font-inter text-sm text-white">${item.description}</p>
+                            </div>
+                        </div>
+                    `).join('');
+                    // Re-initialize icons
+                    lucide.createIcons();
+                    console.log('What changed updated successfully');
+                }
+            } else {
+                console.warn('What changed not in expected format:', content.whatChanged);
+            }
+
+            // Update Earth Impact section
+            if (content.earthImpacts && Array.isArray(content.earthImpacts) && content.earthImpacts.length === 3) {
+                console.log('Updating earth impacts:', content.earthImpacts);
+                const container = document.getElementById('earthImpactContainer');
+                if (container) {
+                    const icons = ['map-pin', 'server', 'zap'];
+                    container.innerHTML = content.earthImpacts.map((impact, index) => `
+                        <div class="flex items-start gap-3">
+                            <div class="p-2.5 bg-white/10 rounded-lg flex-shrink-0">
+                                <i data-lucide="${icons[index]}" class="w-5 h-5"></i>
+                            </div>
+                            <p class="text-sm text-gray-300 font-inter leading-relaxed flex-1">${impact}</p>
+                        </div>
+                    `).join('');
+                    // Re-initialize icons
+                    lucide.createIcons();
+                    console.log('Earth impacts updated successfully');
+                }
+            } else {
+                console.warn('Earth impacts not in expected format:', content.earthImpacts);
+            }
+        }
+
+        // Update timestamp display
+        function updateTimestamp() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('en-US', { 
+                hour: '2-digit', 
+                minute: '2-digit',
+                hour12: true 
+            });
+            const dateString = now.toLocaleDateString('en-US', { 
+                month: 'short', 
+                day: 'numeric' 
+            });
+            
+            const timestampElement = document.getElementById('lastUpdated');
+            if (timestampElement) {
+                timestampElement.textContent = `Updated ${timeString} · ${dateString}`;
+            }
+        }
+
+        // Live Space Weather Data from NOAA SWPC
+        async function fetchSpaceWeatherData() {
+            try {
+                console.log('Fetching space weather data from NOAA...');
+                
+                // Fetch Kp index, solar wind, and magnetic field data
+                const [kpData, solarWindData, magData] = await Promise.all([
+                    fetch('https://services.swpc.noaa.gov/products/noaa-planetary-k-index.json').then(r => r.json()),
+                    fetch('https://services.swpc.noaa.gov/products/solar-wind/plasma-7-day.json').then(r => r.json()),
+                    fetch('https://services.swpc.noaa.gov/products/solar-wind/mag-7-day.json').then(r => r.json())
+                ]);
+
+                console.log('Data fetched successfully');
+
+                // Process Kp Index (latest value)
+                if (kpData && kpData.length > 1) {
+                    const latestKp = kpData[kpData.length - 1];
+                    const kpValue = parseFloat(latestKp[1]);
+                    currentSpaceWeatherData.kpIndex = kpValue;
+                    updateKpIndex(kpValue);
+                }
+
+                // Process Solar Wind (latest values)
+                if (solarWindData && solarWindData.length > 1) {
+                    const latestWind = solarWindData[solarWindData.length - 1];
+                    const speed = parseFloat(latestWind[1]); // km/s
+                    const density = parseFloat(latestWind[2]); // protons/cm³
+                    currentSpaceWeatherData.solarWindSpeed = speed;
+                    currentSpaceWeatherData.solarWindDensity = density;
+                    updateSolarWind(speed, density);
+                }
+
+                // Process Magnetic Field (latest values)
+                if (magData && magData.length > 1) {
+                    const latestMag = magData[magData.length - 1];
+                    const bz = parseFloat(latestMag[3]); // nT
+                    const bt = parseFloat(latestMag[4]); // nT
+                    currentSpaceWeatherData.magneticBz = bz;
+                    currentSpaceWeatherData.magneticBt = bt;
+                    updateMagneticField(bz, bt);
+                }
+
+                // Update timestamp after successful data fetch
+                updateTimestamp();
+
+                // Save current data to history for chatbot context
+                saveToHistory();
+
+                // Generate dynamic content with LLM based on current data
+                // Don't let LLM failure affect the data display
+                try {
+                    await generateDynamicContent();
+                } catch (llmError) {
+                    console.warn('LLM content generation failed, but data was updated:', llmError);
+                    // Keep existing content, just update timestamp
+                }
+
+            } catch (error) {
+                console.error('Error fetching space weather data:', error);
+                const timestampElement = document.getElementById('lastUpdated');
+                if (timestampElement) {
+                    timestampElement.textContent = 'Update failed - retrying...';
+                }
+                // Retry after 30 seconds if failed
+                setTimeout(fetchSpaceWeatherData, 30000);
+            }
+        }
+
+        function updateKpIndex(kpValue) {
+            // Update Kp index display
+            const kpElement = document.querySelector('[data-kp-value]');
+            if (kpElement) {
+                kpElement.textContent = kpValue.toFixed(2);
+            }
+
+            // Update storm level
+            const stormElement = document.querySelector('[data-storm-level]');
+            const stormDot = document.querySelector('[data-storm-dot]');
+            
+            let stormLevel, stormColor;
+            if (kpValue < 4) {
+                stormLevel = 'Quiet';
+                stormColor = 'status-green';
+            } else if (kpValue < 5) {
+                stormLevel = 'Unsettled';
+                stormColor = 'status-yellow';
+            } else if (kpValue < 6) {
+                stormLevel = 'Active';
+                stormColor = 'status-yellow';
+            } else if (kpValue < 7) {
+                stormLevel = 'Minor Storm';
+                stormColor = 'status-red';
+            } else if (kpValue < 8) {
+                stormLevel = 'Moderate Storm';
+                stormColor = 'status-red';
+            } else if (kpValue < 9) {
+                stormLevel = 'Strong Storm';
+                stormColor = 'status-red';
+            } else {
+                stormLevel = 'Severe Storm';
+                stormColor = 'status-red';
+            }
+
+            if (stormElement) {
+                stormElement.textContent = `Storm Level: ${stormLevel}`;
+                stormElement.className = `text-xs font-inter font-normal text-${stormColor}`;
+            }
+            if (stormDot) {
+                stormDot.className = `w-2 h-2 rounded-full bg-${stormColor}`;
+            }
+
+            // Store in global data
+            currentSpaceWeatherData.stormLevel = stormLevel;
+
+            // Update aurora chances based on Kp
+            updateAuroraChances(kpValue);
+        }
+
+        function updateSolarWind(speed, density) {
+            // Update solar wind speed
+            const speedElement = document.querySelector('[data-solar-speed]');
+            if (speedElement && !isNaN(speed)) {
+                speedElement.innerHTML = `${Math.round(speed)} <span class="text-sm text-gray-400">km/s</span>`;
+            }
+
+            // Update solar wind density
+            const densityElement = document.querySelector('[data-solar-density]');
+            if (densityElement && !isNaN(density)) {
+                densityElement.innerHTML = `${density.toFixed(2)} <span class="text-xs text-gray-400">p/cm³</span>`;
+            }
+
+            // Update solar wind status
+            const windStatusElement = document.querySelector('[data-wind-status]');
+            const windDot = document.querySelector('[data-wind-dot]');
+            
+            let status, color;
+            if (speed < 400) {
+                status = 'Low';
+                color = 'status-green';
+            } else if (speed < 600) {
+                status = 'Medium';
+                color = 'status-yellow';
+            } else {
+                status = 'High';
+                color = 'status-red';
+            }
+
+            if (windStatusElement) {
+                windStatusElement.textContent = status;
+            }
+            if (windDot) {
+                windDot.className = `w-2 h-2 rounded-full bg-${color}`;
+            }
+        }
+
+        function updateMagneticField(bz, bt) {
+            // Update Bz field
+            const bzElement = document.querySelector('[data-bz-value]');
+            if (bzElement && !isNaN(bz)) {
+                bzElement.innerHTML = `${bz.toFixed(1)} <span class="text-xs text-gray-400">nT</span>`;
+            }
+
+            // Update Bt field
+            const btElement = document.querySelector('[data-bt-value]');
+            if (btElement && !isNaN(bt)) {
+                btElement.innerHTML = `${bt.toFixed(2)} <span class="text-xs text-gray-400">nT</span>`;
+            }
+
+            // Update magnetic field status
+            const magStatusElement = document.querySelector('[data-mag-status]');
+            const magDot = document.querySelector('[data-mag-dot]');
+            
+            let status, color;
+            if (bz > -5) {
+                status = 'Normal';
+                color = 'status-green';
+            } else if (bz > -10) {
+                status = 'Moderate';
+                color = 'status-yellow';
+            } else {
+                status = 'Strong';
+                color = 'status-red';
+            }
+
+            if (magStatusElement) {
+                magStatusElement.textContent = status;
+                magStatusElement.className = `text-xs font-inter font-normal text-${color}`;
+            }
+            if (magDot) {
+                magDot.className = `w-2 h-2 rounded-full bg-${color}`;
+            }
+        }
+
+        function updateAuroraChances(kpValue) {
+            // Calculate aurora probability based on Kp index
+            let probability;
+            if (kpValue < 4) {
+                probability = 20;
+            } else if (kpValue < 5) {
+                probability = 40;
+            } else if (kpValue < 6) {
+                probability = 60;
+            } else if (kpValue < 7) {
+                probability = 75;
+            } else if (kpValue < 8) {
+                probability = 85;
+            } else {
+                probability = 95;
+            }
+
+            const auroraElement = document.querySelector('[data-aurora-prob]');
+            if (auroraElement) {
+                auroraElement.innerHTML = `${probability} <span class="text-2xl text-gray-300">%</span> <span class="text-lg text-gray-400 font-inter font-normal">Prob</span>`;
+            }
+
+            // Store in global data
+            currentSpaceWeatherData.auroraProb = probability;
+
+            const auroraStatusElement = document.querySelector('[data-aurora-status]');
+            const auroraDot = document.querySelector('[data-aurora-dot]');
+            
+            let status, color;
+            if (probability < 40) {
+                status = 'Low';
+                color = 'status-green';
+            } else if (probability < 70) {
+                status = 'Medium';
+                color = 'status-yellow';
+            } else {
+                status = 'High';
+                color = 'status-red';
+            }
+
+            if (auroraStatusElement) {
+                auroraStatusElement.textContent = status;
+            }
+            if (auroraDot) {
+                auroraDot.className = `w-2 h-2 rounded-full bg-${color}`;
+            }
+        }
+
+        // Fetch data on page load
+        fetchSpaceWeatherData();
+
+        // Update data every 5 minutes
+        setInterval(fetchSpaceWeatherData, 5 * 60 * 1000);
+    </script>
+</body>
+</html>

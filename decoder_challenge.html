@@ -1,0 +1,971 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Decoder Challenge | Orbital</title>
+    <link rel="icon" type="image/jpeg" href="./codeathon-figma/orbi.jpg">
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Sansita:wght@300;400;700&display=swap" rel="stylesheet">
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- Tailwind Config -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'inter': ['Inter', 'sans-serif'],
+                        'sansita': ['Sansita', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+            background-color: #050505;
+            color: #FFFFFF;
+            overflow-x: hidden;
+            background-image: url('./codeathon-figma/pexels-roboseal34-35272009.jpg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+        }
+
+        body.quiz-active {
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        body.hero-active {
+            overflow: hidden;
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Glassmorphism */
+        .glass {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+
+        .option-btn {
+            transition: all 0.2s ease;
+        }
+
+        .option-btn:hover {
+            filter: brightness(1.1);
+        }
+
+        .option-btn.selected {
+            background: #E8D4A8 !important;
+            color: #3D2816;
+            transform: scale(1.02);
+        }
+
+        .quiz-started {
+            display: none;
+        }
+
+        .quiz-started.active {
+            display: flex;
+        }
+
+        .hero-section.hidden {
+            display: none;
+        }
+
+        /* Hero Section */
+        #heroSection {
+            position: relative;
+            background-image: url('./codeathon-figma/7058.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+
+        #heroSection::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 200px;
+            background: linear-gradient(to bottom, transparent, #050505);
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body class="bg-[#050505] hero-active">
+    <!-- Header -->
+    <header class="fixed top-0 left-0 right-0 z-50 py-4">
+        <div class="container mx-auto px-6 max-w-7xl">
+            <div class="flex items-center justify-between glass rounded-full p-2 shadow-2xl">
+                <!-- Logo -->
+                <button onclick="window.location.href='mission_page.html'" class="flex items-center rounded-full hover:opacity-90 transition-opacity">
+                    <img src="./codeathon-figma/image 68.png" alt="Orbital Logo" class="h-10 w-auto">
+                </button>
+
+                <!-- Navigation Links -->
+                <nav class="flex items-center gap-2">
+                    <a href="index.html" class="px-5 py-1.5 text-sm font-inter text-white/80 hover:text-white transition-colors">Home</a>
+                    <a href="mission_page.html" class="px-5 py-1.5 text-sm font-inter text-white/80 hover:text-white transition-colors">Mission</a>
+                    <a href="cosmic_page.html" class="px-5 py-1.5 text-sm font-inter text-white/80 hover:text-white transition-colors">Cosmic</a>
+                    <a href="learn.html" class="px-5 py-1.5 rounded-full bg-white/80 text-black text-sm font-inter font-medium hover:bg-white transition-colors">Learn</a>
+                    <a href="blog.html" class="px-5 py-1.5 text-sm font-inter text-white/80 hover:text-white transition-colors">Blogs</a>
+                    <a href="committee.html" class="px-5 py-1.5 text-sm font-inter text-white/80 hover:text-white transition-colors">Committee</a>
+                </nav>
+
+                <!-- Right Actions -->
+                <div class="flex items-center gap-3">
+                    <!-- User Avatar -->
+                    <a href="profile.html" class="w-10 h-10 rounded-full overflow-hidden border border-white/20">
+                        <img src="./codeathon-figma/profile_pic.png" alt="User Avatar" class="w-full h-full object-cover">
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section id="heroSection" class="hero-section min-h-screen flex items-center justify-center pt-20">
+        <div class="text-center px-6 relative z-10">
+            <h1 class="text-8xl font-sansita font-light text-white uppercase tracking-wide">
+                DECODER CHALLENGE
+            </h1>
+            <p class="text-xl text-gray-300 font-inter mt-6 max-w-2xl mx-auto">The cosmos is speaking. Prove that you know how to listen.</p>
+            <button id="beginBtn" onclick="startQuiz()" class="bg-white/90 text-black px-10 py-4 rounded-full mt-10 hover:bg-white transition font-inter font-semibold text-lg shadow-lg">
+                <span id="btnText">Begin</span>
+                <span id="btnLoader" class="hidden">
+                    <i data-lucide="loader-2" class="w-5 h-5 inline animate-spin"></i> Loading Questions...
+                </span>
+            </button>
+        </div>
+    </section>
+
+    <!-- Quiz Interface -->
+    <section id="quizSection" class="quiz-started h-screen flex flex-col items-center justify-center px-6 py-8">
+        <div class="container mx-auto max-w-7xl w-full" style="margin-top: 8rem;">
+            <!-- Progress Dots -->
+            <div class="flex justify-center items-center gap-4 mb-10">
+                <div id="dot1" class="w-3.5 h-3.5 rounded-full bg-white shadow-lg shadow-white/50"></div>
+                <div id="dot2" class="w-3.5 h-3.5 rounded-full border-2 border-gray-500"></div>
+                <div id="dot3" class="w-3.5 h-3.5 rounded-full border-2 border-gray-500"></div>
+                <div id="dot4" class="w-3.5 h-3.5 rounded-full border-2 border-gray-500"></div>
+                <div id="dot5" class="w-3.5 h-3.5 rounded-full border-2 border-gray-500"></div>
+                <div id="dot6" class="w-3.5 h-3.5 rounded-full border-2 border-gray-500"></div>
+                <div id="dot7" class="w-3.5 h-3.5 rounded-full border-2 border-gray-500"></div>
+            </div>
+
+            <!-- Quiz Card with Arrows -->
+            <div class="flex items-center justify-center gap-12 w-full">
+                <!-- Left Arrow -->
+                <button onclick="prevQuestion()" class="glass w-16 h-16 rounded-full flex items-center justify-center hover:bg-white/20 transition flex-shrink-0">
+                    <i data-lucide="chevron-left" class="w-7 h-7 text-white"></i>
+                </button>
+
+                <!-- Quiz Card -->
+                <div class="flex-1 max-w-5xl">
+                    <!-- Overlapping Panel Design -->
+                    <div class="relative mx-auto" style="height: 400px; max-width: 1100px;">
+                        <!-- Left Panel - Beige (Bottom Layer) -->
+                        <div class="left-panel absolute left-0 top-0 w-[45%] h-full bg-gradient-to-br from-[#F5E6C8] to-[#E8D4A8] rounded-[2.5rem] shadow-2xl" style="z-index: 1;">
+                        </div>
+                        
+                        <!-- Right Panel - Brown with Question (Middle Layer) -->
+                        <div class="right-panel absolute right-0 top-[5%] w-[68%] h-[90%] bg-gradient-to-br from-[#9B6B4E] to-[#7A5336] rounded-[2rem] shadow-2xl px-12 py-10 flex flex-col justify-center" style="z-index: 2;">
+                            <div class="ml-[12%]">
+                                <p id="questionText" class="text-white text-[15px] leading-relaxed mb-7 font-inter">
+                                </p>
+
+                                <!-- Options -->
+                                <div id="optionsContainer" class="space-y-3.5">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Saturn Image (Top Layer) -->
+                        <div class="absolute left-0 top-0 w-[45%] h-full flex items-center justify-center pointer-events-none" style="z-index: 3;">
+                            <img src="./codeathon-figma/saturn.png" alt="Saturn" class="planet-image w-[90%] max-w-sm object-contain drop-shadow-2xl">
+                        </div>
+                    </div>
+
+            <!-- Submit Button -->
+            <div class="flex justify-center mt-8">
+                <button id="submitBtn" onclick="submitAnswer()" class="bg-white/90 text-black px-16 py-3.5 rounded-full font-bold tracking-[0.3em] hover:bg-white transition shadow-lg text-sm">
+                    NEXT
+                </button>
+            </div>
+                </div>
+
+                <!-- Right Arrow -->
+                <button onclick="nextQuestion()" class="glass w-16 h-16 rounded-full flex items-center justify-center hover:bg-white/20 transition flex-shrink-0">
+                    <i data-lucide="chevron-right" class="w-7 h-7 text-white"></i>
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Result Section -->
+    <section id="resultSection" class="result-section min-h-screen flex items-center justify-center py-20 px-6" style="display: none;">
+        <div class="container mx-auto max-w-4xl" style="margin-top: 2rem;">
+            <!-- Moon Phases -->
+            <div class="flex justify-center gap-2 mb-8" style="margin-top: 3rem; " >
+                <div id="moon1" class="w-8 h-8 rounded-full bg-gray-600"></div>
+                <div id="moon2" class="w-8 h-8 rounded-full bg-gray-600"></div>
+                <div id="moon3" class="w-8 h-8 rounded-full bg-gray-600"></div>
+                <div id="moon4" class="w-8 h-8 rounded-full bg-gray-600"></div>
+                <div id="moon5" class="w-8 h-8 rounded-full bg-gray-600"></div>
+                <div id="moon6" class="w-8 h-8 rounded-full bg-gray-600"></div>
+                <div id="moon7" class="w-8 h-8 rounded-full bg-gray-600"></div>
+            </div>
+
+            <!-- Result Card -->
+            <div class="glass rounded-3xl p-12 text-center">
+                <div class="grid grid-cols-2 gap-8 items-center">
+                    <!-- Left Side - Moon Image -->
+                    <div class="flex items-center justify-center">
+                        <img id="resultMoonImage" src="" alt="Moon Phase" class="w-64 h-64 object-contain">
+                    </div>
+
+                    <!-- Right Side - Result Text -->
+                    <div class="text-left">
+                        <h2 id="resultTitle" class="text-5xl font-sansita font-light text-white uppercase mb-4 tracking-wider"></h2>
+                        <p id="resultSubtitle" class="text-xl text-gray-400 mb-6"></p>
+                        <p id="resultMessage" class="text-sm text-gray-300 leading-relaxed mb-8"></p>
+                        
+                        <!-- Action Buttons -->
+                        <div class="flex gap-4 mt-6">
+                            <button onclick="retakeQuiz()" class="bg-white/20 text-white px-6 py-2.5 rounded-full hover:bg-white/30 transition font-inter font-medium text-sm">
+                                Retake Challenge
+                            </button>
+                            <button onclick="window.location.href='learn.html'" class="bg-white text-black px-6 py-2.5 rounded-full hover:bg-gray-100 transition font-inter font-semibold text-sm shadow-lg">
+                                Continue Learning
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Answer Review -->
+            <div id="answerReview" class="mt-12 space-y-4">
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer Section -->
+    <footer class="relative bg-gray-200 py-16 px-5 overflow-hidden">
+        <!-- Background Image -->
+        <div class="absolute inset-0">
+            <img src="./codeathon-figma/image 46.png" alt="Background" class="w-full h-full object-cover">
+        </div>
+        <!-- Dark translucent overlay above image -->
+        <div class="absolute inset-0 bg-black/20"></div>
+
+        <div class="max-w-7xl mx-auto relative z-10">
+            <div class="grid grid-cols-1 lg:grid-cols-[1fr_3fr] gap-12">
+                
+                <!-- Left Column: Logo & Social Icons -->
+                <div>
+                    <a href="index.html" class="inline-block mb-6">
+                        <img src="./codeathon-figma/image 68.png" alt="Orbital Logo" class="h-12 w-auto">
+                    </a>
+                    
+                    <!-- Social Media Icons -->
+                    <div class="flex gap-4">
+                        <a href="#" class="text-gray-800 hover:text-purple-700 transition-colors">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                            </svg>
+                        </a>
+                        <a href="#" class="text-gray-800 hover:text-purple-700 transition-colors">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                            </svg>
+                        </a>
+                        <a href="#" class="text-gray-800 hover:text-purple-700 transition-colors">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                            </svg>
+                        </a>
+                        <a href="#" class="text-gray-800 hover:text-purple-700 transition-colors">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Right Columns: Links -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    
+                    <!-- Column 1: Explore -->
+                    <div>
+                        <h3 class="text-gray-900 font-bold text-base mb-4">Explore</h3>
+                        <ul class="space-y-2">
+                            <li><a href="mission_page.html" class="text-gray-700 text-sm hover:text-purple-700 transition-colors">Space Missions</a></li>
+                            <li><a href="cosmic_page.html" class="text-gray-700 text-sm hover:text-purple-700 transition-colors">Cosmic Events</a></li>
+                            <li><a href="learn.html" class="text-gray-700 text-sm hover:text-purple-700 transition-colors">Learning Hub</a></li>
+                            <li><a href="index.html#events" class="text-gray-700 text-sm hover:text-purple-700 transition-colors">Community Events</a></li>
+                        </ul>
+                    </div>
+
+                    <!-- Column 2: Features -->
+                    <div>
+                        <h3 class="text-gray-900 font-bold text-base mb-4">Features</h3>
+                        <ul class="space-y-2">
+                            <li><a href="index.html#sky" class="text-gray-700 text-sm hover:text-purple-700 transition-colors">Tonight's Sky</a></li>
+                            <li><a href="mission_page.html" class="text-gray-700 text-sm hover:text-purple-700 transition-colors">Mission Tracking</a></li>
+                            <li><a href="cosmic_page.html" class="text-gray-700 text-sm hover:text-purple-700 transition-colors">Geomagnetic Data</a></li>
+                            <li><a href="profile.html" class="text-gray-700 text-sm hover:text-purple-700 transition-colors">Your Profile</a></li>
+                        </ul>
+                    </div>
+
+                    <!-- Column 3: Resources -->
+                    <div>
+                        <h3 class="text-gray-900 font-bold text-base mb-4">Resources</h3>
+                        <ul class="space-y-2">
+                            <li><a href="learn.html" class="text-gray-700 text-sm hover:text-purple-700 transition-colors">Educational Content</a></li>
+                            <li><a href="decoder_challenge.html" class="text-gray-700 text-sm hover:text-purple-700 transition-colors">Decoder Challenge</a></li>
+                            <li><a href="#" class="text-gray-700 text-sm hover:text-purple-700 transition-colors">API Documentation</a></li>
+                            <li><a href="#" class="text-gray-700 text-sm hover:text-purple-700 transition-colors">About Orbital</a></li>
+                        </ul>
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Initialize Lucide Icons
+        lucide.createIcons();
+
+        let currentQuestion = 0;
+        let selectedOption = null;
+        let userAnswers = [];
+        let score = 0;
+
+        // Groq API Configuration
+        const GROQ_API_KEY = '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';
+        const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
+
+        // Disaster content context for question generation
+        const disasterContext = `
+You are creating quiz questions for a disaster management learning module. The content teaches beginners about how satellites detect and monitor natural disasters.
+
+DISASTER TYPES COVERED:
+1. FLOODS - Satellites detect water covering previously dry land using special cameras and radar sensors. Detection methods include comparing before/after images, using NDWI (Normalized Difference Water Index), and radar that works through clouds.
+
+2. WILDFIRES - Satellites detect heat signatures and smoke from space. Thermal infrared sensors spot fires even before visible smoke appears. Satellites track fire spread and help predict fire movement patterns.
+
+3. EARTHQUAKES - Satellites measure ground deformation before and after earthquakes. InSAR (Interferometric Synthetic Aperture Radar) detects millimeter-level changes. Satellites help identify fault lines and predict potential landslides after quakes.
+
+4. CYCLONES - Satellites track storm formation, measure wind speeds, and monitor cloud patterns. They provide early warnings 24-48 hours before storms hit. Satellites monitor eye wall structure and predict storm paths.
+
+5. LANDSLIDES - Satellites detect slope changes, soil moisture, and vegetation disturbances. Radar can see through trees to map terrain. Satellites identify areas at risk after heavy rain and monitor river blockages caused by landslides.
+
+KEY CONCEPTS:
+- Satellites use visible light, infrared, and radar
+- Radar works through clouds and at night
+- Before/after image comparison is crucial
+- Early warning systems save lives
+- Satellites provide real-time damage assessment
+- Multiple satellites work together for better coverage
+
+Generate quiz questions that test understanding of these concepts, suitable for beginners with no technical background.
+`;
+
+        // Generate questions using Groq API
+        async function generateDisasterQuestions() {
+            try {
+                console.log('🤖 Generating disaster management questions with AI...');
+                
+                const response = await fetch(GROQ_API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${GROQ_API_KEY}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        model: 'llama-3.3-70b-versatile',
+                        messages: [
+                            {
+                                role: 'system',
+                                content: disasterContext
+                            },
+                            {
+                                role: 'user',
+                                content: `Generate exactly 7 multiple choice quiz questions about satellite disaster detection. Each question should:
+1. Be easy to understand for beginners
+2. Test understanding of key concepts from the disaster page
+3. Have 4 answer options (A, B, C, D)
+4. Include a brief explanation for the correct answer
+5. Focus on practical understanding, not memorization
+
+Format as JSON array:
+[
+  {
+    "question": "question text here",
+    "options": ["A. option 1", "B. option 2", "C. option 3", "D. option 4"],
+    "correct": 2,
+    "explanation": "brief explanation here",
+    "disaster": "floods|wildfires|earthquakes|cyclones|landslides"
+  }
+]
+
+Make questions varied - cover different disasters and concepts. Keep language simple and engaging.`
+                            }
+                        ],
+                        temperature: 0.8,
+                        max_tokens: 2000
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`API error: ${response.status}`);
+                }
+
+                const data = await response.json();
+                const content = data.choices[0].message.content;
+                
+                // Extract JSON from response (handle markdown code blocks)
+                let jsonContent = content;
+                if (content.includes('```json')) {
+                    jsonContent = content.split('```json')[1].split('```')[0].trim();
+                } else if (content.includes('```')) {
+                    jsonContent = content.split('```')[1].split('```')[0].trim();
+                }
+                
+                const generatedQuestions = JSON.parse(jsonContent);
+                console.log('✅ Generated', generatedQuestions.length, 'questions');
+                
+                // Map disasters to planet images and colors
+                const disasterThemes = {
+                    floods: {
+                        planetImage: "./codeathon-figma/neptun.png",
+                        leftPanelColor: ["#C8D8F5", "#A8C4E8"],
+                        rightPanelColor: ["#4E5B9B", "#364A7A"],
+                        buttonColor: "#7C90C9"
+                    },
+                    wildfires: {
+                        planetImage: "./codeathon-figma/mars.png",
+                        leftPanelColor: ["#F5D7C8", "#E8C4A8"],
+                        rightPanelColor: ["#A85442", "#8B3E2F"],
+                        buttonColor: "#C9876C"
+                    },
+                    earthquakes: {
+                        planetImage: "./codeathon-figma/mercury.png",
+                        leftPanelColor: ["#D8D8D8", "#C8C8C8"],
+                        rightPanelColor: ["#6B6B6B", "#535353"],
+                        buttonColor: "#A8A8A8"
+                    },
+                    cyclones: {
+                        planetImage: "./codeathon-figma/jupiter.png",
+                        leftPanelColor: ["#F5E6D8", "#E8D8C8"],
+                        rightPanelColor: ["#9B7B6B", "#7A5F4E"],
+                        buttonColor: "#C9A98C"
+                    },
+                    landslides: {
+                        planetImage: "./codeathon-figma/earth.png",
+                        leftPanelColor: ["#C8E6F5", "#A8D4E8"],
+                        rightPanelColor: ["#4E6B9B", "#36537A"],
+                        buttonColor: "#7CA6C9"
+                    }
+                };
+                
+                // Add theme properties to each question
+                return generatedQuestions.map(q => {
+                    const theme = disasterThemes[q.disaster] || disasterThemes.floods;
+                    return {
+                        ...q,
+                        planet: q.disaster,
+                        ...theme
+                    };
+                });
+                
+            } catch (error) {
+                console.error('❌ Error generating questions:', error);
+                console.log('⚠️ Falling back to default questions');
+                return null;
+            }
+        }
+
+        // Fallback questions (original astronomy questions)
+        const fallbackQuestions = [
+            {
+                question: "You see a graph showing a star's brightness. The line is flat, then dips down for a few hours, and then goes back up. What likely caused this?",
+                options: [
+                    "A. A cloud on Earth blocked the view",
+                    "B. The star exploded",
+                    "C. A planet passed in front of the star",
+                    "D. The star ran out of batteries"
+                ],
+                correct: 2,
+                explanation: "When a planet passes in front of a star (called a transit), it blocks some of the star's light, causing a temporary dip in brightness. This is how many exoplanets are discovered!",
+                planet: "saturn",
+                planetImage: "./codeathon-figma/saturn.png",
+                leftPanelColor: ["#F5E6C8", "#E8D4A8"],
+                rightPanelColor: ["#9B6B4E", "#7A5336"],
+                buttonColor: "#C9A67C"
+            },
+            {
+                question: "What does 'redshift' in astronomy tell us about a galaxy?",
+                options: [
+                    "A. The galaxy is moving away from us",
+                    "B. The galaxy is very hot",
+                    "C. The galaxy is made of red stars",
+                    "D. The galaxy is behind a red nebula"
+                ],
+                correct: 0,
+                explanation: "Redshift occurs when light waves are stretched as an object moves away from us, shifting toward the red end of the spectrum. This is evidence for the expansion of the universe!",
+                planet: "mars",
+                planetImage: "./codeathon-figma/mars.png",
+                leftPanelColor: ["#F5D7C8", "#E8C4A8"],
+                rightPanelColor: ["#A85442", "#8B3E2F"],
+                buttonColor: "#C9876C"
+            },
+            {
+                question: "If you see a 'light curve' that shows regular, repeating dips in brightness, what is the most likely explanation?",
+                options: [
+                    "A. The star is blinking on and off",
+                    "B. An orbiting planet is passing in front of the star",
+                    "C. Asteroids keep hitting the star",
+                    "D. The telescope needs calibration"
+                ],
+                correct: 1,
+                explanation: "Regular, repeating dips indicate a planet in orbit around the star. Each dip occurs when the planet transits (passes in front of) the star from our point of view.",
+                planet: "earth",
+                planetImage: "./codeathon-figma/earth.png",
+                leftPanelColor: ["#C8E6F5", "#A8D4E8"],
+                rightPanelColor: ["#4E6B9B", "#36537A"],
+                buttonColor: "#7CA6C9"
+            },
+            {
+                question: "What is spectroscopy used for in astronomy?",
+                options: [
+                    "A. Taking pretty pictures of space",
+                    "B. Analyzing the chemical composition of stars",
+                    "C. Measuring the distance to galaxies",
+                    "D. Finding new telescope locations"
+                ],
+                correct: 1,
+                explanation: "Spectroscopy splits light into different wavelengths, revealing the chemical 'fingerprints' of elements. This tells us what stars and planets are made of without visiting them!",
+                planet: "jupiter",
+                planetImage: "./codeathon-figma/jupiter.png",
+                leftPanelColor: ["#F5E6D8", "#E8D8C8"],
+                rightPanelColor: ["#9B7B6B", "#7A5F4E"],
+                buttonColor: "#C9A98C"
+            },
+            {
+                question: "Why do scientists study the 'Goldilocks zone' around stars?",
+                options: [
+                    "A. It's where porridge is served",
+                    "B. It's the region where liquid water can exist",
+                    "C. It's where stars are born",
+                    "D. It's the brightest part of a galaxy"
+                ],
+                correct: 1,
+                explanation: "The habitable zone (Goldilocks zone) is the distance from a star where temperatures allow liquid water to exist - not too hot, not too cold. This is crucial for life as we know it!",
+                planet: "venus",
+                planetImage: "./codeathon-figma/venus.png",
+                leftPanelColor: ["#F5E6D0", "#E8D4B8"],
+                rightPanelColor: ["#B8946B", "#9B7A53"],
+                buttonColor: "#D4B48A"
+            },
+            {
+                question: "What does the Doppler effect help astronomers detect?",
+                options: [
+                    "A. The color of distant planets",
+                    "B. The motion of stars and planets",
+                    "C. The age of galaxies",
+                    "D. The size of black holes"
+                ],
+                correct: 1,
+                explanation: "The Doppler effect causes light waves to compress (blueshift) or stretch (redshift) based on motion. Astronomers use this to detect wobbling stars caused by orbiting planets!",
+                planet: "neptune",
+                planetImage: "./codeathon-figma/neptun.png",
+                leftPanelColor: ["#C8D8F5", "#A8C4E8"],
+                rightPanelColor: ["#4E5B9B", "#364A7A"],
+                buttonColor: "#7C90C9"
+            },
+            {
+                question: "What information can we get from analyzing a planet's atmosphere using transit observations?",
+                options: [
+                    "A. The planet's weight",
+                    "B. The chemical composition of its atmosphere",
+                    "C. How many moons it has",
+                    "D. Its exact surface temperature"
+                ],
+                correct: 1,
+                explanation: "During a transit, some starlight filters through the planet's atmosphere. By analyzing which wavelengths are absorbed, we can identify gases like water vapor, methane, or oxygen!",
+                planet: "mercury",
+                planetImage: "./codeathon-figma/mercury.png",
+                leftPanelColor: ["#D8D8D8", "#C8C8C8"],
+                rightPanelColor: ["#6B6B6B", "#535353"],
+                buttonColor: "#A8A8A8"
+            }
+        ];
+
+        // Active questions array (will be populated with AI-generated or fallback questions)
+        let questions = [];
+
+        // Initialize questions on page load
+        async function initializeQuestions() {
+            console.log('🚀 Initializing Decoder Challenge...');
+            
+            const aiQuestions = await generateDisasterQuestions();
+            
+            if (aiQuestions && aiQuestions.length >= 7) {
+                questions = aiQuestions;
+                console.log('✅ Using AI-generated disaster questions');
+            } else {
+                questions = fallbackQuestions;
+                console.log('⚠️ Using fallback astronomy questions');
+            }
+        }
+
+        // Load current question
+        function loadQuestion() {
+            if (questions.length === 0) {
+                console.error('No questions available!');
+                return;
+            }
+            
+            const q = questions[currentQuestion];
+            document.getElementById('questionText').textContent = q.question;
+            
+            // Update planet image
+            const planetImg = document.querySelector('.planet-image');
+            if (planetImg) {
+                planetImg.src = q.planetImage;
+                planetImg.alt = q.planet;
+                // Adjust size for Venus
+                if (q.planet === 'venus') {
+                    planetImg.style.width = '70%';
+                } else {
+                    planetImg.style.width = '90%';
+                }
+            }
+            
+            // Update panel colors
+            const leftPanel = document.querySelector('.left-panel');
+            const rightPanel = document.querySelector('.right-panel');
+            if (leftPanel && rightPanel) {
+                leftPanel.style.background = `linear-gradient(to bottom right, ${q.leftPanelColor[0]}, ${q.leftPanelColor[1]})`;
+                rightPanel.style.background = `linear-gradient(to bottom right, ${q.rightPanelColor[0]}, ${q.rightPanelColor[1]})`;
+            }
+            
+            const optionsContainer = document.getElementById('optionsContainer');
+            optionsContainer.innerHTML = '';
+            
+            q.options.forEach((option, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn w-full text-white text-sm text-left px-5 py-3.5 rounded-2xl transition cursor-pointer shadow-md';
+                btn.style.backgroundColor = q.buttonColor;
+                btn.style.setProperty('--hover-color', q.buttonColor);
+                btn.textContent = option;
+                btn.onclick = () => selectOption(index);
+                optionsContainer.appendChild(btn);
+            });
+
+            // Update submit button text
+            const submitBtn = document.getElementById('submitBtn');
+            if (currentQuestion === 6) {
+                submitBtn.textContent = 'SUBMIT';
+            } else {
+                submitBtn.textContent = 'NEXT';
+            }
+
+            updateProgressDots();
+        }
+
+        // Start Quiz (manual trigger only)
+        async function startQuiz() {
+            console.log('▶️ Starting quiz...');
+            
+            // Show loading state
+            const btnText = document.getElementById('btnText');
+            const btnLoader = document.getElementById('btnLoader');
+            const beginBtn = document.getElementById('beginBtn');
+            
+            btnText.classList.add('hidden');
+            btnLoader.classList.remove('hidden');
+            beginBtn.disabled = true;
+            beginBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            
+            // Ensure questions are loaded
+            if (questions.length === 0) {
+                console.log('⏳ Questions not loaded yet, initializing...');
+                await initializeQuestions();
+            }
+            
+            // Hide loading state
+            btnText.classList.remove('hidden');
+            btnLoader.classList.add('hidden');
+            beginBtn.disabled = false;
+            beginBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            
+            const quizSection = document.getElementById('quizSection');
+            const heroSection = document.getElementById('heroSection');
+            
+            // Remove hero scroll lock and add quiz scroll lock
+            document.body.classList.remove('hero-active');
+            document.body.classList.add('quiz-active');
+            
+            // Show quiz section first
+            quizSection.classList.add('active');
+            
+            // Smooth scroll to quiz section
+            const targetPosition = quizSection.offsetTop;
+            const startPosition = window.pageYOffset;
+            const distance = targetPosition - startPosition;
+            const duration = 2000; // 2 seconds
+            let start = null;
+
+            function animateScroll(timestamp) {
+                if (!start) start = timestamp;
+                const progress = timestamp - start;
+                const percentage = Math.min(progress / duration, 1);
+                
+                // Easing function (ease-in-out)
+                const easing = percentage < 0.5
+                    ? 4 * percentage * percentage * percentage
+                    : 1 - Math.pow(-2 * percentage + 2, 3) / 2;
+                
+                window.scrollTo(0, startPosition + distance * easing);
+                
+                if (progress < duration) {
+                    requestAnimationFrame(animateScroll);
+                } else {
+                    // Hide hero after scroll completes
+                    heroSection.classList.add('hidden');
+                    // Lock scroll after animation
+                    window.scrollTo(0, 0);
+                }
+            }
+            
+            requestAnimationFrame(animateScroll);
+            lucide.createIcons();
+            loadQuestion();
+        }
+
+        // Back to Hero
+        function backToHero() {
+            document.body.classList.remove('quiz-active');
+            document.body.classList.add('hero-active');
+            document.getElementById('quizSection').classList.remove('active');
+            document.getElementById('heroSection').classList.remove('hidden');
+            document.getElementById('resultSection').style.display = 'none';
+            currentQuestion = 0;
+            userAnswers = [];
+            score = 0;
+            selectedOption = null;
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Select Option
+        function selectOption(index) {
+            selectedOption = index;
+            const options = document.querySelectorAll('.option-btn');
+            options.forEach((btn, i) => {
+                if (i === index) {
+                    btn.classList.add('selected');
+                } else {
+                    btn.classList.remove('selected');
+                }
+            });
+        }
+
+        // Submit Answer
+        function submitAnswer() {
+            if (selectedOption !== null) {
+                // Store user's answer
+                userAnswers[currentQuestion] = selectedOption;
+                
+                // Check if correct
+                if (selectedOption === questions[currentQuestion].correct) {
+                    score++;
+                }
+                
+                // Move to next question or show results
+                if (currentQuestion < 6) {
+                    currentQuestion++;
+                    selectedOption = null;
+                    loadQuestion();
+                } else {
+                    // Show results
+                    showResults();
+                }
+            } else {
+                alert('Please select an answer first!');
+            }
+        }
+
+        // Show Results
+        function showResults() {
+            // Remove scroll lock to allow scrolling in results
+            document.body.classList.remove('quiz-active');
+            
+            document.getElementById('quizSection').style.display = 'none';
+            const resultSection = document.getElementById('resultSection');
+            resultSection.style.display = 'flex';
+            
+            // Update moon phases
+            for (let i = 1; i <= 7; i++) {
+                const moon = document.getElementById(`moon${i}`);
+                if (moon) {
+                    if (i <= score) {
+                        moon.className = 'w-8 h-8 rounded-full bg-white shadow-lg shadow-white/30';
+                    } else {
+                        moon.className = 'w-8 h-8 rounded-full bg-gray-600';
+                    }
+                }
+            }
+            
+            // Determine result level
+            let title, subtitle, message, moonImage;
+            
+            if (score === 7) {
+                title = "FULL MOON";
+                subtitle = "Maximum Luminosity";
+                message = "Absolutely brilliant! Like a full moon lighting up the night sky, your knowledge of the cosmos is complete and unobstructed. You are ready to lead the mission.";
+                moonImage = "./codeathon-figma/full_moon.png"; // Replace with full moon image
+            } else if (score >= 5) {
+                title = "WAXING GIBBOUS";
+                subtitle = "Nearly Complete";
+                message = "Excellent work! Your understanding is almost complete. With just a bit more study, you'll reach full illumination.";
+                moonImage = "./codeathon-figma/full_moon.png";
+            } else if (score >= 4) {
+                title = "FIRST QUARTER";
+                subtitle = "Half Illuminated";
+                message = "Good progress! You're halfway there. Your knowledge is growing steadily, keep exploring!";
+                moonImage = "./codeathon-figma/full_moon.png";
+            } else if (score >= 2) {
+                title = "WAXING CRESCENT";
+                subtitle = "Early Stages";
+                message = "You're beginning to see the light! Keep learning and your understanding will continue to grow.";
+                moonImage = "./codeathon-figma/full_moon.png";
+            } else {
+                title = "NEW MOON";
+                subtitle = "Dark Sky";
+                message = "The journey begins in darkness, but every expert was once a beginner. Time to explore and learn!";
+                moonImage = "./codeathon-figma/full_moon.png";
+            }
+            
+            document.getElementById('resultTitle').textContent = title;
+            document.getElementById('resultSubtitle').textContent = subtitle;
+            document.getElementById('resultMessage').textContent = message;
+            document.getElementById('resultMoonImage').src = moonImage;
+            
+            // Show answer review
+            const reviewContainer = document.getElementById('answerReview');
+            reviewContainer.innerHTML = '<h3 class="text-2xl font-sansita text-white mb-6">Answer Review</h3>';
+            
+            questions.forEach((q, index) => {
+                const isCorrect = userAnswers[index] === q.correct;
+                const reviewCard = document.createElement('div');
+                reviewCard.className = `glass rounded-xl p-6 ${isCorrect ? 'border-l-4 border-green-400' : 'border-l-4 border-red-400'}`;
+                reviewCard.innerHTML = `
+                    <div class="flex items-start gap-4">
+                        <div class="flex-shrink-0">
+                            <span class="text-2xl">${isCorrect ? '✓' : '✗'}</span>
+                        </div>
+                        <div class="flex-1">
+                            <p class="text-white font-semibold mb-2">Question ${index + 1}</p>
+                            <p class="text-gray-300 text-sm mb-3">${q.question}</p>
+                            <p class="text-gray-400 text-sm mb-2">
+                                <span class="${isCorrect ? 'text-green-400' : 'text-red-400'}">Your answer: ${q.options[userAnswers[index]]}</span>
+                            </p>
+                            ${!isCorrect ? `<p class="text-gray-400 text-sm mb-2">Correct answer: ${q.options[q.correct]}</p>` : ''}
+                            <p class="text-gray-300 text-sm italic">${q.explanation}</p>
+                        </div>
+                    </div>
+                `;
+                reviewContainer.appendChild(reviewCard);
+            });
+            
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Retake Quiz
+        function retakeQuiz() {
+            currentQuestion = 0;
+            userAnswers = [];
+            score = 0;
+            selectedOption = null;
+            document.body.classList.add('quiz-active');
+            document.getElementById('resultSection').style.display = 'none';
+            document.getElementById('quizSection').style.display = 'flex';
+            document.getElementById('quizSection').classList.add('active');
+            loadQuestion();
+            lucide.createIcons();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Navigate Questions
+        function nextQuestion() {
+            if (currentQuestion < 6) {
+                currentQuestion++;
+                selectedOption = null;
+                loadQuestion();
+            }
+        }
+
+        function prevQuestion() {
+            if (currentQuestion > 0) {
+                currentQuestion--;
+                selectedOption = null;
+                loadQuestion();
+            }
+        }
+
+        function updateProgressDots() {
+            for (let i = 1; i <= 7; i++) {
+                const dot = document.getElementById(`dot${i}`);
+                if (i === currentQuestion + 1) {
+                    dot.className = 'w-3.5 h-3.5 rounded-full bg-white shadow-lg shadow-white/50';
+                } else {
+                    dot.className = 'w-3.5 h-3.5 rounded-full border-2 border-gray-500';
+                }
+            }
+        }
+
+        // Initialize questions when page loads
+        console.log('📄 Page loaded, initializing questions in background...');
+        initializeQuestions();
+    </script>
+</body>
+</html>

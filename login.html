@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Log In - Orbital</title>
+    <link rel="icon" type="image/jpeg" href="./codeathon-figma/orbi.jpg">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #000000 0%, #0a0a0a 50%, #000000 100%);
+            min-height: 100vh;
+        }
+
+        .glass-form {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        input:focus {
+            border-color: rgba(168, 85, 247, 0.5) !important;
+            box-shadow: 0 0 20px rgba(168, 85, 247, 0.2) !important;
+        }
+
+        .input-field {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .submit-btn {
+            background: linear-gradient(135deg, #a855f7, #ec4899);
+            transition: all 0.3s ease;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(168, 85, 247, 0.4);
+        }
+
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+
+        .error-message {
+            color: #ef4444;
+            font-size: 0.875rem;
+            margin-top: 0.5rem;
+        }
+
+        .success-message {
+            color: #10b981;
+            font-size: 0.875rem;
+            margin-top: 0.5rem;
+        }
+    </style>
+</head>
+<body class="text-white">
+    <!-- Header -->
+    <header class="sticky top-0 z-50 py-4 backdrop-blur-md">
+        <div class="container mx-auto px-6 max-w-7xl">
+            <div class="flex items-center justify-between">
+                <!-- Logo -->
+                <a href="index.html" class="flex items-center rounded-full hover:opacity-90 transition-opacity">
+                    <img src="./codeathon-figma/image 68.png" alt="Orbital Logo" class="h-10 w-auto">
+                </a>
+                <div>
+                    <a href="signup.html" class="px-6 py-2 text-sm font-medium text-white/80 hover:text-white transition-colors">
+                        Sign Up
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex items-center justify-center min-h-[calc(100vh-80px)] px-4">
+        <div class="w-full max-w-md">
+            <!-- Title -->
+            <div class="text-center mb-12">
+                <h1 class="text-4xl font-bold mb-3 bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+                    Welcome Back
+                </h1>
+                <p class="text-white/60 text-lg">Continue your space exploration journey</p>
+            </div>
+
+            <!-- Form -->
+            <div class="glass-form rounded-3xl p-8 space-y-6">
+                <!-- Username/Email -->
+                <div>
+                    <label for="username" class="block text-sm font-medium text-white/80 mb-2">Username or Email</label>
+                    <input
+                        type="text"
+                        id="username"
+                        placeholder="Enter your username or email"
+                        class="input-field w-full px-4 py-3 rounded-xl text-white placeholder-white/30 outline-none"
+                    />
+                    <div id="usernameError" class="error-message hidden"></div>
+                </div>
+
+                <!-- Password -->
+                <div>
+                    <label for="password" class="block text-sm font-medium text-white/80 mb-2">Password</label>
+                    <input
+                        type="password"
+                        id="password"
+                        placeholder="Enter your password"
+                        class="input-field w-full px-4 py-3 rounded-xl text-white placeholder-white/30 outline-none"
+                    />
+                    <div id="passwordError" class="error-message hidden"></div>
+                </div>
+
+                <!-- Error Message -->
+                <div id="generalError" class="error-message hidden text-center"></div>
+
+                <!-- Success Message -->
+                <div id="successMessage" class="success-message hidden text-center"></div>
+
+                <!-- Submit Button -->
+                <button
+                    id="loginBtn"
+                    onclick="handleLogin()"
+                    class="submit-btn w-full py-3 rounded-xl font-semibold text-white transition-all duration-300"
+                >
+                    Log In
+                </button>
+
+                <!-- Sign Up Link -->
+                <div class="text-center">
+                    <p class="text-white/60 text-sm">
+                        Don't have an account?
+                        <a href="signup.html" class="text-purple-400 hover:text-purple-300 font-semibold transition-colors">
+                            Sign Up
+                        </a>
+                    </p>
+                </div>
+            </div>
+
+            <!-- Info -->
+            <div class="mt-8 p-4 bg-white/5 border border-white/10 rounded-2xl">
+                <p class="text-white/50 text-sm text-center">
+                    Demo Account: username: <strong>demo</strong> | password: <strong>demo123</strong>
+                </p>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        async function handleLogin() {
+            // Clear previous errors
+            document.getElementById('usernameError').innerHTML = '';
+            document.getElementById('passwordError').innerHTML = '';
+            document.getElementById('generalError').innerHTML = '';
+            document.getElementById('successMessage').innerHTML = '';
+
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value;
+
+            let hasError = false;
+
+            // Validation
+            if (!username) {
+                document.getElementById('usernameError').innerHTML = 'Username or email is required';
+                hasError = true;
+            }
+
+            if (!password) {
+                document.getElementById('passwordError').innerHTML = 'Password is required';
+                hasError = true;
+            }
+
+            if (hasError) return;
+
+            // Show loading state
+            const btn = document.getElementById('loginBtn');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = 'Logging in...';
+            btn.disabled = true;
+
+            try {
+                const response = await fetch('http://localhost:3000/api/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        username,
+                        password
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    // Store user info in localStorage
+                    localStorage.setItem('user_id', data.user_id);
+                    localStorage.setItem('username', data.username);
+                    
+                    document.getElementById('successMessage').innerHTML = 'Login successful! Redirecting...';
+                    document.getElementById('successMessage').classList.remove('hidden');
+                    
+                    setTimeout(() => {
+                        window.location.href = 'profile.html';
+                    }, 2000);
+                } else {
+                    document.getElementById('generalError').innerHTML = data.error || 'Login failed';
+                    document.getElementById('generalError').classList.remove('hidden');
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                document.getElementById('generalError').innerHTML = 'Connection error. Please try again.';
+                document.getElementById('generalError').classList.remove('hidden');
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        }
+
+        // Allow Enter key to submit
+        document.addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                handleLogin();
+            }
+        });
+
+        // Create demo account on load if needed
+        document.addEventListener('DOMContentLoaded', function() {
+            // Just for reference, the demo account is created in the backend
+        });
+    </script>
+</body>
+</html>

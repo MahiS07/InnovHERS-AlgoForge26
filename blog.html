@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Community Blogs - Orbital</title>
+    <link rel="icon" type="image/jpeg" href="./codeathon-figma/orbi.jpg">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="styles.css">
+    
+    <!-- Authentication Utilities -->
+    <script src="./auth.js"></script>
+    
+    <!-- ORBI - Space Assistant Module -->
+    <script src="./orbi.js"></script>
+</head>
+<body class="bg-black text-white">
+    <!-- Header -->
+    <header class="sticky top-0 z-50 py-4">
+        <div class="container mx-auto px-6 max-w-7xl">
+            <div class="flex items-center justify-between bg-white/5 backdrop-blur-2xl border border-white/20 rounded-full p-2 shadow-lg shadow-black/50">
+                <!-- Logo -->
+                <a href="index.html" class="flex items-center rounded-full hover:opacity-90 transition-opacity">
+                    <img src="./codeathon-figma/image 68.png" alt="Orbital Logo" class="h-10 w-auto">
+                </a>
+
+                <!-- Navigation Links -->
+                <nav class="flex items-center gap-2">
+                    <a href="index.html" class="px-5 py-1.5 text-sm font-inter text-white/80 hover:text-white transition-colors">Home</a>
+                    <a href="mission_page.html" class="px-5 py-1.5 text-sm font-inter text-white/80 hover:text-white transition-colors">Mission</a>
+                    <a href="cosmic_page.html" class="px-5 py-1.5 text-sm font-inter text-white/80 hover:text-white transition-colors">Cosmic</a>
+                    <a href="learn.html" class="px-5 py-1.5 text-sm font-inter text-white/80 hover:text-white transition-colors">Learn</a>
+                    <a href="blog.html" class="px-5 py-1.5 rounded-full bg-white/80 text-black text-sm font-inter font-medium hover:bg-white transition-colors">Blogs</a>
+                    <a href="committee.html" class="px-5 py-1.5 text-sm font-inter text-white/80 hover:text-white transition-colors">Committee</a>
+                </nav>
+
+                <!-- Right Actions -->
+                <div class="flex items-center gap-3">
+                    <!-- User Avatar -->
+                    <a href="profile.html" class="w-10 h-10 rounded-full overflow-hidden ">
+                        <img src="./codeathon-figma/profile_pic.png" alt="User Avatar" class="w-full h-full object-cover">
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-6 max-w-7xl py-16">
+        <!-- Page Header -->
+        <div class="mb-12 text-center">
+            <h1 class="text-5xl font-bold mb-2">Community Blogs</h1>
+            <p class="text-white/60 text-lg">Long-form stories from the space community</p>
+        </div>
+
+        <!-- Filter Tabs & Write Button -->
+        <div class="flex items-center justify-between mb-12 pb-4 border-b border-white/10">
+            <div class="flex items-center gap-6">
+                <button onclick="filterBlogs('latest')" id="filter-latest" class="text-sm font-medium text-white border-b-2 border-white pb-2 transition-colors">
+                    Latest
+                </button>
+                <button onclick="filterBlogs('most-read')" id="filter-most-read" class="text-sm font-medium text-white/50 hover:text-white border-b-2 border-transparent hover:border-white/20 pb-2 transition-colors">
+                    Most Read
+                </button>
+                <button onclick="filterBlogs('editors-pick')" id="filter-editors-pick" class="text-sm font-medium text-white/50 hover:text-white border-b-2 border-transparent hover:border-white/20 pb-2 transition-colors">
+                    Editor's Pick
+                </button>
+            </div>
+            <a href="write_blog.html" class="inline-block px-5 py-2 bg-purple-600 hover:bg-purple-700 rounded-full text-sm font-medium transition-colors whitespace-nowrap">
+                ✏️ Write
+            </a>
+        </div>
+
+        <!-- Blog Feed -->
+        <div id="blogFeed" class="space-y-6">
+            <!-- Blogs will be dynamically loaded here -->
+        </div>
+
+        <!-- Empty State -->
+        <div id="emptyState" class="text-center py-20 hidden">
+            <div class="text-white/40 text-lg mb-4">No blogs published yet</div>
+            <a href="write_blog.html" class="inline-block px-6 py-3 bg-purple-600 hover:bg-purple-700 rounded-full text-sm font-medium transition-colors">
+                Write the first blog
+            </a>
+        </div>
+    </main>
+
+    <!-- Fixed Chat Button -->
+    <div class="fixed bottom-8 right-8 z-50 group">
+        <!-- Tooltip -->
+        <div id="chatTooltip" class="absolute bottom-20 right-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+            <div class="bg-white/95 backdrop-blur-md text-black px-4 py-2 rounded-xl shadow-xl border border-white/20 whitespace-nowrap">
+                <p class="text-sm font-inter font-medium">Hey! I'm Orbi 👋</p>
+                <p class="text-xs text-gray-600">Ask me anything!</p>
+            </div>
+            <div class="absolute -bottom-1 right-6 w-3 h-3 bg-white/95 backdrop-blur-md rotate-45 border-r border-b border-white/20"></div>
+        </div>
+        
+        <button id="chatButton" onclick="toggleChat()" class="w-16 h-16 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 border-2 border-white/40 flex items-center justify-center transition-all duration-300 shadow-2xl hover:shadow-purple-500/50 overflow-hidden hover:scale-110 active:scale-95">
+            <img src="./codeathon-figma/orbi.jpg" alt="Chat with Orbi" class="w-full h-full object-cover">
+        </button>
+    </div>
+
+    <!-- Chat Overlay -->
+    <div id="chatOverlay" class="hidden fixed inset-0 z-[60] flex items-end justify-end p-4 md:p-8 bg-black/20 backdrop-blur-sm">
+        <div class="w-full md:w-96 h-[600px] bg-gradient-to-b from-purple-900/40 via-black/60 to-black/80 backdrop-blur-2xl border border-purple-500/30 rounded-3xl shadow-2xl overflow-hidden flex flex-col">
+            <!-- Header -->
+            <div class="flex items-center justify-between p-5 border-b border-purple-500/20 bg-gradient-to-r from-purple-600/20 to-pink-600/20">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center overflow-hidden">
+                        <img src="./codeathon-figma/orbi.jpg" alt="Orbi" class="w-full h-full object-cover">
+                    </div>
+                    <span class="font-medium text-white">Orbi</span>
+                </div>
+                <button onclick="toggleChat()" class="p-2 hover:bg-white/10 rounded-full transition-all duration-200">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <!-- Chat Messages -->
+            <div id="chatMessages" class="flex-1 p-5 space-y-4 overflow-y-auto custom-scrollbar">
+                <div class="flex items-start gap-3 mb-2">
+                    <div class="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center flex-shrink-0 shadow-lg overflow-hidden">
+                        <img src="./codeathon-figma/orbi.jpg" alt="Orbi" class="w-full h-full object-cover">
+                    </div>
+                    <div class="flex-1 bg-gradient-to-br from-purple-500/20 to-pink-500/10 backdrop-blur-md rounded-2xl rounded-tl-sm p-4 border border-purple-400/30 shadow-lg">
+                        <p class="text-sm font-inter text-white leading-relaxed">Hi! I'm Orbi, your space assistant. Ask me anything about space, astronomy, or our cosmic exploration mission! 🚀</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Input -->
+            <div class="p-5 border-t border-purple-500/20 bg-gradient-to-r from-purple-600/10 to-pink-600/10">
+                <div class="flex items-center gap-2 bg-white/10 backdrop-blur-md rounded-2xl p-3 border border-purple-400/30 focus-within:border-purple-400/60 transition-all">
+                    <input type="text" id="chatInput" placeholder="Ask Orbi..." class="flex-1 bg-transparent outline-none text-sm text-white placeholder-white/40" onkeypress="handleChatKeyPress(event)" />
+                    <button onclick="sendMessage()" class="p-2 hover:bg-white/10 rounded-lg transition-all">
+                        <i data-lucide="send" class="w-4 h-4"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        try { if (window.lucide) { lucide.createIcons(); } } catch (e) {}
+
+        // ==================== ORBI CHATBOT ====================
+        // Groq API Configuration
+        const GROQ_API_KEY = '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';
+        const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
+
+        // Load chat history from database for logged-in users
+        async function loadChatHistory() {
+            try {
+                const response = await fetch('http://localhost:3000/api/chat-history', {
+                    credentials: 'include'
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    const history = data.chat_history || [];
+                    
+                    // Populate chat UI with loaded history
+                    if (history.length > 0) {
+                        const chatMessages = document.getElementById('chatMessages');
+                        chatMessages.innerHTML = ''; // Clear default message
+                        
+                        history.forEach(msg => {
+                            if (msg.role === 'user') {
+                                addUserMessage(msg.content);
+                            } else if (msg.role === 'assistant') {
+                                addBotMessage(msg.content);
+                            }
+                        });
+                    }
+                }
+            } catch (error) {
+                console.log('Chat history load skipped (not logged in)');
+            }
+        }
+
+        // Chat Toggle
+        let isChatOpen = false;
+        function toggleChat() {
+            const chatOverlay = document.getElementById('chatOverlay');
+            isChatOpen = !isChatOpen;
+            
+            if (isChatOpen) {
+                chatOverlay.classList.remove('hidden');
+                setTimeout(() => lucide.createIcons(), 10);
+            } else {
+                chatOverlay.classList.add('hidden');
+            }
+        }
+
+        // Close chat when clicking outside
+        document.getElementById('chatOverlay')?.addEventListener('click', function(e) {
+            if (e.target === this) {
+                toggleChat();
+            }
+        });
+
+        // Chat conversation history
+        let chatHistory = [
+            {
+                role: 'system',
+                content: `You are Orbi, a space assistant STRICTLY LIMITED to answering ONLY space-related questions.
+
+✅ ALLOWED TOPICS ONLY:
+- Space, astronomy, planets, stars, galaxies, cosmic events
+- Space missions, satellites, rockets, spacecraft, space exploration
+- ISS tracking, astronauts, space stations
+- Solar system, moon, sun, space weather
+- Telescopes, space technology, orbital mechanics
+- Satellite disaster detection (floods, wildfires, earthquakes from space)
+- Geomagnetic storms, auroras, solar wind
+- Eclipses, meteor showers, comets, asteroids
+- Space history, NASA, space agencies
+
+❌ STRICTLY FORBIDDEN - DO NOT ANSWER:
+- General knowledge, trivia unrelated to space
+- Mathematics, coding, programming (unless space-related)
+- Cooking, recipes, food
+- Sports, games, entertainment
+- Politics, current events (unless space-related)
+- History (unless space history)
+- General science topics not related to space
+- Website navigation or technical questions
+- ANY other non-space topics
+
+🚫 CRITICAL RULE: If ANY question is not specifically about space, astronomy, or space-related topics, you MUST respond EXACTLY:
+"I'm Orbi, a space assistant. I can ONLY answer questions about space, astronomy, space missions, and space-related topics. Please ask me something about space!"
+
+Do NOT answer questions about website features or navigation. ONLY answer space-related content questions. Keep responses concise (2-3 sentences) unless detail is requested.`
+            }
+        ];
+
+
+
+        // Initialize Lucide icons
+        lucide.createIcons();
+
+        // Blog storage management
+        const BlogStorage = {
+            getBlogs() {
+                const blogs = localStorage.getItem('orbital_blogs');
+                return blogs ? JSON.parse(blogs) : [];
+            },
+            
+            getBlog(id) {
+                const blogs = this.getBlogs();
+                return blogs.find(blog => blog.id === id);
+            },
+
+            incrementViews(id) {
+                const blogs = this.getBlogs();
+                const blog = blogs.find(b => b.id === id);
+                if (blog) {
+                    blog.views = (blog.views || 0) + 1;
+                    localStorage.setItem('orbital_blogs', JSON.stringify(blogs));
+                }
+            }
+        };
+
+        // Calculate read time
+        function calculateReadTime(content) {
+            const wordsPerMinute = 200;
+            const words = content.trim().split(/\s+/).length;
+            const minutes = Math.ceil(words / wordsPerMinute);
+            return minutes;
+        }
+
+        // Format date
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            const options = { year: 'numeric', month: 'long', day: 'numeric' };
+            return date.toLocaleDateString('en-US', options);
+        }
+
+        // Create blog excerpt
+        function createExcerpt(content, maxLength = 200) {
+            const stripped = content.replace(/<[^>]*>/g, '').replace(/[#*`]/g, '');
+            if (stripped.length <= maxLength) return stripped;
+            return stripped.substring(0, maxLength).trim() + '...';
+        }
+
+        // Render blog feed
+        function renderBlogs(filter = 'latest') {
+            let blogs = BlogStorage.getBlogs();
+            const feedContainer = document.getElementById('blogFeed');
+            const emptyState = document.getElementById('emptyState');
+
+            if (blogs.length === 0) {
+                feedContainer.innerHTML = '';
+                emptyState.classList.remove('hidden');
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+
+            // Apply filter
+            if (filter === 'most-read') {
+                blogs = [...blogs].sort((a, b) => (b.views || 0) - (a.views || 0));
+            } else if (filter === 'editors-pick') {
+                blogs = [...blogs].filter(b => b.editorsPick);
+            } else {
+                blogs = [...blogs].sort((a, b) => new Date(b.publishedDate) - new Date(a.publishedDate));
+            }
+
+            // Render blogs
+            feedContainer.innerHTML = blogs.map(blog => {
+                const readTime = calculateReadTime(blog.content);
+                const excerpt = createExcerpt(blog.content);
+                const badgeStyle = blog.editorsPick ? 'inline-block px-3 py-1 bg-purple-500/30 border border-purple-400/50 rounded-full text-xs font-medium text-purple-300 mb-4' : 'hidden';
+                
+                return `
+                    <article class="group cursor-pointer p-6 rounded-2xl bg-white/5 border border-white/10 hover:border-white/20 hover:bg-white/10 transition-all duration-300 hover:shadow-lg hover:shadow-purple-500/10" onclick="window.location.href='blog_detail.html?id=${blog.id}'">
+                        ${blog.editorsPick ? `<div class="${badgeStyle}">⭐ Editor's Pick</div>` : ''}
+                        <h2 class="text-2xl font-bold mb-3 group-hover:text-purple-400 transition-colors leading-tight">
+                            ${blog.title}
+                        </h2>
+                        <p class="text-white/70 text-base mb-5 leading-relaxed line-clamp-2">
+                            ${excerpt}
+                        </p>
+                        <div class="flex flex-wrap items-center gap-3 text-xs text-white/60">
+                            <span class="font-medium text-white/80">${blog.author}</span>
+                            <span class="w-1 h-1 bg-white/30 rounded-full"></span>
+                            <span>${formatDate(blog.publishedDate)}</span>
+                            <span class="w-1 h-1 bg-white/30 rounded-full"></span>
+                            <span>${readTime} min</span>
+                            ${blog.views ? `
+                                <span class="w-1 h-1 bg-white/30 rounded-full"></span>
+                                <span>${blog.views} views</span>
+                            ` : ''}
+                        </div>
+                    </article>
+                `;
+            }).join('');
+        }
+
+        // Filter blogs
+        function filterBlogs(filter) {
+            // Update active tab
+            document.querySelectorAll('[id^="filter-"]').forEach(btn => {
+                btn.classList.remove('text-white', 'border-white');
+                btn.classList.add('text-white/50', 'border-transparent');
+            });
+            
+            const activeBtn = document.getElementById(`filter-${filter}`);
+            activeBtn.classList.remove('text-white/50', 'border-transparent');
+            activeBtn.classList.add('text-white', 'border-white');
+
+            renderBlogs(filter);
+        }
+
+        // Initialize sample blogs if none exist
+        function initializeSampleBlogs() {
+            const blogs = BlogStorage.getBlogs();
+            if (blogs.length === 0) {
+                const sampleBlogs = [
+                    {
+                        id: 'blog-' + Date.now() + '-1',
+                        title: 'The James Webb Space Telescope: A New Era of Discovery',
+                        content: `The James Webb Space Telescope (JWST) represents humanity's most ambitious attempt to peer into the deepest corners of our universe. Launched on December 25, 2021, this $10 billion marvel of engineering has already transformed our understanding of cosmic evolution.
+
+## Unprecedented Capabilities
+
+Unlike its predecessor, the Hubble Space Telescope, JWST observes primarily in the infrared spectrum. This allows it to see through cosmic dust clouds and observe the most distant galaxies formed shortly after the Big Bang.
+
+The telescope's 6.5-meter primary mirror, composed of 18 hexagonal gold-coated beryllium segments, collects light that has traveled for over 13 billion years. Each photon carries information about the early universe, distant exoplanets, and star formation regions.
+
+## Revolutionary Discoveries
+
+In its first year of operation, JWST has delivered breathtaking images and groundbreaking data:
+
+- The deepest infrared view of the universe ever captured
+- Detailed atmospheric composition of exoplanets
+- Ancient galaxies that formed just 300 million years after the Big Bang
+- Chemical signatures in distant nebulae
+
+## What This Means for Humanity
+
+JWST isn't just about pretty pictures. It's rewriting textbooks. Questions about how galaxies form, whether we're alone in the universe, and what the cosmos looked like in its infancy are finally being answered with unprecedented precision.
+
+The telescope operates at the second Lagrange point (L2), about 1.5 million kilometers from Earth, where it maintains a stable position relative to both Earth and the Sun. This location allows for continuous observations without interference from Earth's heat signature.
+
+## Looking Forward
+
+As JWST continues its mission over the next decade, we can expect even more revolutionary discoveries. From mapping the atmospheres of potentially habitable exoplanets to observing the formation of the first stars, the telescope will continue to expand the boundaries of human knowledge.
+
+The data collected is publicly available, allowing scientists worldwide to contribute to our understanding. Amateur astronomers and professional researchers alike can access these cosmic treasures, democratizing space exploration in ways never before possible.`,
+                        author: 'Dr. Sarah Mitchell',
+                        publishedDate: new Date('2026-02-01').toISOString(),
+                        views: 247,
+                        editorsPick: true
+                    },
+                    {
+                        id: 'blog-' + Date.now() + '-2',
+                        title: 'Why Mars Colonization is Closer Than You Think',
+                        content: `The dream of establishing a human settlement on Mars has captivated our imagination for generations. But what was once pure science fiction is rapidly becoming engineering reality.
+
+## The Technology is Almost Here
+
+SpaceX's Starship, designed to carry up to 100 people to Mars, has completed multiple test flights. NASA's Artemis program is establishing lunar infrastructure that will serve as a proving ground for Mars technologies. The pieces are falling into place.
+
+### Life Support Systems
+
+Modern closed-loop life support systems can recycle 98% of water and generate oxygen from Martian regolith. The technology exists—it just needs to be scaled up and proven in the harsh Martian environment.
+
+### Radiation Shielding
+
+One of the biggest challenges—cosmic radiation—has viable solutions. Underground habitats, water-based shielding, and artificial magnetic fields are all being developed.
+
+## The Economic Case
+
+Mars isn't just about exploration; it's about expansion. The planet contains vast mineral resources, and its lower gravity makes it an ideal manufacturing hub for space-based industries.
+
+## Challenges Remain
+
+- The journey takes 6-9 months one way
+- Communication delay of up to 24 minutes
+- Psychological effects of isolation
+- Unknown long-term health effects of 38% Earth gravity
+
+## The Timeline
+
+Optimistic estimates suggest the first crewed mission could launch in the early 2030s. A permanent settlement might follow within 10-20 years after that.
+
+The question isn't if we'll colonize Mars, but when. And the answer might be sooner than you think.`,
+                        author: 'Marcus Chen',
+                        publishedDate: new Date('2026-02-03').toISOString(),
+                        views: 189,
+                        editorsPick: false
+                    },
+                    {
+                        id: 'blog-' + Date.now() + '-3',
+                        title: 'The Hidden Beauty of Light Pollution Maps',
+                        content: `Every astronomer knows that light pollution is the enemy of stargazing. But when you step back and look at light pollution maps from space, they reveal something unexpectedly beautiful: the story of human civilization.
+
+## Patterns in the Dark
+
+From orbit, Earth's night side glows with artificial light. Cities appear as bright clusters, highways as glowing threads connecting urban centers. The patterns tell stories about how we organize ourselves, where we build, and how we've spread across the planet.
+
+### Coastal Concentration
+
+Over 60% of humanity lives within 100 kilometers of a coast. Night-time satellite imagery makes this strikingly apparent. Coastlines glow bright while inland areas remain dark.
+
+### The Digital Divide
+
+Light maps also reveal inequality. Regions with reliable electricity shine bright, while areas lacking infrastructure remain in darkness. It's a sobering reminder that basic amenities we take for granted aren't universally available.
+
+## The Dark Sky Movement
+
+Organizations worldwide are fighting to preserve naturally dark skies. It's not just about astronomy—excessive artificial light disrupts ecosystems, wastes energy, and affects human health.
+
+### International Dark Sky Places
+
+Over 100 locations worldwide have been designated as International Dark Sky Places, where communities have taken specific steps to reduce light pollution. These sanctuaries allow both wildlife and humans to experience the night as nature intended.
+
+## A Different Perspective
+
+Looking at Earth from space changes you. Seeing our planet's artificial glow against the cosmic dark makes you realize: we're all sharing this tiny, bright island in an unimaginably vast darkness.
+
+The next time you see a light pollution map, don't just see a problem to solve. See a portrait of humanity, painted in photons, telling the story of where we've been and where we're going.`,
+                        author: 'Elena Rodriguez',
+                        publishedDate: new Date('2026-02-05').toISOString(),
+                        views: 312,
+                        editorsPick: true
+                    }
+                ];
+
+                localStorage.setItem('orbital_blogs', JSON.stringify(sampleBlogs));
+            }
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeSampleBlogs();
+            renderBlogs('latest');
+            loadChatHistory(); // Load saved chat history for logged-in users
+        });
+    </script>
+</body>
+</html>

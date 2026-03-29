@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solar Eclipse - Orbital</title>
+    <link rel="icon" type="image/jpeg" href="./codeathon-figma/orbi.jpg">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="styles.css">
+    
+    <!-- Authentication Utilities -->
+    <script src="./auth.js"></script>
+    
+    <!-- ORBI - Space Assistant Module -->
+    <script src="./orbi.js"></script>
+</head>
+<body>
+    <!-- Header -->
+    <header class="sticky top-0 z-50 py-4">
+        <div class="container mx-auto px-6 max-w-7xl">
+            <div class="flex items-center justify-between bg-white/5 backdrop-blur-2xl border border-white/20 rounded-full p-2 shadow-lg shadow-black/50">
+                <!-- Logo -->
+                <a href="index.html" class="flex items-center rounded-full hover:opacity-90 transition-opacity">
+                    <img src="./codeathon-figma/image 68.png" alt="Orbital Logo" class="h-10 w-auto">
+                </a>
+
+                <!-- Navigation Links -->
+                <nav class="flex items-center gap-2">
+                    <a href="index.html" class="px-5 py-1.5 rounded-full bg-white/80 text-black text-sm font-inter font-medium hover:bg-white transition-colors">Home</a>
+                    <a href="mission_page.html" class="px-5 py-1.5 text-sm font-inter text-white/80 hover:text-white transition-colors">Mission</a>
+                    <a href="cosmic_page.html" class="px-5 py-1.5 text-sm font-inter text-white/80 hover:text-white transition-colors">Cosmic</a>
+                    <a href="learn.html" class="px-5 py-1.5 text-sm font-inter text-white/80 hover:text-white transition-colors">Learn</a>
+                    <a href="blog.html" class="px-5 py-1.5 text-sm font-inter text-white/80 hover:text-white transition-colors">Blogs</a>
+                    <a href="committee.html" class="px-5 py-1.5 text-sm font-inter text-white/80 hover:text-white transition-colors">Committee</a>
+                </nav>
+
+                <!-- Right Actions -->
+                <div class="flex items-center gap-3" id="authActionsNav">
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section with Eclipse Image -->
+    <section class="details-hero">
+        <div class="details-hero-overlay"></div>
+        <img id="heroImage" src="./codeathon-figma/6183488.jpg" alt="Event" class="details-hero-image">
+        
+        <div class="details-hero-content">
+            <div class="details-title-container">
+                <div class="orange-bar"></div>
+                <h1 id="eventTitle" class="details-main-title">Loading...</h1>
+            </div>
+            <button id="likeEventBtn" onclick="toggleEventLike()" class="favorite-button hover:scale-110 transition-transform">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                </svg>
+            </button>
+        </div>
+    </section>
+
+    <!-- Main Content Section -->
+    <section class="details-content-section">
+        <div class="details-container">
+            <!-- Left Column: Date -->
+            <div class="date-column">
+                <div class="date-display">
+                    <div id="dateMonth" class="date-month">Loading</div>
+                    <div id="dateDay" class="date-day">--</div>
+                </div>
+                <div class="text-links">
+                    <a href="index.html" class="text-link">
+                        ← Back to Events
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                        </svg>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Right Column: Event Details -->
+            <div class="event-details-column">
+                <h2 class="upcoming-events-title">Event Details</h2>
+                
+                <!-- Overview Section -->
+                <div class="mb-8">
+                    <h3 class="text-white text-xl font-bold mb-3">/ Overview</h3>
+                    <p id="eventDescription" class="event-description-text">
+                        Loading event details...
+                    </p>
+                </div>
+
+                <!-- Key Facts Section -->
+                <div class="mb-8">
+                    <h3 class="text-white text-xl font-bold mb-3">/ Key Facts</h3>
+                    <div id="keyFacts" class="space-y-2">
+                        <div class="animate-pulse text-gray-400">Loading facts...</div>
+                    </div>
+                </div>
+
+                <!-- Visibility & Regions Section -->
+                <div class="mb-8">
+                    <h3 class="text-white text-xl font-bold mb-3">/ Visibility & Regions</h3>
+                    <div id="visibilityInfo">
+                        <div class="animate-pulse text-gray-400">Loading visibility data...</div>
+                    </div>
+                </div>
+
+                <!-- Timeline Section -->
+                <div id="timelineSection" class="mb-8 hidden">
+                    <h3 class="text-white text-xl font-bold mb-3">/ Timeline</h3>
+                    <div id="timelineInfo">
+                    </div>
+                </div>
+
+                <!-- Eclipse Diagram (Dynamic based on event type) -->
+                <div id="eventDiagram" class="eclipse-diagram hidden">
+                    <img id="diagramImage" src="" alt="Event Diagram">
+                </div>
+
+                <p class="location-info">
+                    Based on your location — planets, Moon phase, ISS passes, and special events.
+                </p>
+
+                <div id="detailedContent" class="eclipse-path-details">
+                    <!-- Dynamic detailed content will be inserted here -->
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- More Stories Section -->
+    <section class="more-stories-section">
+        <div class="max-w-7xl mx-auto px-5">
+            <h2 class="more-stories-title">More Stories...</h2>
+            
+            <div class="stories-grid">
+                <!-- Card 1: View 2026 Moons -->
+                <div class="story-card blue-card">
+                    <div class="card-header">
+                        <div>
+                            <h3 class="card-main-title">View<br>2026<br>Moons</h3>
+                        </div>
+                        <div class="card-price">
+                            <span class="price-amount">$50</span>
+                            <span class="price-period">/mo</span>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <a href="#" class="card-read-button blue-button">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                            </svg>
+                            Read Now
+                        </a>
+                        <button class="card-favorite-button">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Card 2: Night Sky Explorer -->
+                <div class="story-card purple-card">
+                    <img src="./codeathon-figma/intro-1676493671.jpg" alt="Night Sky" class="card-bg-image">
+                    <div class="card-overlay"></div>
+                    <div class="card-content-wrapper">
+                        <div class="card-header">
+                            <div>
+                                <h3 class="card-main-title text-white">Night<br>Sky<br>Explorer</h3>
+                            </div>
+                            <div class="card-price">
+                                <span class="price-amount">$50</span>
+                                <span class="price-period">/mo</span>
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <a href="#" class="card-read-button purple-button">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                                </svg>
+                                Read Now
+                            </a>
+                            <button class="card-favorite-button">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 3: Nearby Live Sights -->
+                <div class="story-card orange-card">
+                    <div class="card-header">
+                        <div>
+                            <h3 class="card-main-title text-gray-900">Nearby<br>Live<br>Sights</h3>
+                            <p class="card-subtitle">Text Strong</p>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <a href="#" class="card-read-button orange-button">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                            </svg>
+                            Read Now
+                        </a>
+                        <button class="card-favorite-button text-gray-900">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer Section -->
+    <footer class="relative bg-gray-200 py-16 px-5 overflow-hidden">
+        <!-- Background Image -->
+        <div class="absolute inset-0">
+            <img src="./codeathon-figma/image 46.png" alt="Background" class="w-full h-full object-cover">
+        </div>
+        <!-- Dark translucent overlay above image -->
+        <div class="absolute inset-0 bg-black/20"></div>
+
+        <div class="max-w-7xl mx-auto relative z-10">
+            <div class="grid grid-cols-1 lg:grid-cols-[1fr_3fr] gap-12">
+                
+                <!-- Left Column: Logo & Social Icons -->
+                <div>
+                    <a href="index.html" class="inline-block mb-6">
+                        <img src="./codeathon-figma/image 68.png" alt="Orbital Logo" class="h-12 w-auto">
+                    </a>
+                    
+                    <!-- Social Media Icons -->
+                    <div class="flex gap-4">
+                        <a href="#" class="text-gray-800 hover:text-purple-700 transition-colors">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                            </svg>
+                        </a>
+                        <a href="#" class="text-gray-800 hover:text-purple-700 transition-colors">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                            </svg>
+                        </a>
+                        <a href="#" class="text-gray-800 hover:text-purple-700 transition-colors">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                            </svg>
+                        </a>
+                        <a href="#" class="text-gray-800 hover:text-purple-700 transition-colors">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Right Columns: Links -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    
+                    <!-- Column 1: Explore -->
+                    <div>
+                        <h3 class="text-gray-900 font-bold text-base mb-4">Explore</h3>
+                        <ul class="space-y-2">
+                            <li><a href="mission_page.html" class="text-gray-700 text-sm hover:text-purple-700 transition-colors">Space Missions</a></li>
+                            <li><a href="cosmic_page.html" class="text-gray-700 text-sm hover:text-purple-700 transition-colors">Cosmic Events</a></li>
+                            <li><a href="learn.html" class="text-gray-700 text-sm hover:text-purple-700 transition-colors">Learning Hub</a></li>
+                            <li><a href="index.html#events" class="text-gray-700 text-sm hover:text-purple-700 transition-colors">Community Events</a></li>
+                        </ul>
+                    </div>
+
+                    <!-- Column 2: Features -->
+                    <div>
+                        <h3 class="text-gray-900 font-bold text-base mb-4">Features</h3>
+                        <ul class="space-y-2">
+                            <li><a href="index.html#sky" class="text-gray-700 text-sm hover:text-purple-700 transition-colors">Tonight's Sky</a></li>
+                            <li><a href="mission_page.html" class="text-gray-700 text-sm hover:text-purple-700 transition-colors">Mission Tracking</a></li>
+                            <li><a href="cosmic_page.html" class="text-gray-700 text-sm hover:text-purple-700 transition-colors">Geomagnetic Data</a></li>
+                            <li><a href="profile.html" class="text-gray-700 text-sm hover:text-purple-700 transition-colors">Your Profile</a></li>
+                        </ul>
+                    </div>
+
+                    <!-- Column 3: Resources -->
+                    <div>
+                        <h3 class="text-gray-900 font-bold text-base mb-4">Resources</h3>
+                        <ul class="space-y-2">
+                            <li><a href="learn.html" class="text-gray-700 text-sm hover:text-purple-700 transition-colors">Educational Content</a></li>
+                            <li><a href="decoder_challenge.html" class="text-gray-700 text-sm hover:text-purple-700 transition-colors">Decoder Challenge</a></li>
+                            <li><a href="#" class="text-gray-700 text-sm hover:text-purple-700 transition-colors">API Documentation</a></li>
+                            <li><a href="#" class="text-gray-700 text-sm hover:text-purple-700 transition-colors">About Orbital</a></li>
+                        </ul>
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+    </footer>
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+    </footer>
+</body>
+<script>
+    try { if (window.lucide) { lucide.createIcons(); } } catch (e) {}
+
+    // Get detailed event content based on event type
+    function getDetailedContent(event) {
+        const contentMap = {
+            'eclipse': `
+                <p>
+                    The total eclipse will pass over the <a href="#" class="inline-link">Arctic</a>, 
+                    <a href="#" class="inline-link">Greenland</a>, <a href="#" class="inline-link">Iceland</a>, 
+                    <a href="#" class="inline-link">Atlantic Ocean</a>, northern <a href="#" class="inline-link">Spain</a> and very extreme 
+                    northeastern <a href="#" class="inline-link">Portugal</a>. The points of greatest duration and greatest eclipse will be just 
+                    45 km (28 mi) off the western coast of Iceland by 65°10.3' N and 25°12.3' W, where the totality will last 2m 18.21s.
+                </p>
+                <br>
+                <p>
+                    The total eclipse will pass over northern Spain from the Atlantic coast to the Mediterranean coast as well as the 
+                    <a href="#" class="inline-link">Balearic Islands</a>. The total eclipse will be visible from the cities of 
+                    <a href="#" class="inline-link">A Coruña</a>, <a href="#" class="inline-link">Valencia</a>, 
+                    <a href="#" class="inline-link">Zaragoza</a>, <a href="#" class="inline-link">Palma</a> and 
+                    <a href="#" class="inline-link">Bilbao</a>, but both <a href="#" class="inline-link">Madrid</a> and 
+                    <a href="#" class="inline-link">Barcelona</a> will be just outside the path of totality.
+                </p>
+                <br>
+                <p>
+                    The last total eclipse in continental Europe occurred on <a href="#" class="inline-link">March 29, 2006</a> and in continental 
+                    part of <a href="#" class="inline-link">European Union</a> it occurred on <a href="#" class="inline-link">August 11, 1999</a>. 
+                    It will be the first total solar eclipse visible in Iceland since <a href="#" class="inline-link">June 30, 1954</a>, 
+                    and the only one to occur in the 21st century as the next one visible over Iceland will be in 2196.
+                </p>
+            `,
+            'meteor': `
+                <p>
+                    The Perseid meteor shower is caused by debris from <a href="#" class="inline-link">Comet Swift-Tuttle</a>, 
+                    which orbits the Sun once every 133 years. Each August, Earth passes through a stream of dusty debris left behind 
+                    by the comet, and these tiny particles - most no bigger than a grain of sand - burn up in our atmosphere at speeds 
+                    of 133,200 mph (214,000 km/h), creating brilliant streaks of light we call meteors or "shooting stars."
+                </p>
+                <br>
+                <p>
+                    The best time to observe the Perseids is during the pre-dawn hours when the radiant point in the constellation 
+                    <a href="#" class="inline-link">Perseus</a> is highest in the sky. To maximize your viewing experience, find a 
+                    location away from city lights, allow your eyes 30 minutes to adjust to the dark, and look toward the northern 
+                    part of the sky. You don't need any special equipment - the naked eye is best for meteor watching.
+                </p>
+                <br>
+                <p>
+                    The Perseids have been observed for at least <a href="#" class="inline-link">2,000 years</a>, with the first 
+                    recorded sighting from Chinese astronomers in 36 AD. The shower reliably produces one of the highest meteor rates 
+                    of the year, making it a favorite among amateur astronomers and casual sky watchers alike.
+                </p>
+            `,
+            'aurora': `
+                <p>
+                    The <a href="#" class="inline-link">Aurora Borealis</a>, or Northern Lights, occurs when electrically charged 
+                    particles from the Sun enter Earth's atmosphere and collide with gases such as oxygen and nitrogen. The collisions 
+                    produce the characteristic green, pink, red, and purple lights that shimmer and dance across the polar skies. 
+                    The 2026-2027 season is especially promising as we approach <a href="#" class="inline-link">solar maximum</a> - 
+                    the peak of the Sun's 11-year activity cycle.
+                </p>
+                <br>
+                <p>
+                    For the best aurora viewing experience, head to locations within or near the <a href="#" class="inline-link">Arctic Circle</a> 
+                    such as <a href="#" class="inline-link">Tromsø, Norway</a>, <a href="#" class="inline-link">Reykjavik, Iceland</a>, 
+                    <a href="#" class="inline-link">Fairbanks, Alaska</a>, or <a href="#" class="inline-link">Yellowknife, Canada</a>. 
+                    Clear, dark skies away from light pollution provide optimal conditions. The aurora is most active around midnight 
+                    and can appear for several hours, though displays are unpredictable and can change rapidly.
+                </p>
+                <br>
+                <p>
+                    During periods of strong geomagnetic activity, the aurora oval expands and aurora can be visible at lower latitudes. 
+                    Monitor <a href="#" class="inline-link">NOAA Space Weather forecasts</a> for real-time aurora predictions and 
+                    geomagnetic storm alerts that may bring the Northern Lights to mid-latitude regions.
+                </p>
+            `,
+            'supermoon': `
+                <p>
+                    A <a href="#" class="inline-link">supermoon</a> occurs when a full Moon coincides with <a href="#" class="inline-link">perigee</a> - 
+                    the point in the Moon's elliptical orbit when it is closest to Earth. At perigee, the Moon is approximately 
+                    226,000 miles (363,300 km) from Earth, compared to 251,000 miles (405,500 km) at apogee (farthest point). 
+                    This 25,000-mile difference in distance makes the Moon appear up to 14% larger and 30% brighter than an average full Moon.
+                </p>
+                <br>
+                <p>
+                    The term "supermoon" was coined by astrologer <a href="#" class="inline-link">Richard Nolle</a> in 1979, though 
+                    astronomers prefer the term "perigee syzygy." The June 2026 supermoon is one of the closest of the year, providing 
+                    exceptional opportunities for <a href="#" class="inline-link">lunar photography</a>. The Moon appears especially 
+                    large when viewed near the horizon due to the "Moon illusion" - an optical effect that makes the Moon seem larger 
+                    when compared to foreground objects like trees and buildings.
+                </p>
+                <br>
+                <p>
+                    While supermoons occur several times per year, not all are equally impressive. The June 2026 event is particularly 
+                    notable for its proximity and timing. The best viewing opportunities are at <a href="#" class="inline-link">moonrise</a> 
+                    and <a href="#" class="inline-link">moonset</a> when the Moon is low on the horizon. Use photography apps to find 
+                    exact rise/set times for your location and plan your viewing session accordingly.
+                </p>
+            `
+        };
+
+        return contentMap[event.type] || '<p>Detailed information about this event will be available soon.</p>';
+    }
+
+    // Get diagram image based on event type
+    function getDiagramImage(event) {
+        const diagramMap = {
+            'eclipse': './codeathon-figma/intro-1676493671.jpg',
+            'meteor': './codeathon-figma/3865467.jpg',
+            'aurora': './codeathon-figma/1467958.jpg',
+            'supermoon': './codeathon-figma/intro-1676493671.jpg'
+        };
+
+        return diagramMap[event.type] || event.image;
+    }
+
+    // Load event data from URL parameter and sessionStorage
+    function loadEventData() {
+        try {
+            // Get event ID from URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const eventId = urlParams.get('event');
+
+            if (!eventId) {
+                console.error('No event ID provided in URL');
+                showErrorState('No event specified. Please return to the home page.');
+                return;
+            }
+
+            // Retrieve event data from sessionStorage
+            const eventDataStr = sessionStorage.getItem(`event_${eventId}`);
+            
+            if (!eventDataStr) {
+                console.error('Event data not found in session storage for:', eventId);
+                showErrorState('Event data not found. Please select an event from the home page.');
+                return;
+            }
+
+            const event = JSON.parse(eventDataStr);
+            console.log('Loading event details:', event);
+
+            // Update page title
+            document.title = `${event.title} - Orbital`;
+
+            // Update hero section
+            const heroImage = document.getElementById('heroImage');
+            if (heroImage && event.image) {
+                heroImage.src = event.image;
+                heroImage.alt = event.title;
+            }
+            
+            const eventTitle = document.getElementById('eventTitle');
+            if (eventTitle) {
+                eventTitle.textContent = event.title || 'Event Details';
+            }
+
+            // Update date display
+            const dateMonth = document.getElementById('dateMonth');
+            const dateDay = document.getElementById('dateDay');
+            
+            if (dateMonth && dateDay) {
+                if (event.month && event.day) {
+                    dateMonth.textContent = event.month;
+                    dateDay.textContent = event.day;
+                } else {
+                    dateMonth.textContent = 'Event';
+                    dateDay.textContent = '2026';
+                }
+            }
+
+            // Update overview
+            const eventDescription = document.getElementById('eventDescription');
+            if (eventDescription) {
+                eventDescription.textContent = event.description || event.subtitle || 'No description available.';
+            }
+
+            // Update key facts
+            const keyFacts = document.getElementById('keyFacts');
+            if (keyFacts) {
+                if (event.facts && event.facts.length > 0) {
+                    const factsHtml = event.facts.map(fact => `
+                        <div class="flex justify-between py-2 border-b border-gray-700">
+                            <span class="text-gray-400 text-sm">${fact.label}:</span>
+                            <span class="text-white text-sm font-semibold">${fact.value}</span>
+                        </div>
+                    `).join('');
+                    keyFacts.innerHTML = factsHtml;
+                } else {
+                    keyFacts.innerHTML = '<p class="text-gray-400 text-sm">No detailed facts available.</p>';
+                }
+            }
+
+            // Update visibility info
+            const visibilityInfo = document.getElementById('visibilityInfo');
+            if (visibilityInfo) {
+                const visibilityHtml = `
+                    <div class="mb-4">
+                        <h4 class="text-white font-semibold mb-2">Affected Regions:</h4>
+                        <p class="text-gray-400 text-sm">${event.regions?.join(', ') || 'Global'}</p>
+                    </div>
+                    <div class="mb-4">
+                        <h4 class="text-white font-semibold mb-2">Visibility Details:</h4>
+                        <p class="text-gray-400 text-sm">${event.visibility || 'Visible from multiple locations worldwide.'}</p>
+                    </div>
+                `;
+                visibilityInfo.innerHTML = visibilityHtml;
+            }
+
+            // Update timeline if duration exists
+            if (event.duration) {
+                const timelineSection = document.getElementById('timelineSection');
+                if (timelineSection) {
+                    timelineSection.classList.remove('hidden');
+                    
+                    const timelineHtml = `
+                        <div class="space-y-3">
+                            <div class="flex items-start gap-3">
+                                <div class="w-2 h-2 bg-purple-500 rounded-full mt-2"></div>
+                                <div>
+                                    <p class="text-white font-semibold">Event Date</p>
+                                    <p class="text-gray-400 text-sm">${event.dateDisplay || event.date}</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start gap-3">
+                                <div class="w-2 h-2 bg-purple-500 rounded-full mt-2"></div>
+                                <div>
+                                    <p class="text-white font-semibold">Duration</p>
+                                    <p class="text-gray-400 text-sm">${event.duration}</p>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    
+                    const timelineInfo = document.getElementById('timelineInfo');
+                    if (timelineInfo) {
+                        timelineInfo.innerHTML = timelineHtml;
+                    }
+                }
+            }
+
+            // Update diagram section
+            const eventDiagram = document.getElementById('eventDiagram');
+            const diagramImage = document.getElementById('diagramImage');
+            
+            if (eventDiagram && diagramImage && event.type) {
+                const diagramSrc = getDiagramImage(event);
+                diagramImage.src = diagramSrc;
+                diagramImage.alt = `${event.title} Diagram`;
+                eventDiagram.classList.remove('hidden');
+            }
+
+            // Update detailed content
+            const detailedContent = document.getElementById('detailedContent');
+            if (detailedContent && event.type) {
+                detailedContent.innerHTML = getDetailedContent(event);
+            }
+
+            console.log('Event details loaded successfully');
+
+        } catch (error) {
+            console.error('Error loading event data:', error);
+            showErrorState('Error loading event details. Please try again.');
+        }
+    }
+
+    // Show error state
+    function showErrorState(message) {
+        const eventTitle = document.getElementById('eventTitle');
+        const eventDescription = document.getElementById('eventDescription');
+        
+        if (eventTitle) {
+            eventTitle.textContent = 'Error';
+        }
+        
+        if (eventDescription) {
+            eventDescription.innerHTML = `
+                <p class="text-red-400">${message}</p>
+                <a href="index.html" class="inline-block mt-4 px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-full transition-colors">
+                    Return to Home
+                </a>
+            `;
+        }
+    }
+
+    // Load event data when page loads
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => {
+            loadEventData();
+            startTrackingReading();
+        });
+    } else {
+        loadEventData();
+        startTrackingReading();
+    }
+
+    // Stop tracking when leaving the page
+    window.addEventListener('beforeunload', () => {
+        stopTrackingReading();
+    });
+
+    // ============== PAGE INITIALIZATION & AUTH ==============
+    
+    let currentEventId = null;
+    let currentEventTitle = null;
+    let isEventLiked = false;
+
+    // Initialize page
+    document.addEventListener('DOMContentLoaded', () => {
+        // Extract event ID from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        currentEventId = urlParams.get('event');
+
+        // Load event data
+        loadEventData();
+
+        // Load like status if user is logged in
+        if (AUTH.isLoggedIn() && currentEventId) {
+            checkEventLikeStatus();
+        }
+    });
+
+    // Check if event is liked by current user
+    async function checkEventLikeStatus() {
+        if (!AUTH.isLoggedIn() || !currentEventId) return;
+
+        try {
+            const favorites = await AUTH.getFavorites();
+            // Our favorites store the event id in the `id` field
+            const liked = favorites.some(fav => String(fav.id) === String(currentEventId));
+            isEventLiked = liked;
+            updateLikeButton();
+        } catch (error) {
+            console.warn('Could not load like status:', error);
+        }
+    }
+
+    // Toggle like status for event
+    async function toggleEventLike() {
+        console.log('toggleEventLike called, isEventLiked:', isEventLiked);
+        
+        if (!AUTH.isLoggedIn()) {
+            // Redirect to login if not authenticated
+            console.warn('Not logged in, redirecting to login');
+            window.location.href = 'login.html';
+            return;
+        }
+
+        if (!currentEventId) {
+            console.error('No current event ID');
+            return;
+        }
+
+        // Get current event title from DOM
+        const titleElement = document.getElementById('eventTitle');
+        currentEventTitle = titleElement ? titleElement.textContent : 'Event';
+
+        try {
+            if (isEventLiked) {
+                console.log('Removing favorite:', currentEventId);
+                // Remove favorite
+                const result = await AUTH.removeFavorite(currentEventId);
+                console.log('Remove result:', result);
+                if (result && result.error) {
+                    throw new Error(result.error);
+                }
+                isEventLiked = false;
+                console.log('Favorite removed successfully');
+            } else {
+                console.log('Adding favorite:', currentEventId);
+                // Add favorite
+                const result = await AUTH.addFavorite(currentEventId, 'event', {
+                    title: currentEventTitle,
+                    type: 'cosmic_event',
+                    source: 'Event Details Page'
+                });
+                console.log('Add result:', result);
+                if (result && result.error) {
+                    throw new Error(result.error);
+                }
+                isEventLiked = true;
+                console.log('Favorite added successfully');
+            }
+            updateLikeButton();
+        } catch (error) {
+            console.error('Error toggling like:', error);
+        }
+    }
+
+    // Update like button UI
+    function updateLikeButton() {
+        const likeBtn = document.getElementById('likeEventBtn');
+        if (likeBtn) {
+            const svg = likeBtn.querySelector('svg');
+            if (isEventLiked) {
+                svg.setAttribute('fill', 'currentColor');
+                likeBtn.classList.add('text-pink-500');
+                likeBtn.classList.remove('text-white');
+            } else {
+                svg.setAttribute('fill', 'none');
+                likeBtn.classList.remove('text-pink-500');
+                likeBtn.classList.add('text-white');
+            }
+        }
+    }
+</script>
+
+<!-- Fixed Chat Button - Bottom Right -->
+<div class="fixed bottom-8 right-8 z-50 group">
+    <!-- Tooltip -->
+    <div id="chatTooltip" class="absolute bottom-20 right-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+        <div class="bg-white/95 backdrop-blur-md text-black px-4 py-2 rounded-xl shadow-xl border border-white/20 whitespace-nowrap">
+            <p class="text-sm font-inter font-medium">Hey! I'm Orbi 👋</p>
+            <p class="text-xs text-gray-600">Ask me about space events!</p>
+        </div>
+        <div class="absolute -bottom-1 right-6 w-3 h-3 bg-white/95 backdrop-blur-md rotate-45 border-r border-b border-white/20"></div>
+    </div>
+    
+    <!-- Chat Button -->
+    <button id="chatButton" onclick="toggleChat()" class="w-16 h-16 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 border-2 border-white/40 flex items-center justify-center transition-all duration-300 shadow-2xl hover:shadow-purple-500/50 overflow-hidden hover:scale-110 active:scale-95">
+        <img src="./codeathon-figma/orbi.jpg" alt="Chat with Orbi" class="w-full h-full object-cover">
+    </button>
+</div>
+
+<!-- Chat Overlay -->
+<div id="chatOverlay" class="hidden fixed inset-0 z-50 flex items-end justify-end p-4 md:p-8 bg-black/20 backdrop-blur-sm fade-in">
+    <div class="w-full md:w-96 h-[600px] bg-gradient-to-b from-purple-900/40 via-black/60 to-black/80 backdrop-blur-2xl border border-purple-500/30 rounded-3xl shadow-2xl overflow-hidden flex flex-col slide-in-bottom">
+        <!-- Header -->
+        <div class="flex items-center justify-between p-5 border-b border-purple-500/20 bg-gradient-to-r from-purple-600/20 to-pink-600/20">
+            <div class="flex items-center gap-3">
+                <div class="w-11 h-11 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shadow-lg overflow-hidden">
+                    <img src="./codeathon-figma/orbi.jpg" alt="Orbi" class="w-full h-full object-cover">
+                </div>
+                <div>
+                    <p class="font-inter font-bold text-base text-white">Orbi</p>
+                    <div class="flex items-center gap-1">
+                        <div class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></div>
+                        <p class="text-xs text-gray-300 font-inter">Space Events Assistant</p>
+                    </div>
+                </div>
+            </div>
+            <button onclick="toggleChat()" class="p-2 hover:bg-white/10 rounded-full transition-all duration-200 hover:rotate-90">
+                <i data-lucide="x" class="w-5 h-5 text-white"></i>
+            </button>
+        </div>
+
+        <!-- Chat Messages -->
+        <div id="chatMessages" class="flex-1 p-5 space-y-4 overflow-y-auto custom-scrollbar">
+            <!-- Bot Message 1 -->
+            <div class="flex items-start gap-3 mb-2">
+                <div class="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center flex-shrink-0 shadow-lg overflow-hidden">
+                    <img src="./codeathon-figma/orbi.jpg" alt="Orbi" class="w-full h-full object-cover">
+                </div>
+                <div class="flex-1 bg-gradient-to-br from-purple-500/20 to-pink-500/10 backdrop-blur-md rounded-2xl rounded-tl-sm p-4 border border-purple-400/30 shadow-lg">
+                    <p class="text-sm font-inter text-white leading-relaxed">Hi! I'm Orbi, your space events assistant. Ask me about eclipses, meteor showers, planetary alignments, or any celestial events!</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Input -->
+        <div class="p-5 border-t border-purple-500/20 bg-gradient-to-r from-purple-600/10 to-pink-600/10">
+            <div class="flex items-center gap-2 bg-white/10 backdrop-blur-md rounded-2xl p-3 border border-purple-400/30 focus-within:border-purple-400/60 transition-all">
+                <input id="chatInput" type="text" placeholder="Ask about cosmic events..." class="flex-1 bg-transparent border-none outline-none text-sm font-inter text-white placeholder-gray-400 px-2" onkeypress="handleChatKeyPress(event)">
+                <button id="chatSendBtn" onclick="sendMessage()" class="p-2 bg-gradient-to-br from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 rounded-xl transition-all duration-200 flex-shrink-0 hover:scale-110 active:scale-95 shadow-lg">
+                    <i data-lucide="send" class="w-5 h-5 text-white"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+    
+    <script>
+        function initializeAuthUI() {
+            const authActionsNav = document.getElementById('authActionsNav');
+            if (!authActionsNav) return;
+            
+            if (AUTH.isLoggedIn()) {
+                const user = AUTH.getCurrentUser();
+                authActionsNav.innerHTML = `
+                    <button class="p-3 bg-white/10 hover:bg-white/20 rounded-full transition-colors">
+                        <i data-lucide="calendar" class="w-5 h-5"></i>
+                    </button>
+                    <a href="profile.html" class="w-10 h-10 rounded-full overflow-hidden border-2 border-white hover:opacity-80 transition-opacity">
+                        <img src="./codeathon-figma/profile_pic.png" alt="Profile" class="w-full h-full object-cover">
+                    </a>
+                    <button onclick="AUTH.logout()" class="px-3 py-1.5 text-xs text-white/70 hover:text-white transition-colors">
+                        Logout
+                    </button>
+                `;
+            } else {
+                authActionsNav.innerHTML = `
+                    <button class="p-3 bg-white/10 hover:bg-white/20 rounded-full transition-colors">
+                        <i data-lucide="calendar" class="w-5 h-5"></i>
+                    </button>
+                    <a href="login.html" class="px-5 py-1.5 rounded-full bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium transition-colors">
+                        Sign In
+                    </a>
+                `;
+            }
+            if (window.lucide) lucide.createIcons();
+        }
+        
+        document.addEventListener('DOMContentLoaded', initializeAuthUI);
+
+        // Reload event like status when returning to page with different user
+        window.addEventListener('pageshow', async () => {
+            await checkEventLikeStatus();
+            initializeAuthUI();
+        });
+    </script>

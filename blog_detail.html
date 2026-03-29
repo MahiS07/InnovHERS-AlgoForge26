@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blog - Orbital</title>
+    <link rel="icon" type="image/jpeg" href="./codeathon-figma/orbi.jpg">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="styles.css">
+    
+    <!-- Authentication Utilities -->
+    <script src="./auth.js"></script>
+    
+    <!-- ORBI - Space Assistant Module -->
+    <script src="./orbi.js"></script>
+    <style>
+        body {
+            background-color: #000000;
+        }
+
+        /* Typography for blog content */
+        .blog-content {
+            font-size: 1.125rem;
+            line-height: 1.8;
+            color: rgba(255, 255, 255, 0.85);
+        }
+
+        .blog-content h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-top: 3rem;
+            margin-bottom: 1.5rem;
+            color: white;
+            line-height: 1.2;
+        }
+
+        .blog-content h2 {
+            font-size: 2rem;
+            font-weight: 600;
+            margin-top: 2.5rem;
+            margin-bottom: 1.25rem;
+            color: white;
+            line-height: 1.3;
+        }
+
+        .blog-content h3 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            color: rgba(255, 255, 255, 0.95);
+            line-height: 1.4;
+        }
+
+        .blog-content p {
+            margin-bottom: 1.5rem;
+        }
+
+        .blog-content ul, .blog-content ol {
+            margin-bottom: 1.5rem;
+            padding-left: 2rem;
+        }
+
+        .blog-content li {
+            margin-bottom: 0.75rem;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .blog-content blockquote {
+            border-left: 4px solid rgba(168, 85, 247, 0.6);
+            padding-left: 1.5rem;
+            margin: 2rem 0;
+            font-style: italic;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .blog-content code {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 0.2rem 0.5rem;
+            border-radius: 0.25rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            color: rgba(168, 85, 247, 0.9);
+        }
+
+        .blog-content pre {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            overflow-x: auto;
+            margin: 2rem 0;
+        }
+
+        .blog-content pre code {
+            background: none;
+            padding: 0;
+            color: rgba(255, 255, 255, 0.85);
+        }
+
+        .blog-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 0.5rem;
+            margin: 2rem 0;
+        }
+
+        .blog-content a {
+            color: rgb(168, 85, 247);
+            text-decoration: underline;
+            text-decoration-color: rgba(168, 85, 247, 0.4);
+            transition: all 0.2s;
+        }
+
+        .blog-content a:hover {
+            text-decoration-color: rgba(168, 85, 247, 1);
+        }
+    </style>
+</head>
+<body class="bg-black text-white">
+    <!-- Header -->
+    <header class="sticky top-0 z-50 py-4">
+        <div class="container mx-auto px-6 max-w-7xl">
+            <div class="flex items-center justify-between bg-white/5 backdrop-blur-2xl border border-white/20 rounded-full p-2 shadow-lg shadow-black/50">
+                <!-- Logo -->
+                <a href="index.html" class="flex items-center rounded-full hover:opacity-90 transition-opacity">
+                    <img src="./codeathon-figma/image 68.png" alt="Orbital Logo" class="h-10 w-auto">
+                </a>
+
+                <!-- Navigation Links -->
+                <nav class="flex items-center gap-2">
+                    <a href="index.html" class="px-5 py-1.5 text-sm font-inter text-white/80 hover:text-white transition-colors">Home</a>
+                    <a href="mission_page.html" class="px-5 py-1.5 text-sm font-inter text-white/80 hover:text-white transition-colors">Mission</a>
+                    <a href="cosmic_page.html" class="px-5 py-1.5 text-sm font-inter text-white/80 hover:text-white transition-colors">Cosmic</a>
+                    <a href="learn.html" class="px-5 py-1.5 text-sm font-inter text-white/80 hover:text-white transition-colors">Learn</a>
+                    <a href="blog.html" class="px-5 py-1.5 rounded-full bg-white/80 text-black text-sm font-inter font-medium hover:bg-white transition-colors">Blogs</a>
+                    <a href="committee.html" class="px-5 py-1.5 text-sm font-inter text-white/80 hover:text-white transition-colors">Committee</a>
+                </nav>
+
+                <!-- Right Actions -->
+                <div class="flex items-center gap-3">
+                    <!-- User Avatar -->
+                    <a href="profile.html" class="w-10 h-10 rounded-full overflow-hidden ">
+                        <img src="./codeathon-figma/profile_pic.png" alt="User Avatar" class="w-full h-full object-cover">
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-6 max-w-2xl py-16">
+        <!-- Blog Header -->
+        <article id="blogArticle">
+            <div id="blogHeader" class="mb-12">
+                <!-- Title, author, date will be inserted here -->
+            </div>
+
+            <!-- Blog Content -->
+            <div id="blogContent" class="blog-content">
+                <!-- Content will be inserted here -->
+            </div>
+        </article>
+
+        <!-- Author Section -->
+        <div id="authorSection" class="mt-16 pt-12 border-t border-white/10">
+            <!-- Author info will be inserted here -->
+        </div>
+
+        <!-- Back to Blogs -->
+        <div class="mt-16 text-center">
+            <a href="blog.html" class="inline-flex items-center gap-2 px-6 py-3 bg-white/5 hover:bg-white/10 rounded-full text-sm font-medium transition-colors border border-white/10">
+                <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                <span>Back to all blogs</span>
+            </a>
+        </div>
+    </main>
+
+    <!-- Fixed Chat Button -->
+    <div class="fixed bottom-8 right-8 z-50 group">
+        <!-- Tooltip -->
+        <div id="chatTooltip" class="absolute bottom-20 right-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+            <div class="bg-white/95 backdrop-blur-md text-black px-4 py-2 rounded-xl shadow-xl border border-white/20 whitespace-nowrap">
+                <p class="text-sm font-inter font-medium">Hey! I'm Orbi 👋</p>
+                <p class="text-xs text-gray-600">Ask me anything!</p>
+            </div>
+            <div class="absolute -bottom-1 right-6 w-3 h-3 bg-white/95 backdrop-blur-md rotate-45 border-r border-b border-white/20"></div>
+        </div>
+        
+        <button id="chatButton" onclick="toggleChat()" class="w-16 h-16 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 border-2 border-white/40 flex items-center justify-center transition-all duration-300 shadow-2xl hover:shadow-purple-500/50 overflow-hidden hover:scale-110 active:scale-95">
+            <img src="./codeathon-figma/orbi.jpg" alt="Chat with Orbi" class="w-full h-full object-cover">
+        </button>
+    </div>
+
+    <!-- Chat Overlay -->
+    <div id="chatOverlay" class="hidden fixed inset-0 z-[60] flex items-end justify-end p-4 md:p-8 bg-black/20 backdrop-blur-sm">
+        <div class="w-full md:w-96 h-[600px] bg-gradient-to-b from-purple-900/40 via-black/60 to-black/80 backdrop-blur-2xl border border-purple-500/30 rounded-3xl shadow-2xl overflow-hidden flex flex-col">
+            <!-- Header -->
+            <div class="flex items-center justify-between p-5 border-b border-purple-500/20 bg-gradient-to-r from-purple-600/20 to-pink-600/20">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center overflow-hidden">
+                        <img src="./codeathon-figma/orbi.jpg" alt="Orbi" class="w-full h-full object-cover">
+                    </div>
+                    <span class="font-medium text-white">Orbi</span>
+                </div>
+                <button onclick="toggleChat()" class="p-2 hover:bg-white/10 rounded-full transition-all duration-200">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <!-- Chat Messages -->
+            <div id="chatMessages" class="flex-1 p-5 space-y-4 overflow-y-auto custom-scrollbar">
+                <div class="flex items-start gap-3 mb-2">
+                    <div class="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center flex-shrink-0 shadow-lg overflow-hidden">
+                        <img src="./codeathon-figma/orbi.jpg" alt="Orbi" class="w-full h-full object-cover">
+                    </div>
+                    <div class="flex-1 bg-gradient-to-br from-purple-500/20 to-pink-500/10 backdrop-blur-md rounded-2xl rounded-tl-sm p-4 border border-purple-400/30 shadow-lg">
+                        <p class="text-sm font-inter text-white leading-relaxed">Hi! I'm Orbi, your space assistant. Ask me anything about space, astronomy, or our cosmic exploration mission! 🚀</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Input -->
+            <div class="p-5 border-t border-purple-500/20 bg-gradient-to-r from-purple-600/10 to-pink-600/10">
+                <div class="flex items-center gap-2 bg-white/10 backdrop-blur-md rounded-2xl p-3 border border-purple-400/30 focus-within:border-purple-400/60 transition-all">
+                    <input type="text" id="chatInput" placeholder="Ask Orbi..." class="flex-1 bg-transparent outline-none text-sm text-white placeholder-white/40" onkeypress="handleChatKeyPress(event)" />
+                    <button onclick="sendMessage()" class="p-2 hover:bg-white/10 rounded-lg transition-all">
+                        <i data-lucide="send" class="w-4 h-4"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        try { if (window.lucide) { lucide.createIcons(); } } catch (e) {}
+
+        // Initialize Blog Page
+
+        // Load chat history from database for logged-in users
+        async function loadChatHistory() {
+            try {
+                const response = await fetch('http://localhost:3000/api/chat-history', {
+                    credentials: 'include'
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    const history = data.chat_history || [];
+                    
+                    // Populate chat UI with loaded history
+                    if (history.length > 0) {
+                        const chatMessages = document.getElementById('chatMessages');
+                        chatMessages.innerHTML = ''; // Clear default message
+                        
+                        history.forEach(msg => {
+                            if (msg.role === 'user') {
+                                addUserMessage(msg.content);
+                            } else if (msg.role === 'assistant') {
+                                addBotMessage(msg.content);
+                            }
+                        });
+                    }
+                }
+            } catch (error) {
+                console.log('Chat history load skipped (not logged in)');
+            }
+        }
+
+        // Chat Toggle
+        let isChatOpen = false;
+        function toggleChat() {
+            const chatOverlay = document.getElementById('chatOverlay');
+            isChatOpen = !isChatOpen;
+            
+            if (isChatOpen) {
+                chatOverlay.classList.remove('hidden');
+                setTimeout(() => lucide.createIcons(), 10);
+            } else {
+                chatOverlay.classList.add('hidden');
+            }
+        }
+
+        // Close chat when clicking outside
+        document.getElementById('chatOverlay')?.addEventListener('click', function(e) {
+            if (e.target === this) {
+                toggleChat();
+            }
+        });
+
+        // Chat conversation history
+        let chatHistory = [
+            {
+                role: 'system',
+                content: `You are Orbi, a space assistant STRICTLY LIMITED to answering ONLY space-related questions.
+
+✅ ALLOWED TOPICS ONLY:
+- Space, astronomy, planets, stars, galaxies, cosmic events
+- Space missions, satellites, rockets, spacecraft, space exploration
+- ISS tracking, astronauts, space stations
+- Solar system, moon, sun, space weather
+- Telescopes, space technology, orbital mechanics
+- Satellite disaster detection (floods, wildfires, earthquakes from space)
+- Geomagnetic storms, auroras, solar wind
+- Eclipses, meteor showers, comets, asteroids
+- Space history, NASA, space agencies
+
+❌ STRICTLY FORBIDDEN - DO NOT ANSWER:
+- General knowledge, trivia unrelated to space
+- Mathematics, coding, programming (unless space-related)
+- Cooking, recipes, food
+- Sports, games, entertainment
+- Politics, current events (unless space-related)
+- History (unless space history)
+- General science topics not related to space
+- Website navigation or technical questions
+- ANY other non-space topics
+
+🚫 CRITICAL RULE: If ANY question is not specifically about space, astronomy, or space-related topics, you MUST respond EXACTLY:
+"I'm Orbi, a space assistant. I can ONLY answer questions about space, astronomy, space missions, and space-related topics. Please ask me something about space!"
+
+Do NOT answer questions about website features or navigation. ONLY answer space-related content questions. Keep responses concise (2-3 sentences) unless detail is requested.`
+            }
+        ];
+
+
+
+        // Initialize Lucide icons
+        lucide.createIcons();
+
+        // Get blog ID from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const blogId = urlParams.get('id');
+
+        // Blog storage
+        const BlogStorage = {
+            getBlogs() {
+                const blogs = localStorage.getItem('orbital_blogs');
+                return blogs ? JSON.parse(blogs) : [];
+            },
+            
+            getBlog(id) {
+                const blogs = this.getBlogs();
+                return blogs.find(blog => blog.id === id);
+            },
+
+            incrementViews(id) {
+                const blogs = this.getBlogs();
+                const blog = blogs.find(b => b.id === id);
+                if (blog) {
+                    blog.views = (blog.views || 0) + 1;
+                    localStorage.setItem('orbital_blogs', JSON.stringify(blogs));
+                    return blog.views;
+                }
+                return 0;
+            }
+        };
+
+        // Calculate read time
+        function calculateReadTime(content) {
+            const wordsPerMinute = 200;
+            const words = content.trim().split(/\s+/).length;
+            const minutes = Math.ceil(words / wordsPerMinute);
+            return minutes;
+        }
+
+        // Format date
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            const options = { year: 'numeric', month: 'long', day: 'numeric' };
+            return date.toLocaleDateString('en-US', options);
+        }
+
+        // Parse markdown-style content to HTML
+        function parseContent(content) {
+            let html = content;
+
+            // Headers
+            html = html.replace(/^### (.*$)/gim, '<h3>$1</h3>');
+            html = html.replace(/^## (.*$)/gim, '<h2>$1</h2>');
+            html = html.replace(/^# (.*$)/gim, '<h1>$1</h1>');
+
+            // Bold
+            html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+
+            // Italic
+            html = html.replace(/\*(.+?)\*/g, '<em>$1</em>');
+
+            // Code blocks
+            html = html.replace(/```(.*?)```/gs, '<pre><code>$1</code></pre>');
+
+            // Inline code
+            html = html.replace(/`(.+?)`/g, '<code>$1</code>');
+
+            // Lists
+            html = html.replace(/^\- (.+)$/gim, '<li>$1</li>');
+            html = html.replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>');
+
+            // Paragraphs
+            html = html.split('\n\n').map(para => {
+                if (para.trim() && 
+                    !para.startsWith('<h') && 
+                    !para.startsWith('<ul') && 
+                    !para.startsWith('<pre') &&
+                    !para.startsWith('<li')) {
+                    return `<p>${para.trim()}</p>`;
+                }
+                return para;
+            }).join('\n');
+
+            return html;
+        }
+
+        // Render blog
+        function renderBlog() {
+            if (!blogId) {
+                window.location.href = 'blog.html';
+                return;
+            }
+
+            const blog = BlogStorage.getBlog(blogId);
+
+            if (!blog) {
+                document.getElementById('blogHeader').innerHTML = `
+                    <div class="text-center py-20">
+                        <h1 class="text-3xl font-bold mb-4">Blog not found</h1>
+                        <a href="blog.html" class="text-purple-400 hover:text-purple-300">← Back to all blogs</a>
+                    </div>
+                `;
+                return;
+            }
+
+            // Increment view count
+            const views = BlogStorage.incrementViews(blogId);
+
+            // Update page title
+            document.title = `${blog.title} - Orbital`;
+
+            // Render header
+            const readTime = calculateReadTime(blog.content);
+            document.getElementById('blogHeader').innerHTML = `
+                <h1 class="text-5xl font-bold mb-8 leading-tight">${blog.title}</h1>
+                <div class="flex items-center gap-4 text-white/60">
+                    <span class="text-lg font-medium text-white">${blog.author}</span>
+                    <span>•</span>
+                    <span>${formatDate(blog.publishedDate)}</span>
+                    <span>•</span>
+                    <span>${readTime} min read</span>
+                    <span>•</span>
+                    <span>${views} views</span>
+                </div>
+            `;
+
+            // Render content
+            const parsedContent = parseContent(blog.content);
+            document.getElementById('blogContent').innerHTML = parsedContent;
+
+            // Render author section
+            document.getElementById('authorSection').innerHTML = `
+                <div class="flex items-start gap-4">
+                    <div class="w-16 h-16 rounded-full bg-purple-600/20 flex items-center justify-center text-2xl font-bold">
+                        ${blog.author.charAt(0)}
+                    </div>
+                    <div>
+                        <div class="text-xl font-semibold mb-2">${blog.author}</div>
+                        <div class="text-white/60 text-sm">
+                            Space enthusiast and contributor to the Orbital community
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Reinitialize icons after dynamic content load
+            lucide.createIcons();
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            renderBlog();
+            loadChatHistory(); // Load saved chat history for logged-in users
+            startTrackingReading(); // Start tracking reading time
+        });
+        
+        // Stop tracking when leaving the page
+        window.addEventListener('beforeunload', () => {
+            stopTrackingReading();
+        });
+    </script>
+</body>
+</html>
